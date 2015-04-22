@@ -17,6 +17,10 @@
 # */
 
 
+__author__          = "Marée Raphaël <raphael.maree@ulg.ac.be>"
+__copyright__       = "Copyright 2010-2015 University of Liège, Belgium"
+
+
 from cytomine import Cytomine
 import sys,time
 import os
