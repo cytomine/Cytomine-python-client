@@ -80,6 +80,7 @@ elif dump_type==2:
 else:
         annotation_get_func = Annotation.get_annotation_crop_url  
 #Note: if file already exists locally, they will not be requested again
+print "Downloading annotations into %s ..." %output_dir
 dump_annotations=conn.dump_annotations(annotations = annotations, 
                                        get_image_url_func = annotation_get_func, 
                                        dest_path =  output_dir,
