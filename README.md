@@ -9,4 +9,4 @@ Cytomine utilities contains various functions including ones to access whole sli
 See examples in https://github.com/cytomine/Cytomine-python-client/tree/master/client/examples and https://github.com/cytomine/Cytomine-python-client/tree/master/utilities/examples
 
 See installation instructions here:
-http://confluence.cytomine.be/pages/viewpage.action?pageId=12321357
+http://doc.cytomine.be/pages/viewpage.action?pageId=12321357
