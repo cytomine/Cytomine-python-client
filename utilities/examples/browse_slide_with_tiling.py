@@ -106,6 +106,7 @@ def main(argv):
         while True:
             reader.read(async = async)
             image=reader.data
+            #Saving tile locally
             tile_filename = "%s/image-%d-tile-%d.png" %(cytomine_working_path,id_image,i)
             image.save(tile_filename,"PNG")
             cv.SetData(cv_image, reader.result().tostring())
