@@ -2,7 +2,7 @@
 
 Cytomine (http://www.cytomine.be/) client and utilities in Python.
 
-Cytomine client contains functions to import/export data (projects, ontologies, images, users, annotations,...) from/to Cytomine core server.
+Cytomine client contains functions to import/export data (projects, ontologies, images, users, annotations, softwares, ...) from/to Cytomine core server.
 
 Cytomine utilities contains various functions including ones to access whole slide images (tiles,...) and basic image processing tools.
 
