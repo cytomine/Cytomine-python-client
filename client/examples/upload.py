@@ -17,6 +17,11 @@
 # */
 
 
+__author__          = "Stévens Benjamin <b.stevens@ulg.ac.be>" 
+__contributors__    = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]                
+__copyright__       = "Copyright 2010-2015 University of Liège, Belgium"
+
+
 from cytomine import Cytomine
 import cytomine.models
 import time
