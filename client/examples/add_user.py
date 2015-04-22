@@ -46,7 +46,10 @@ role_user = conn.get_roles("ROLE_USER")
 assert(role_user.authority == "ROLE_USER")
 #role_admin = conn.get_roles("ROLE_ADMIN")
 #assert(role_admin.authority == "ROLE_ADMIN")
-
+#role_super_admin = conn.get_roles("ROLE_SUPER_ADMIN")
+#assert(role_super_admin.authority == "ROLE_SUPER_ADMIN")
+#role_guest = conn.get_roles("ROLE_GUEST")
+#assert(role_guest.authority == "ROLE_GUEST")
 
 #Local listing
 for user_data in users:	
@@ -61,3 +64,27 @@ for user_data in users:
         conn.init_storage_for_user(user.id)
         print "%s %s : %s / %s" % (user_data['firstname'],user_data['lastname'], user_data['username'], user_data['password'])
 
+
+#Other operations
+#delete USER role
+#user_role = conn.delete_user_role(user.id, role_user.id)
+#add ADMIN role
+#user_role = conn.add_user_role(user.id, role_admin.id)
+#delete ADMIN role
+#user_role = conn.delete_user_role(user.id, role_admin.id)
+#DELETE user
+#conn.delete_user(user.id)
+
+
+##Add user job (a running instance of a cytomine software)
+#id_software=XXX
+#your_parameters['key'] = "value"
+#user_job = conn.add_user_job(id_software, id_project)
+##Switch to job credentials
+#conn.set_credentials(str(user_job.publicKey), str(user_job.privateKey))
+#job = conn.get_job(user_job.job)  
+##Set job parameter values (must be compatible with software parameter definition)
+#parameters_values = conn.add_job_parameters(user_job.job, conn.get_software(id_software), your_parameters)
+##Update job status (visible in Cytomine web UI)
+#job = conn.update_job_status(job, status = job.RUNNING, status_comment = "Run...", progress = 0)
+#job = conn.update_job_status(job, status = job.TERMINATED, status_comment = "Finish", progress = 100)
