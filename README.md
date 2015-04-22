@@ -1,3 +1,6 @@
 # Cytomine-python-client
 
-Cytomine client and utilities in Python
+
+Cytomine (http://www.cytomine.be/) client and utilities in Python.
+
+See examples in client/examples/
