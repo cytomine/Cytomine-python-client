@@ -1,6 +1,8 @@
 #!/bin/bash
 
 #Example to browse a whole slide tile per tile
+#Warning: it saves each tile locally to $working_path/image-tile*** (see code)
+
 # Replace XXX values by your settings
 host="XXX"
 public_key="XXX"
