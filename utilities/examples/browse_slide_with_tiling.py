@@ -104,21 +104,26 @@ def main(argv):
 
         geometries = []
         while True:
+            #Read next tile
             reader.read(async = async)
             image=reader.data
             #Saving tile locally
             tile_filename = "%s/image-%d-tile-%d.png" %(cytomine_working_path,id_image,i)
             image.save(tile_filename,"PNG")
+            #Apply filtering
             cv.SetData(cv_image, reader.result().tostring())
             filtered_cv_image = filter.process(cv_image)
             i += 1
+            #Detect connected components
             components = ObjectFinder(filtered_cv_image).find_components()
+            #Convert local coordinates (from the tile image) to global coordinates (the whole slide)
             components = whole_slide.convert_to_real_coordinates(whole_slide, components, reader.window_position, reader.zoom)
             geometries.extend(Utils().get_geometries(components, min_area, max_area))
             
             if not reader.next(): break
         
         if options.publish_annotations:  
+            #Upload annotations (geometries corresponding to connected components) to Cytomine core
             conn.add_annotations(geometries, id_image)
 
         #save coordinates of detected geometries to local file
