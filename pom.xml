@@ -1,0 +1,24 @@
+<project xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd'>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>be.cytomine.client</groupId>
+  <artifactId>Cytomine-python-client</artifactId>
+  <version>20150104</version>
+  <packaging>pom</packaging>
+  <name>Cytomine-client-python</name>
+  <build>
+    <sourceDirectory>./client</sourceDirectory>
+  </build>
+  <properties>
+    <sonar.language>py</sonar.language>
+    <sonar.phase>generate-sources</sonar.phase>
+    <sonar.jdbc.url>jdbc:postgresql://localhost/sonar</sonar.jdbc.url>
+    <sonar.jdbc.driver>org.postgresql.Driver</sonar.jdbc.driver>
+    <sonar.jdbc.username>postgres</sonar.jdbc.username>
+    <sonar.jdbc.password></sonar.jdbc.password>
+    <!-- test -->
+    <sonar.host.url>http://sonar.cytomine.be</sonar.host.url>
+    
+     <!--<sonar.python.pylint>/usr/bin/pylint</sonar.python.pylint> -->
+
+  </properties>
+</project>
