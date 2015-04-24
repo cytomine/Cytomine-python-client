@@ -4,7 +4,7 @@
   <artifactId>Cytomine-python-client</artifactId>
   <version>20150104</version>
   <packaging>pom</packaging>
-  <name>Cytomine-client-python</name>
+  <name>Cytomine-python-client</name>
   <build>
     <sourceDirectory>./client</sourceDirectory>
   </build>
