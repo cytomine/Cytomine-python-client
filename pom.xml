@@ -10,7 +10,6 @@
   </build>
   <properties>
     <sonar.language>py</sonar.language>
-    <sonar.phase>generate-sources</sonar.phase>
     <sonar.jdbc.url>jdbc:postgresql://localhost/sonar</sonar.jdbc.url>
     <sonar.jdbc.driver>org.postgresql.Driver</sonar.jdbc.driver>
     <sonar.jdbc.username>postgres</sonar.jdbc.username>
