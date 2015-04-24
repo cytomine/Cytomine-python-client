@@ -44,17 +44,17 @@ project_id = XXX
 #Methods to add properties to an existing annotation
 #add
 annotation_property = conn.add_annotation_property(annotation_id, "key_prop", "value_prop")
-assert(annotation_property != None)
+assert annotation_property != None
 #get one property
 annotation_property2 = conn.get_annotation_property(annotation_id, annotation_property.id)
-assert(annotation_property != None)
+assert annotation_property != None
 #get property collection
 annotation_properties = conn.get_annotation_properties(annotation_id)
 for annotation_property in annotation_properties.data():
 	print "%s => %s" % (annotation_property.key, annotation_property.value)
 #edit
 annotation_property = conn.edit_annotation_property(annotation_id, annotation_property.id, "key_prop", "value_prop2")
-assert(annotation_property != None)
+assert annotation_property != None
 #delete
 #success = annotation_property = conn.delete_annotation_property(annotation_id, annotation_property.id)
 #assert(success == True)

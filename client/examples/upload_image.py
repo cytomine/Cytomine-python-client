@@ -52,10 +52,10 @@ id_project = XXX # optional
 core_conn = Cytomine(cytomine_core_path,cytomine_public_key,cytomine_private_key, verbose= False)
 # check that the storage exists
 storage = core_conn.get_storage(id_storage)
-assert(storage.id == id_storage) 
-if (id_project):
+assert storage.id == id_storage
+if id_project:
     project = core_conn.get_project(id_project)
-    assert(project.id == id_project)
+    assert project.id == id_project
 # at this point, we are sure that the parameters for the Cytomine instance works 
 # and that the storage and the project (if provided) exists                                  
 
@@ -76,7 +76,7 @@ response = ims_conn.upload_image(file_path_2, id_project, id_storage, "%s%s" % (
 uploaded_file_info = response.get('uploaded_file')
 uploaded_file_id = uploaded_file_info.get('id')
 uploaded_file = core_conn.get_uploaded_file(uploaded_file_id)
-assert(uploaded_file.image)
+assert uploaded_file.image
 image_properties = core_conn.get_abstract_image_properties(uploaded_file.image)
 print "OK (sync)"
 
@@ -89,7 +89,7 @@ print "OK (sync)"
 sync = False
 response = ims_conn.upload_image(file_path, id_project, id_storage, "%s%s" % (protocol, cytomine_core_path), sync, properties ) #sync False (async)
 
-assert(response.get('status') == 200) #uploaded worked as expected
+assert response.get('status') == 200 #uploaded worked as expected
 uploaded_file_info = response.get('uploaded_file')
 uploaded_file_id = uploaded_file_info.get('id')
 uploaded_file = core_conn.get_uploaded_file(uploaded_file_id)

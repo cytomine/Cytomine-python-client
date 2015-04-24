@@ -47,7 +47,7 @@ projects.init_paginator(10, 0)
 
 
 #This will request "pages" (per 10) of projects
-while (True): 
+while True: 
     projects  = conn.fetch(projects)
     if not(projects.next_page()):
         break

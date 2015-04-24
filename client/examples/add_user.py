@@ -43,13 +43,13 @@ users = [
 
 #Roles attributed to users
 role_user = conn.get_roles("ROLE_USER")
-assert(role_user.authority == "ROLE_USER")
+assert role_user.authority == "ROLE_USER"
 #role_admin = conn.get_roles("ROLE_ADMIN")
-#assert(role_admin.authority == "ROLE_ADMIN")
+#assert role_admin.authority == "ROLE_ADMIN"
 #role_super_admin = conn.get_roles("ROLE_SUPER_ADMIN")
-#assert(role_super_admin.authority == "ROLE_SUPER_ADMIN")
+#assert role_super_admin.authority == "ROLE_SUPER_ADMIN"
 #role_guest = conn.get_roles("ROLE_GUEST")
-#assert(role_guest.authority == "ROLE_GUEST")
+#assert role_guest.authority == "ROLE_GUEST"
 
 #Local listing
 for user_data in users:	
