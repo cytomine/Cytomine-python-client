@@ -34,7 +34,7 @@ class User(Model):
     def to_url(self):
         if hasattr(self, "id"):
             return "user/%d.json" % self.id
-        elif (hasattr(self, "software")):
+        elif hasattr(self, "software"):
             self._callback_identifier = "userJob"
             return "userJob.json"
         else:
@@ -65,11 +65,11 @@ class UserGroup(Model):
         self._callback_identifier = "usergroup"
 
     def to_url(self):
-        if (hasattr(self, "user") and not hasattr(self, "id")):#new
+        if hasattr(self, "user") and not hasattr(self, "id"):#new
             return "user/%d/group.json" % self.user
-        elif (hasattr(self, "user") and hasattr(self, "group")):
+        elif hasattr(self, "user") and hasattr(self, "group"):
             return "user/%d/group/%d.json" % (self.user, self.group)
-        elif(not hasattr(self, "user") and hasattr(self, "group")) :
+        elif not hasattr(self, "user") and hasattr(self, "group") :
             return "group/%d.json" % self.group
 
     def __str__( self ):
@@ -95,9 +95,9 @@ class UserRole(Model):
         self._callback_identifier = "secusersecrole"
         
     def to_url(self):
-        if (hasattr(self, "user") and not hasattr(self, "id")):#new
+        if hasattr(self, "user") and not hasattr(self, "id"):#new
             return "user/%d/role.json" % self.user
-        elif (hasattr(self, "user") and hasattr(self, "role")):
+        elif hasattr(self, "user") and hasattr(self, "role"):
             return "user/%d/role/%d.json" % (self.user, self.role)
         
     def __str__( self ):

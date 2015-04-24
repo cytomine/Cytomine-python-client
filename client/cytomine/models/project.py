@@ -57,9 +57,9 @@ class ProjectProperty(Model):
         self._callback_identifier = "property"
 
     def to_url(self):
-        if (hasattr(self, "domainIdent") and not hasattr(self, "id")):#new
+        if hasattr(self, "domainIdent") and not hasattr(self, "id"):#new
             return "project/%d/property.json" % self.domainIdent
-        elif (hasattr(self, "domainIdent") and hasattr(self, "id")):
+        elif hasattr(self, "domainIdent") and hasattr(self, "id"):
             return "project/%d/property/%d.json" % (self.domainIdent, self.id)        
 
     def __str__( self ):

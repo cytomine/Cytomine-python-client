@@ -118,9 +118,9 @@ class AnnotationTerm(Model):
         self._callback_identifier = "annotationterm"
 
     def to_url(self):
-        if (hasattr(self, "annotation") and hasattr(self, "term")):
+        if hasattr(self, "annotation") and hasattr(self, "term"):
             return "annotation/%d/term/%d.json" % (self.annotation, self.term)
-        elif (hasattr(self, "annotation")):
+        elif hasattr(self, "annotation"):
             return "annotation/%d/term.json" % (self.annotation)
 
     def __str__( self ):
@@ -139,9 +139,9 @@ class AnnotationProperty(Model):
         self._callback_identifier = "property"
 
     def to_url(self):
-        if (hasattr(self, "domainIdent") and not hasattr(self, "id")):#new
+        if hasattr(self, "domainIdent") and not hasattr(self, "id"):#new
             return "annotation/%d/property.json" % self.domainIdent
-        elif (hasattr(self, "domainIdent") and hasattr(self, "id")):
+        elif hasattr(self, "domainIdent") and hasattr(self, "id"):
             return "annotation/%d/property/%d.json" % (self.domainIdent, self.id)        
 
     def __str__( self ):

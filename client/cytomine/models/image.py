@@ -134,7 +134,7 @@ class AbstractImageGroup(Model):
         self._callback_identifier = "abstractImageGroup"
 
     def to_url(self):
-        if (hasattr(self, "group") and hasattr(self, "abstractimage")):
+        if hasattr(self, "group") and hasattr(self, "abstractimage"):
             return "abstractimage/%d/group/%d.json" % (self.group, self.abstractimage)
         else:
             return "404.json" #does not exists
@@ -162,9 +162,9 @@ class AbstractImageProperty(Model):
         self._callback_identifier = "property"
 
     def to_url(self):
-        if (hasattr(self, "domainIdent") and not hasattr(self, "id")):#new
+        if hasattr(self, "domainIdent") and not hasattr(self, "id"):#new
             return "domain/be.cytomine.image.AbstractImage/%d/property.json" % self.domainIdent
-        elif (hasattr(self, "domainIdent") and hasattr(self, "id")):
+        elif hasattr(self, "domainIdent") and hasattr(self, "id"):
             return "domain/be.cytomine.image.AbstractImage/%d/property/%d.json" % (self.domainIdent, self.id)        
 
     def __str__( self ):
