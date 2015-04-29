@@ -36,7 +36,6 @@ from cytomine_utilities.reader import Bounds, CytomineReader
 from cytomine_utilities.utils import Utils
 from cytomine_utilities.wholeslide import WholeSlide
 
-__author__ = 'stevben'
 
 class Enum(set):
     def __getattr__(self, name):
@@ -45,91 +44,61 @@ class Enum(set):
         raise AttributeError
 
 def main(argv):
-    # modes
-    modes = Enum(['MANUAL','AUTO'])
-
-    #filter
-    filters = { 'binary' : BinaryFilter(), 'adaptive' : AdaptiveThresholdFilter(), 'otsu' : OtsuFilter()}
-
     parser = optparse.OptionParser(description='Cytomine Datamining',
                               prog='cytomining',
                               version='cytomining 0.1')
-    parser.add_option('-m', '--mode', dest='mode', type = 'choice', choices = [modes.MANUAL, modes.AUTO], help = 'manual or auto mode')
-    parser.add_option('-i', '--image', type='int', dest='id_image',
+    parser.add_option('-i', '--cytomine_id_image', type='int', dest='id_image',
                   help='image id from cytomine', metavar='IMAGE')
     parser.add_option('--cytomine_host', dest='cytomine_host', help='cytomine_host')
     parser.add_option('--cytomine_public_key', dest='cytomine_public_key', help='cytomine_public_key')
     parser.add_option('--cytomine_private_key', dest='cytomine_private_key', help='cytomine_private_key')
     parser.add_option('--cytomine_base_path', dest='cytomine_base_path', help='cytomine base path')
     parser.add_option('--cytomine_working_path', dest='cytomine_working_path', help='cytomine_working_path base path')
-    parser.add_option('--cytomine_publish', action="store_true", default=False, dest="publish_annotations", help="Turn on upload of geometries")
-    parser.add_option('--zoom', dest='zoom', type = 'int', help='(auto mode only) Zoom. 0 value is maximum zoom')
-    parser.add_option('--binary_filter', dest='filter', type = 'choice', choices = filters.keys())
-    parser.add_option('--min_area', dest='min_area', type = 'int', help='min area of detected object in pixel at maximum zoom')
-    parser.add_option('--max_area', dest='max_area', type = 'int', help='max area of detected object in pixel at maximum zoom')
-    parser.add_option('--window_size', dest='window_size', type = 'int', help='window_size (sliding window). default is 1024')
-    parser.add_option('--overlap', dest='overlap', type = 'int', help='overlap between two sliding window position in pixels. default is 0')
+    parser.add_option('--cytomine_zoom_level', dest='zoom', type = 'int', help='(auto mode only) Zoom. 0 value is maximum zoom')
+    parser.add_option('--cytomine_tile_size', dest='window_size', type = 'int', help='window_size (sliding tile window). default is 1024')
+    parser.add_option('--cytomine_tile_overlap', dest='overlap', type = 'int', help='overlap between two tile sliding window position in pixels. default is 0')
     options, arguments = parser.parse_args( args = argv)
 
 
-    mode = options.mode if options.mode else modes.MANUAL
-
     #copy options
-    id_image = options.id_image
+    cytomine_id_image = options.id_image
     cytomine_host = options.cytomine_host if options.cytomine_host else 'ulb.cytomine.be'
     cytomine_public_key = options.cytomine_public_key if options.cytomine_public_key else '4b4ef932-204c-4fa4-b456-a50729f3519e'
     cytomine_private_key = options.cytomine_private_key if options.cytomine_private_key else 'afd8407e-5059-466a-bc8d-fe18dec63a4c'
     cytomine_base_path = options.cytomine_base_path if options.cytomine_base_path else "/api/"
     cytomine_working_path = options.cytomine_working_path if options.cytomine_working_path else "/tmp"
-    zoom = options.zoom if options.zoom else int(0)
+    cytomine_zoom_level = options.zoom if options.zoom else int(0)
     overlap = options.overlap if options.overlap else int(0)    
     window_size = options.window_size if options.window_size else 1024
-    min_area = options.min_area if options.min_area else (50*50 / (2**zoom)) #25x25 pixels at zoom 0
-    max_area = options.min_area if options.min_area else (100000*100000 / (2**zoom)) #100000x100000 pixels at zoom 0
-    filter = filters.get(options.filter)
-    # init connection
-    conn = Cytomine(cytomine_host, cytomine_public_key, cytomine_private_key, cytomine_working_path, base_path = cytomine_base_path, verbose = False)
-    whole_slide = WholeSlide(conn.get_image_instance(id_image, True))
 
+    # Creates tile output directory
+    if not os.path.exists(cytomine_working_path):
+        os.makedirs(cytomine_working_path)
+
+    # init connection & whole-slide reader
+    conn = Cytomine(cytomine_host, cytomine_public_key, cytomine_private_key, cytomine_working_path, base_path = cytomine_base_path, verbose = True)
+    whole_slide = WholeSlide(conn.get_image_instance(cytomine_id_image, True))
     async = False #True is experimental
+    reader = CytomineReader(conn, whole_slide, window_position = Bounds(0,0, window_size, window_size), zoom = cytomine_zoom_level, overlap = overlap)
+    cv_image = cv.CreateImageHeader((reader.window_position.width, reader.window_position.height), cv.IPL_DEPTH_8U, 3)
 
-    if mode == modes.AUTO:
-        reader = CytomineReader(conn, whole_slide, window_position = Bounds(0,0, window_size, window_size), zoom = zoom, overlap = overlap)
-        cv_image = cv.CreateImageHeader((reader.window_position.width, reader.window_position.height), cv.IPL_DEPTH_8U, 3)
+    
+    #sliding window test:
+    reader.window_position = Bounds(0, 0, reader.window_position.width, reader.window_position.height)
+    
+    i = 0        
 
-        #sliding window test:
-        reader.window_position = Bounds(0, 0, reader.window_position.width, reader.window_position.height)
+    while True:
+        #Read next tile
+        reader.read(async = async)
+        image=reader.data
+        #Saving tile locally
+        tile_filename = "%s/image-%d-zoom-%d-tile-%d-x-%d-y-%d.png" %(cytomine_working_path,cytomine_id_image,cytomine_zoom_level,i,reader.window_position.x,reader.window_position.y)
+        print "Saving tile %d into %s" %(i,tile_filename)
+        image.save(tile_filename,"PNG")
+        i += 1
 
-        i = 0        
-
-        geometries = []
-        while True:
-            #Read next tile
-            reader.read(async = async)
-            image=reader.data
-            #Saving tile locally
-            tile_filename = "%s/image-%d-tile-%d.png" %(cytomine_working_path,id_image,i)
-            image.save(tile_filename,"PNG")
-            #Apply filtering
-            cv.SetData(cv_image, reader.result().tostring())
-            filtered_cv_image = filter.process(cv_image)
-            i += 1
-            #Detect connected components
-            components = ObjectFinder(filtered_cv_image).find_components()
-            #Convert local coordinates (from the tile image) to global coordinates (the whole slide)
-            components = whole_slide.convert_to_real_coordinates(whole_slide, components, reader.window_position, reader.zoom)
-            geometries.extend(Utils().get_geometries(components, min_area, max_area))
-            
-            if not reader.next(): break
-        
-        if options.publish_annotations:  
-            #Upload annotations (geometries corresponding to connected components) to Cytomine core
-            conn.add_annotations(geometries, id_image)
-
-        #save coordinates of detected geometries to local file
-        #output = open(os.path.join(cytomine_working_path,save_to), 'wb')
-        #pickle.dump(geometries, output, protocol=pickle.HIGHEST_PROTOCOL)
-        #output.close()
+        if not reader.next(): break
 
 if __name__ == '__main__':
     main(sys.argv[1:])
