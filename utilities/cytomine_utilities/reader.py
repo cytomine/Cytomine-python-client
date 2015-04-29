@@ -235,7 +235,7 @@ class CytomineReader(Reader):
             image_tile, box = self.out_queue.get()
             self.data.paste(image_tile, box)
 
-        print "done"
+        #print "done"
 
     def result(self):
         return self.rgb2bgr(self.data)
@@ -257,8 +257,8 @@ class CytomineReader(Reader):
         return previous_x != self.window_position.x
 
     def right(self):
-        print "overlap = %f" % self.overlap 
-        print "oldx = %d" % self.window_position.x
+        #print "overlap = %f" % self.overlap 
+        #print "oldx = %d" % self.window_position.x
         
         if self.window_position.x >= (self.image.levels[self.zoom]['level_width'] - self.window_position.width):
             return False
