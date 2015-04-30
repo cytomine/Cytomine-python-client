@@ -49,9 +49,15 @@ term3 = conn.add_term("TERM3", ontology.id, "#0000FF")
 conn.add_relation_term(cat1.id, term2.id)
 conn.add_relation_term(cat1.id, term3.id)
 
+
+
+
 #Methods in order to delete term, relation and ontology. 
 #Note that delete_ontology method will automatically delete everything	
 #conn.delete_relation_term(cat1.id, term2.id)	
 #conn.delete_term(term2.id)
 #conn.delete_ontology(ontology.id)
 
+
+#Method to edit a project, change its name and ontology id
+#conn.edit_project(id_project,"MY_PROJECT_NAME",id_ontology)
