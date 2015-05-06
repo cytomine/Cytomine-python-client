@@ -927,7 +927,7 @@ class Cytomine(object):
         return self.fetch(term)
 
     # Check / for destPath
-    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None):
+    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None, max_size=None):
         images = []
         if not (os.path.exists(self.__working_path)):
             print "Working path (%s) does not exist" % self.__working_path
