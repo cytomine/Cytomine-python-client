@@ -64,28 +64,71 @@ class ObjectFinder(object):
         self.height = np_size[0]
 
 
-    def find_components_list(self):
+    #def find_components_list(self):
         #for detect_sample application:
-        storage = cv.CreateMemStorage()
-        contours = cv.FindContours(cv.fromarray(self.np_image), storage, cv.CV_RETR_LIST, cv.CV_CHAIN_APPROX_SIMPLE)
-        components = []
-        while contours:
-            component = []
-            points = list(contours)
+     #   storage = cv.CreateMemStorage()
+      #  contours = cv.FindContours(cv.fromarray(self.np_image), storage, cv.CV_RETR_LIST, cv.CV_CHAIN_APPROX_SIMPLE)
+       # components = []
+        #while contours:
+         #   component = []
+          #  points = list(contours)
              
-            if len(points) > 3 :
-                for point in points:
-                    component.append((point[0], point[1]))
-                components.append(component)
+           # if len(points) > 3 :
+            #    for point in points:
+             #       component.append((point[0], point[1]))
+              #  components.append(component)
 
-            contours = contours.h_next()
+            #contours = contours.h_next()
 
-        del contours
-        return components
+        #del contours
+        #return components
 
         
+    def find_components_list(self):
+        #CV_RETR_EXTERNAL to only get external contours.
+        #cv2.RETR_CCOMP
+        contours, hierarchy = cv2.findContours(self.np_image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        
+        components = []
+        if (len(contours) > 0):
+            top_index = 0
+            tops_remaining = True
+            while tops_remaining:
+                exterior = contours[top_index][:,0,:].tolist()
+                
+                interiors = []
+                # check if there are childs and process if necessary
+                if (hierarchy[0][top_index][2] != -1):
+                    sub_index = hierarchy[0][top_index][2]
+                    subs_remaining = True
+                    while subs_remaining:
+                        interiors.append(contours[sub_index][:,0,:].tolist())
+                        
+                        # check if there is another sub contour
+                        if (hierarchy[0][sub_index][0] != -1):
+                            sub_index = hierarchy[0][sub_index][0]
+                        else:
+                            subs_remaining = False
+                
+                # add component tupple to components only if exterior is a polygon
+                if (len(exterior) > 3):
+                    components.append( (exterior, interiors) )
+                
+                # check if there is another top contour
+                if (hierarchy[0][top_index][0] != -1):
+                    top_index = hierarchy[0][top_index][0]
+                else:
+                    tops_remaining = False
+
+        del contours
+        del hierarchy
+        return components
+
+
+
     def find_components(self):
         #CV_RETR_EXTERNAL to only get external contours.
+        #cv2.RETR_CCOMP
         contours, hierarchy = cv2.findContours(self.np_image.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         
         components = []
@@ -122,4 +165,5 @@ class ObjectFinder(object):
         del contours
         del hierarchy
         return components
-   
+
+
