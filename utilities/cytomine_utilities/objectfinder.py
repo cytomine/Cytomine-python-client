@@ -62,7 +62,27 @@ class ObjectFinder(object):
         np_size = self.np_image.shape
         self.width = np_size[1]
         self.height = np_size[0]
-        
+
+
+    def find_components_list(self):
+        #for detect_sample application:
+        storage = cv.CreateMemStorage()
+        contours = cv.FindContours(cv.fromarray(self.np_image), storage, cv.CV_RETR_LIST, cv.CV_CHAIN_APPROX_SIMPLE)
+        components = []
+        while contours:
+            component = []
+            points = list(contours)
+             
+            if len(points) > 3 :
+                for point in points:
+                    component.append((point[0], point[1]))
+                components.append(component)
+
+            contours = contours.h_next()
+
+        del contours
+        return components
+
         
     def find_components(self):
         #CV_RETR_EXTERNAL to only get external contours.
