@@ -37,6 +37,8 @@ class User(Model):
         elif hasattr(self, "software"):
             self._callback_identifier = "userJob"
             return "userJob.json"
+        elif hasattr(self, "current"):
+            return "user/current.json"
         else:
             return "user.json"
 
