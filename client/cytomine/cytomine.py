@@ -343,6 +343,11 @@ class Cytomine(object):
             user = UserCollection()
             return self.fetch(user)
 
+    def get_current_user(self):
+        user = User()
+        user.current = True
+        return self.fetch(user)
+        
     def add_user(self, username, firstname, lastname, email, password):
         user = User()
         user.username = username
