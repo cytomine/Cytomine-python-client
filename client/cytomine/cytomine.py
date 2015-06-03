@@ -52,6 +52,8 @@ class Cytomine(object):
     def __init__(self, host, public_key, private_key, working_path="/tmp", protocol="http://", base_path="/api/",
                  verbose=False, timeout=120):
         self.__protocol = protocol
+        host = host.replace("http://" , "")
+        host = host.replace("https://" , "")
         self.__host = host
         self.__timeout = timeout
         self.__base_path = base_path
