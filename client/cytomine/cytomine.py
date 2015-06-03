@@ -1146,5 +1146,4 @@ class Cytomine(object):
         json_response = json.loads(content)
         return json_response.get('token')
 
-    def str2bool(v):
-        return v.lower() in ("yes", "true", "t", "1")
+    
