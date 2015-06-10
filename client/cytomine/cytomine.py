@@ -1145,3 +1145,5 @@ class Cytomine(object):
         print "%s => %s" % (resp,content)
         json_response = json.loads(content)
         return json_response.get('token')
+
+    
