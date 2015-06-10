@@ -923,7 +923,7 @@ class Cytomine(object):
 
 
 
-    def get_project_image_intances(self, id_project):
+    def get_project_image_instances(self, id_project):
         image_instances = ImageInstanceCollection()
         image_instances.project = id_project
         return self.fetch(image_instances)
