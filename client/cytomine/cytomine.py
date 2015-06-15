@@ -957,12 +957,13 @@ class Cytomine(object):
             setattr(image_instance, "filename", filename)
             images.append(image_instance)
             if (not (os.path.exists(filename)) or (os.path.exists(filename) and override)):
-                if max_size:
+                if (type(max_size) is int):
                     url = image_instance.preview[0:image_instance.preview.index('?')] + "?maxSize=" + str(max_size)
-                    #print url
-                    self.fetch_url_into_file(url, filename, override)
+                elif(max_size):
+                    url = image_instance.preview[0:image_instance.preview.index('?')] + "?maxSize=" + str(max(image_instance.width,image_instance.height))
                 else:
-                    self.fetch_url_into_file(image_instance.preview, filename, override)
+                    url = image_instance.preview
+                self.fetch_url_into_file(url, filename, override)
             pbar.update(i)
         pbar.finish()
         return images
