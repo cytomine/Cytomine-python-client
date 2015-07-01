@@ -1089,11 +1089,29 @@ class Cytomine(object):
         image.id = id_image
         return self.fetch(image)
 
-    def edit_image(self, id_image, filename, path, mime):
+#    def edit_image(self, id_image, filename, path, mime):
+#        image = self.get_image(id_image)
+#        image.filename = filename
+#        image.path = path
+#        image.mime = mime
+#        return self.update(image)
+
+    def edit_image(self, id_image, filename = None, path = None, mime = None, id_sample = None, id_scanner = None, magnification = None, resolution = None):
         image = self.get_image(id_image)
-        image.filename = filename
-        image.path = path
-        image.mime = mime
+        if filename:
+            image.filename = filename
+        if path:
+	    image.path = path
+	if mime:
+            image.mime = mime
+        if id_sample:
+            image.sample = id_sample
+	if id_scanner:
+            image.scanner = id_scanner
+        if magnification:
+            image.magnification = magnification
+	if resolution:
+            image.resolution = resolution
         return self.update(image)
 
     def delete_image(self, id_image):
