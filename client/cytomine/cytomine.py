@@ -969,6 +969,9 @@ class Cytomine(object):
         return images
 
     def upload_job_data_file(self, job_data, filename):
+        from poster.encode import multipart_encode
+        from poster.streaminghttp import register_openers
+
         url = 'jobdata/%d/upload' % job_data.id
 
         # Build the request
