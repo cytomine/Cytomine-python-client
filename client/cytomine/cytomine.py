@@ -908,9 +908,11 @@ class Cytomine(object):
                                                 
                     else:   
                         #use original cropURL (smallest bounding box around the annotation)
-                        print "Get crop at zoom %d" %desired_zoom
+                        if self.__verbose:
+                            print "Get crop at zoom %d" %desired_zoom
                         cropURL = get_image_url_func(annot, desired_zoom, desired_max_size)
-                        print "cropURL: %s" %cropURL
+                        if self.__verbose:
+                            print "cropURL: %s" %cropURL
                         queue.put((cropURL, filename, annot))
 
         queue.join()
