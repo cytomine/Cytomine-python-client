@@ -175,9 +175,10 @@ class Cytomine(object):
         established = None
         while(not established):
             try:
-                print "base_path: %s" %self.__base_path
-                print "url: %s" %url
-                print "url: %s" %model.to_url()+query
+                if self.__verbose:
+                    print "base_path: %s" %self.__base_path
+                    print "url: %s" %url
+                    print "url: %s" %model.to_url()+query
                 self.__conn.request("POST", self.__base_path + url + model.to_url() + query, body = model.to_json(), headers=dict(self.__headers.items()+[('content-type','application/json')]))
                 established = True
             #except socket.timeout, socket.error, error, e, err:
@@ -502,34 +503,36 @@ class Cytomine(object):
         userGroup = self.get_user_group(id_user, id_group)
         return self.delete(userGroup)
 
-    #annotations
+    # annotations
     def get_annotations(self, id_project = None, id_user = None, id_image = None, id_term = None, showGIS = None, showWKT = None, showMeta = None, bbox = None, id_bbox= None, reviewed_only = False):
         annotations = AnnotationCollection()
         query=""
         if id_project:
-            query = query + "&project=" + str(id_project)
+            query += "&project=" + str(id_project)
         if id_term:
-            query = query + "&terms=" + str(id_term)  #terms for multiple, term instead
+            query += "&terms=" + str(id_term)  # terms for multiple, term instead
         if id_user:
-            query = query + "&users=%s" %str(id_user).strip('[]').replace(' ','')
+            # TODO use ReviewedAnnotationCollection instead of messing with user field
+            query = "{}&{}={}".format(query, "reviewUsers" if reviewed_only else "users",
+                                      str(id_user).strip('[]').replace(' ', ''))
         if id_image:
-            query = query + "&images=%s" %str(id_image).strip('[]').replace(' ','')
+            query += "&images=%s" % str(id_image).strip('[]').replace(' ', '')
         if bbox:
-            query = query + "&bbox=%s" %urllib.quote_plus(bbox) # %str(bbox).strip('[]').replace(' ','%20')
+            query += "&bbox=%s" % urllib.quote_plus(bbox)  # %str(bbox).strip('[]').replace(' ','%20')
         if id_bbox:
-            query = query + "&bboxAnnotation=%s" %str(id_bbox) 
+            query += "&bboxAnnotation=%s" % str(id_bbox)
         if showGIS:
-            query = query + "&showGIS=true"
+            query += "&showGIS=true"
         if showWKT:
-            query = query + "&showWKT=true"
+            query += "&showWKT=true"
         if showMeta:
-            query = query + "&showMeta=true"
+            query += "&showMeta=true"
         if showMeta or showGIS or showWKT:
-            query = query + "&showTerm=true"
+            query += "&showTerm=true"
         if reviewed_only:
-            query = query + "&reviewed=true"
+            query += "&reviewed=true"
                 
-        #print query
+        # print query
         annotations = self.fetch(annotations,query=query)
         return annotations
 
@@ -915,9 +918,11 @@ class Cytomine(object):
                                                 
                     else:   
                         #use original cropURL (smallest bounding box around the annotation)
-                        print "Get crop at zoom %d" %desired_zoom
+                        if self.__verbose:
+                            print "Get crop at zoom %d" %desired_zoom
                         cropURL = get_image_url_func(annot, desired_zoom, desired_max_size)
-                        print "cropURL: %s" %cropURL
+                        if self.__verbose:
+                            print "cropURL: %s" %cropURL
                         queue.put((cropURL, filename, annot))
 
         queue.join()
@@ -1177,4 +1182,6 @@ class Cytomine(object):
         json_response = json.loads(content)
         return json_response.get('token')
 
-    
+    def __getstate__(self):  # Make cytomine client serializable
+        self.__conn = None
+        return self.__dict__

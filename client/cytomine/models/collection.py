@@ -81,4 +81,22 @@ class Collection(object):
     def data(self):
         return self._data
 
+    def __len__(self):
+        return len(self._data)
 
+    def __getitem__(self, item):
+        return self._data[item]
+
+    def __iadd__(self, other):
+        if not isinstance(other, Collection):
+            raise ValueError("Only two Collection objects can be added together, 'other' is not an instance of Collection.")
+        self._data.extend(other.data())
+        return self
+
+    def __add__(self, other):
+        if not isinstance(other, Collection):
+            raise ValueError("Only two Collection objects can be added together, 'other' is not an instance of Collection.")
+        collection = Collection({})
+        collection += self.data()
+        collection += other.data()
+        return collection
