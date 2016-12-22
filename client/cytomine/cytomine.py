@@ -690,6 +690,16 @@ class Cytomine(object):
         software.resultName = result_name
         return self.save(software)
 
+
+    def add_software(self, name, service_name, result_name, execute_command=None):
+        software = Software()
+        software.name = name
+        software.serviceName = service_name
+        software.resultName = result_name
+        software.executeCommand = execute_command
+        return self.save(software)
+
+
     # software project
     def add_software_project(self, project, software):
         software_project = SoftwareProject()
@@ -917,11 +927,10 @@ class Cytomine(object):
         return annotations
 	
 
-
-
-
-
-
+    def get_project_users(self, id_project):
+        users = UserCollection()
+        users.project = id_project
+        return self.fetch(users)
 
     def get_project_image_instances(self, id_project):
         image_instances = ImageInstanceCollection()
