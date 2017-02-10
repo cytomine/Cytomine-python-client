@@ -18,10 +18,9 @@
 
 
 __author__ = "Begon Jean-Michel <jm.begon@gmail.com>"
+__contributors__ = ["Mormont Romain <romainmormont@gmail.com"]
 __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
 __version__ = '0.1'
-
-
 
 
 from .logger import Logger
@@ -37,3 +36,21 @@ from .taskmanager import TaskSplitter
 from .taskmanager import TaskExecutor
 from .taskmanager import SerialExecutor
 from .taskmanager import ParallelExecutor
+
+from .cytomine_job import CytomineJob
+
+__all__ = [
+    "Logger",
+    "StandardLogger",
+    "FileLogger",
+    "VoidLogger",
+    "ProgressLogger",
+    "Progressable",
+    "format_duration",
+    "format_size",
+    "TaskSplitter",
+    "TaskExecutor",
+    "SerialExecutor",
+    "ParallelExecutor",
+    "CytomineJob"
+]
