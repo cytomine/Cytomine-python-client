@@ -107,6 +107,23 @@ class JobParameter(Model):
     def __str__( self ):
         return "Jobparameter : " + str(self.id)
 
+
+class JobTemplate(Model):
+
+    def __init__(self, params = None):
+        super(JobTemplate, self).__init__(params)
+        self._callback_identifier = "jobtemplate"
+
+    def to_url(self):
+        if hasattr(self, "id"):
+            return "jobtemplate/%d.json" % self.id
+        else:
+            return "jobtemplate.json"
+
+    def __str__( self ):
+        return "Jobparameter : " + str(self.id)
+
+
 class JobData(Model):
 
     def __init__(self, params = None):
