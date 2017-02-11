@@ -802,6 +802,15 @@ class Cytomine(object):
         else:
             return job
 
+    #JobTemplate
+    def add_job_template(self, name, id_project, id_software):
+        job_template = JobTemplate()
+        job_template.name = name
+        job_template.project = id_project
+        job_template.software = id_software
+        return self.save(job_template)
+
+
     # Check / for destPath
 
     #old
