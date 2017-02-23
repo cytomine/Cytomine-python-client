@@ -54,6 +54,17 @@ class CytomineJob(object):
         self.__parameters = parameters
 
     @property
+    def job(self):
+        """Return the job model
+
+        Return
+        ------
+        job: cytomine.Job
+            The job model
+        """
+        return self.__job
+
+    @property
     def cytomine_client(self):
         """
         Protected method
