@@ -1,6 +1,6 @@
 # Cytomine-python-client
 
-When using our software, you agree to cite our website url and related publications in all your work (publications, studies, oral presentations,...). In particular, you agree to cite our (Marée et al., Bioinformatics 2016) paper, and to use our logo when appropriate. See our license files for additional details.
+When using our software, we kindly ask you to cite our website url and related publications in all your work (publications, studies, oral presentations,...). In particular, we recommend to cite (Marée et al., Bioinformatics 2016) paper, and to use our logo when appropriate. See our license files for additional details.
 
 - URL: http://www.cytomine.be/
 - Logo: http://www.cytomine.be/logo/logo.png
