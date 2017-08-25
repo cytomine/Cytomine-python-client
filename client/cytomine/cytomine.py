@@ -71,7 +71,7 @@ class Cytomine(object):
         url = url.replace("http://%s%s" % (self.__host, self.__base_path), "")
         url = url.replace("https://%s%s" % (self.__host, self.__base_path), "")
         self.__conn = httplib.HTTPConnection(self.__host, timeout=self.__timeout)
-        locale.setlocale(locale.LC_ALL, '')
+        locale.setlocale(locale.LC_TIME)
         self.__headers = {'accept': accept, 'date': strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime()),
                           'X-Requested-With': 'XMLHttpRequest'}
         canonical__headers = "%s\n\n%s\n%s\n" % (action, content_type, self.__headers['date'])
