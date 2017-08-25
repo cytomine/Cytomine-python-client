@@ -98,5 +98,5 @@ class Collection(object):
             raise ValueError("Only two Collection objects can be added together, 'other' is not an instance of Collection.")
         collection = Collection({})
         collection += self.data()
-        collection += other.data()
+        collection += other
         return collection
