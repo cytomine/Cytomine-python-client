@@ -503,6 +503,38 @@ class Cytomine(object):
         userGroup = self.get_user_group(id_user, id_group)
         return self.delete(userGroup)
 
+
+    #get positions (as a single request or with multiple requests (paging)
+    def get_positions(self, id_image = None, id_user = None, showDetails = None, afterthan = None, beforethan = None, maxperpage = None):
+        positions = PositionCollection()
+        positions.imageinstance = id_image
+        query=""
+        if id_user:
+            query += "user=" +str(id_user)
+        if showDetails:
+            query += "&showDetails=true"
+        if afterthan:
+            query +="&afterThan=" + str(afterthan)
+        if beforethan:
+            query +="&beforeThan=" + str(beforethan)
+        #use paging for big collections
+        if maxperpage:
+            positions_tmp = PositionCollection()
+            positions_tmp.init_paginator(maxperpage,0)
+            while True: 
+                positions_tmp.imageinstance = id_image
+                positions_tmp = self.fetch(positions_tmp,query=query)
+                if not positions:
+                    positions = positions_tmp
+                else : 
+                    positions.data().extend(positions_tmp.data())
+                if not(positions_tmp.next_page()):
+                    break
+        else:
+            positions = self.fetch(positions,query=query)
+        return positions
+
+    
     # annotations
     def get_annotations(self, id_project = None, id_user = None, id_image = None, id_term = None, showGIS = None, showWKT = None, showMeta = None, bbox = None, id_bbox= None, reviewed_only = False):
         annotations = AnnotationCollection()
@@ -757,14 +789,15 @@ class Cytomine(object):
         return self.save(job_parameter)
 
     def add_job_parameters(self, job, software, values):
-        #software = conn.getSoftware(id_software)
-        #software_parameters_map = {}
         job_parameters_values = {}
+        cytomine_job = self.get_job(job)
         for software_parameter in software.parameters:
             software_parameter_name = software_parameter["name"]
             if values[software_parameter["name"]]:
                 job_parameters_values[software_parameter["id"]] = software_parameter_name, values[
                     software_parameter_name]
+            elif (cytomine_job.algoType=="jobtemplate" and software_parameter_name == "annotation"):
+                print "Do not add annotation param if JobTemplate"
             else:
                 job_parameters_values[software_parameter["id"]] = software_parameter_name, software_parameter[
                     "defaultParamValue"]
@@ -803,6 +836,11 @@ class Cytomine(object):
             return job
 
     #JobTemplate
+    def get_job_template(self, id_job_template):
+        job_template = JobTemplate()
+        job_template.id = id_job_template
+        return self.fetch(job_template)
+
     def add_job_template(self, name, id_project, id_software):
         job_template = JobTemplate()
         job_template.name = name
@@ -810,6 +848,9 @@ class Cytomine(object):
         job_template.software = id_software
         return self.save(job_template)
 
+    def delete_job_template(self, id_job_template):
+        job_template = self.get_job_template(id_job_template)
+        return self.delete(job_template)
 
     # Check / for destPath
 
