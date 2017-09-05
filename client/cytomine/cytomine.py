@@ -517,7 +517,7 @@ class Cytomine(object):
             query +="&afterThan=" + str(afterthan)
         if beforethan:
             query +="&beforeThan=" + str(beforethan)
-        #use paging for big collections
+        #use paginator for large collections
         if maxperpage:
             positions_tmp = PositionCollection()
             positions_tmp.init_paginator(maxperpage,0)
