@@ -24,7 +24,8 @@ __copyright__       = "Copyright 2010-2015 University of Liège, Belgium, http:/
 __version__         = '0.1'
 
 
-import cv
+import cv2
+import numpy as np
 
 class Filter(object):
 
@@ -42,9 +43,9 @@ class AdaptiveThresholdFilter(Filter):
         self.c = c
 
     def process(self, image):
-        image_gray = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1)
-        cv.CvtColor(image,image_gray, cv.CV_BGR2GRAY)
-        cv.AdaptiveThreshold(image_gray, image_gray, 255, cv.CV_ADAPTIVE_THRESH_MEAN_C, cv.CV_THRESH_BINARY_INV, self.block_size, self.c)
+        image_gray = np.array((image.shape[0], image.shape[1]))
+        cv2.cvtColor(image,image_gray, cv2.COLOR_BGR2GRAY)
+        cv2.adaptiveThreshold(image_gray, image_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, self.block_size, self.c)
         return image_gray
 
 class BinaryFilter(Filter):
@@ -55,9 +56,9 @@ class BinaryFilter(Filter):
 
 
     def process(self, image):
-        image_gray = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1)
-        cv.CvtColor(image,image_gray, cv.CV_BGR2GRAY)
-        cv.Threshold( image_gray, image_gray, self.threshold, 255, cv.CV_THRESH_BINARY_INV)
+        image_gray = np.array((image.shape[0], image.shape[1]))
+        cv2.cvtColor(image, image_gray, cv2.COLOR_BGR2GRAY)
+        cv2.threshold( image_gray, image_gray, self.threshold, 255, cv2.THRESH_BINARY_INV)
         return image_gray
 
 class OtsuFilter(Filter):
@@ -68,7 +69,7 @@ class OtsuFilter(Filter):
 
 
     def process(self, image):
-        image_gray = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1)
-        cv.CvtColor(image,image_gray, cv.CV_BGR2GRAY)
-        cv.Threshold( image_gray, image_gray, self.threshold, 255, cv.CV_THRESH_BINARY_INV | cv.CV_THRESH_OTSU)
+        image_gray = np.array((image.shape[0], image.shape[1]))
+        cv2.cvtColor(image, image_gray, cv2.COLOR_BGR2GRAY)
+        cv2.threshold( image_gray, image_gray, self.threshold, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
         return image_gray
