@@ -929,11 +929,10 @@ class Cytomine(object):
             t.setDaemon(True)
             t.start()
 
-        for annot in annotations.data():                            
-            
-            if self.__verbose and not(len(annot.term)):
-                print "Skip %s/%s : annotation (%s) without term " % (i, nbAnnotations, annot.id)
-                continue
+        for annot in annotations.data():
+
+            if len(annot.term) == 0:
+                annot.term = [""]
 
             for term in annot.term:
                 if term in excluded_terms: 
