@@ -43,9 +43,8 @@ class AdaptiveThresholdFilter(Filter):
         self.c = c
 
     def process(self, image):
-        image_gray = np.array((image.shape[0], image.shape[1]))
-        cv2.cvtColor(image,image_gray, cv2.COLOR_BGR2GRAY)
-        cv2.adaptiveThreshold(image_gray, image_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, self.block_size, self.c)
+        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_gray = cv2.adaptiveThreshold(image_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, self.block_size, self.c)
         return image_gray
 
 class BinaryFilter(Filter):
@@ -56,9 +55,8 @@ class BinaryFilter(Filter):
 
 
     def process(self, image):
-        image_gray = np.array((image.shape[0], image.shape[1]))
-        cv2.cvtColor(image, image_gray, cv2.COLOR_BGR2GRAY)
-        cv2.threshold( image_gray, image_gray, self.threshold, 255, cv2.THRESH_BINARY_INV)
+        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_gray = cv2.threshold(image_gray, self.threshold, 255, cv2.THRESH_BINARY_INV)
         return image_gray
 
 class OtsuFilter(Filter):
@@ -69,7 +67,6 @@ class OtsuFilter(Filter):
 
 
     def process(self, image):
-        image_gray = np.array((image.shape[0], image.shape[1]))
-        cv2.cvtColor(image, image_gray, cv2.COLOR_BGR2GRAY)
-        cv2.threshold( image_gray, image_gray, self.threshold, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
+        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_gray = cv2.threshold(image_gray, self.threshold, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
         return image_gray
