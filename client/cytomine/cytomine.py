@@ -45,7 +45,6 @@ import socket
 
 from .utils import ImageFetcher
 from models import *
-from models import annotationAction
 
 #API
 class Cytomine(object):
