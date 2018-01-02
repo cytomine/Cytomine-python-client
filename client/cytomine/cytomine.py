@@ -534,7 +534,36 @@ class Cytomine(object):
             positions = self.fetch(positions,query=query)
         return positions
 
-    
+    # annotation Actions
+    def get_annoationactions(self, id_image = None, id_user = None, showDetails = None, afterthan = None, beforethan = None, maxperpage = None):
+        actions = AnnotationActionCollection()
+        actions.imageinstance = id_image
+        query=""
+        if id_user:
+            query += "user=" +str(id_user)
+        if showDetails:
+            query += "&showDetails=true"
+        if afterthan:
+            query +="&afterThan=" + str(afterthan)
+        if beforethan:
+            query +="&beforeThan=" + str(beforethan)
+        #use paginator for large collections
+        if maxperpage:
+            actions_tmp = AnnotationActionCollection()
+            actions_tmp.init_paginator(maxperpage,0)
+            while True:
+                actions_tmp.imageinstance = id_image
+                actions_tmp = self.fetch(actions_tmp,query=query)
+                if not actions:
+                    actions = actions_tmp
+                else :
+                    actions.data().extend(actions_tmp.data())
+                if not(actions_tmp.next_page()):
+                    break
+        else:
+            actions = self.fetch(actions,query=query)
+        return actions
+
     # annotations
     def get_annotations(self, id_project = None, id_user = None, id_image = None, id_term = None, showGIS = None, showWKT = None, showMeta = None, bbox = None, id_bbox= None, reviewed_only = False):
         annotations = AnnotationCollection()
