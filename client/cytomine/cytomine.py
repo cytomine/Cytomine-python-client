@@ -535,7 +535,7 @@ class Cytomine(object):
         return positions
 
     # annotation Actions
-    def get_annoationactions(self, id_image=None, id_user=None,
+    def get_annotationactions(self, id_image=None, id_user=None,
                              showDetails=None, afterthan=None,
                              beforethan=None, maxperpage=None):
         actions = AnnotationActionCollection()
