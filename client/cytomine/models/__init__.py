@@ -24,14 +24,14 @@ __copyright__       = "Copyright 2010-2015 University of Liège, Belgium, http:/
 
 
 
-from .model import *
-from .collection import *
-from .annotation import *
-from .image import *
-from .ontology import *
-from .project import *
-from .software import *
-from .user import *
-from .storage import *
-from .position import *
-from .annotationAction import *
+
+# from .model import *
+# from .collection import *
+# from .annotation import *
+# from .image import *
+# from .ontology import *
+# from .project import *
+# from .software import *
+# from .user import *
+# from .storage import *
+# from .position import *
