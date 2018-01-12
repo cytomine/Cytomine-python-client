@@ -24,9 +24,7 @@ from time import strftime, gmtime
 import requests
 from cachecontrol import CacheControlAdapter
 
-from .utils import CytomineAuth
-
-from .models.project import Project, ProjectCollection
+from .utils import CytomineAuth, deprecated
 
 __author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
@@ -164,27 +162,32 @@ class Cytomine(object):
         return model.populate(response.json()[model.callback_identifier])
 
     # Project
-    @DeprecationWarning
+    @deprecated
     def add_project(self, project_name, id_ontology):
+        from .models.project import Project
         return Project(project_name, id_ontology).save()
 
-    @DeprecationWarning
+    @deprecated
     def edit_project(self, id_project, project_name, id_ontology):
+        from .models.project import Project
         project = Project().fetch(id_project)
         project.name = project_name
         project.ontology = id_ontology
         return project.update()
 
-    @DeprecationWarning
+    @deprecated
     def delete_project(self, id_project):
+        from .models.project import Project
         return Project().delete(id_project)
 
-    @DeprecationWarning
+    @deprecated
     def get_project(self, id_project):
+        from .models.project import Project
         return Project().fetch(id_project)
 
-    @DeprecationWarning
+    @deprecated
     def get_projects(self):
+        from .models.project import ProjectCollection
         return ProjectCollection().fetch()
 
 
