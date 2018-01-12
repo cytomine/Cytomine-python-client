@@ -35,6 +35,17 @@ class ProjectCollection(Collection):
         self._allowed_filters = ["user", "software", "ontology"]
 
 
+class Discipline(Model):
+    def __init__(self, name=None, **attributes):
+        super(Discipline, self).__init__(**attributes)
+        self.name = name
+
+
+class DisciplineCollection(Collection):
+    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
+        super(DisciplineCollection, self).__init__(Discipline, filters, query_parameters, max, offset)
+
+
 # class ProjectProperty(Model):
 #
 #     def __init__(self, params = None):
