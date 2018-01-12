@@ -18,8 +18,8 @@ __author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
 __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
 
-from model import Model
 from collection import Collection
+from model import Model
 
 
 class Project(Model):
@@ -27,6 +27,22 @@ class Project(Model):
         super(Project, self).__init__(**attributes)
         self.name = name
         self.ontology = id_ontology
+        self.ontologyName = None
+        self.discipline = None
+        self.blindMode = None
+        self.disciplineName = None
+        self.numberOfSlides = None
+        self.numberOfImages = None
+        self.numberOfAnnotations = None
+        self.numberOfJobAnnotations = None
+        self.retrievalProjects = None
+        self.numberOfReviewedAnnotations = None
+        self.retrievalDisable = None
+        self.retrievalAllOntology = None
+        self.isClosed = None
+        self.isReadOnly = None
+        self.hideUsersLayers = None
+        self.hideAdminsLayers = None
 
 
 class ProjectCollection(Collection):
