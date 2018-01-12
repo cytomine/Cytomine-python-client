@@ -52,11 +52,11 @@ class Model(object):
         if id is not None:
             self.id = id
 
-        return Cytomine.get_instance().fetch(self, self.query_parameters)
+        return Cytomine.get_instance().get(self, self.query_parameters)
 
     def save(self):
         self.id = None
-        return Cytomine.get_instance().save(self)
+        return Cytomine.get_instance().post(self)
 
     def delete(self, id=None):
         if self.id is None and id is None:
@@ -74,13 +74,15 @@ class Model(object):
 
         if attributes:
             self.populate(attributes)
-        return Cytomine.get_instance().update(self)
+        return Cytomine.get_instance().put(self)
 
     def is_new(self):
         return self.id is None
 
     def populate(self, attributes):
         for key, value in six.iteritems(attributes):
+            if key.startswith("id_"):
+                key = key[3:]
             if not key.startswith("_"):
                 setattr(self, key, value)
         return self

@@ -103,7 +103,7 @@ class Cytomine(object):
 
         return headers
 
-    def fetch(self, model, query_parameters=None):
+    def get(self, model, query_parameters=None):
         response = self._session.get("{}{}".format(self._base_url(), model.uri()),
                                      auth=CytomineAuth(
                                          self._public_key, self._private_key,
