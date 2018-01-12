@@ -22,6 +22,4 @@ __copyright__       = "Copyright 2010-2015 University of Liège, Belgium, http:/
 
 
 
-from .cytomine import Cytomine
-import models
-import utils
+

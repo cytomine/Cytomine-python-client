@@ -14,27 +14,162 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from time import strftime, gmtime
+
+import requests
+from cachecontrol import CacheControlAdapter
+
+from .utils import CytomineAuth
+
 __author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
 __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
 
 
 class Cytomine(object):
-    def __init__(self, host, public_key, private_key, working_path="/tmp", protocol="http://", base_path="/api/",
-                 verbose=False, timeout=120):
-        self.__protocol = protocol
-        host = host.replace("http://", "")
-        host = host.replace("https://", "")
-        self.__host = host
-        self.__timeout = timeout
-        self.__base_path = base_path
-        self.__public_key = public_key
-        self.__private_key = private_key
-        self.__working_path = working_path
-        self.__cache = "%s/%s" % (working_path, ".cache")
-        self.__conn = None
-        self.__headers = None
-        self.__verbose = verbose
+    __instance = None
+
+    def __init__(self, host, public_key, private_key, verbose=0, use_cache=True, protocol="http",
+                 working_path="/tmp", **kwargs):
+        """
+        Initialize the Cytomine Python client which is a singleton.
+
+        Parameters
+        ----------
+        host : str
+            The Cytomine host (without protocol).
+        public_key : str
+            The Cytomine public key.
+        private_key : str
+            The Cytomine private key.
+        verbose : int
+            The verbosity level of the client.
+        use_cache : bool
+            True to use HTTP cache, False otherwise.
+        protocol : str ("http", "https")
+            The protocol.
+        working_path : str
+            Deprecated.
+        kwargs : dict
+            Deprecated arguments.
+        """
+        self._host = host.replace("http://", "").replace("https://", "")
+        self._public_key = public_key
+        self._private_key = private_key
+        self._verbose = verbose
+        self._use_cache = use_cache
+        self._protocol = protocol.replace("://", "")
+        self._base_path = "/api/"
+        self._logger = None  # TODO
+
+        self._session = requests.session()
+        if self._use_cache:
+            self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
+
+        Cytomine.__instance = self
+
+    @staticmethod
+    def get_instance():
+        return Cytomine.__instance
+
+    @property
+    def host(self):
+        return self._host
+
+    def set_credentials(self, public_key, private_key):
+        self._public_key = public_key
+        self._private_key = private_key
+
+    def _base_url(self):
+        return "{}://{}{}".format(self._protocol, self._host, self._base_path)
+
+    @staticmethod
+    def _headers(accept="application/json, */*", content_type=None):
+        headers = dict()
+
+        if accept is not None:
+            headers['accept'] = accept
+
+        if content_type is not None:
+            headers['content-type'] = content_type
+
+        headers['date'] = strftime('%a, %d %b %Y %H:%M:%S +0000', gmtime())
+        headers['X-Requested-With'] = 'XMLHTTPRequest'
+
+        return headers
+
+    def fetch(self, model, query_parameters=None):
+        response = self._session.get("{}{}".format(self._base_url(), model.uri()),
+                                     auth=CytomineAuth(
+                                         self._public_key, self._private_key,
+                                         self._base_url(), self._base_path),
+                                     headers=self._headers(),
+                                     params=query_parameters)
+
+        if not response.status_code == requests.codes.ok:
+            self._logger.warning(response.reason)
+            return False
+
+        return model.populate(response.json())
+
+    def put(self, model, query_parameters=None):
+        response = self._session.put("{}{}".format(self._base_url(), model.uri()),
+                                     auth=CytomineAuth(
+                                         self._public_key, self._private_key,
+                                         self._base_url(), self._base_path),
+                                     headers=self._headers(content_type='application/json'),
+                                     params=query_parameters,
+                                     data=model.to_json())
+
+        if not response.status_code == requests.codes.ok:
+            self._logger.warning(response.reason)
+            return False
+
+        return model.populate(response.json()[model.callback_identifier])
+
+    def delete(self, model, query_parameters=None):
+        response = self._session.delete("{}{}".format(self._base_url(), model.uri()),
+                                        auth=CytomineAuth(
+                                            self._public_key, self._private_key,
+                                            self._base_url(), self._base_path),
+                                        headers=self._headers(content_type='application/json'),
+                                        params=query_parameters)
+
+        if not response.status_code == requests.codes.ok:
+            self._logger.warning(response.reason)
+            return False
+
+        return True
+
+    def post(self, model, query_parameters=None):
+        response = self._session.post("{}{}".format(self._base_url(), model.uri()),
+                                      auth=CytomineAuth(
+                                          self._public_key, self._private_key,
+                                          self._base_url(), self._base_path),
+                                      headers=self._headers(content_type='application/json'),
+                                      params=query_parameters,
+                                      data=model.to_json())
+
+        if not response.status_code == requests.codes.ok:
+            self._logger.warning(response.reason)
+            return False
+
+        return model.populate(response.json()[model.callback_identifier])
+
+
+
+
+
+
+
+
+
+
 """
     # http://code.google.com/apis/storage/docs/reference/v1/developer-guidev1.html#authentication
     def __authorize(self, action, url="", content_type="", accept="application/json,*/*", sign_with_base_path=True):
@@ -56,9 +191,7 @@ class Cytomine(object):
         if self.__verbose: print "authorization = %s " % authorization
         self.__headers['authorization'] = authorization
 
-    def set_credentials(self, public_key, private_key):
-        self.__public_key = public_key
-        self.__private_key = private_key
+    
 
     def basic_auth(self, username, password):
         auth = base64.encodestring(username + ':' + password)
