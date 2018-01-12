@@ -19,6 +19,7 @@ __contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <
 __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
 
 from model import Model
+from collection import Collection
 
 
 class Project(Model):
@@ -28,18 +29,12 @@ class Project(Model):
         self.ontology = id_ontology
 
 
-#
-#
-# class ProjectCollection(Collection):
-#
-#     def __init__(self, params = None):
-#         super(ProjectCollection, self).__init__(Project, params)
-#
-#     def to_url(self):
-#         return "project.json"
-#
-#
-#
+class ProjectCollection(Collection):
+    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
+        super(ProjectCollection, self).__init__(Project, filters, query_parameters, max, offset)
+        self._allowed_filters = ["user", "software", "ontology"]
+
+
 # class ProjectProperty(Model):
 #
 #     def __init__(self, params = None):

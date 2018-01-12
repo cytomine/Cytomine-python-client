@@ -26,6 +26,8 @@ from cachecontrol import CacheControlAdapter
 
 from .utils import CytomineAuth
 
+from .models.project import Project, ProjectCollection
+
 __author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
 __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
@@ -161,6 +163,29 @@ class Cytomine(object):
 
         return model.populate(response.json()[model.callback_identifier])
 
+    # Project
+    @DeprecationWarning
+    def add_project(self, project_name, id_ontology):
+        return Project(project_name, id_ontology).save()
+
+    @DeprecationWarning
+    def edit_project(self, id_project, project_name, id_ontology):
+        project = Project().fetch(id_project)
+        project.name = project_name
+        project.ontology = id_ontology
+        return project.update()
+
+    @DeprecationWarning
+    def delete_project(self, id_project):
+        return Project().delete(id_project)
+
+    @DeprecationWarning
+    def get_project(self, id_project):
+        return Project().fetch(id_project)
+
+    @DeprecationWarning
+    def get_projects(self):
+        return ProjectCollection().fetch()
 
 
 
@@ -171,169 +196,6 @@ class Cytomine(object):
 
 
 """
-    # http://code.google.com/apis/storage/docs/reference/v1/developer-guidev1.html#authentication
-    def __authorize(self, action, url="", content_type="", accept="application/json,*/*", sign_with_base_path=True):
-        # sometimes url fetched are complete url, we have to remove  host and base_path in order to sign
-        url = url.replace("http://%s%s" % (self.__host, self.__base_path), "")
-        url = url.replace("https://%s%s" % (self.__host, self.__base_path), "")
-        self.__conn = httplib.HTTPConnection(self.__host, timeout=self.__timeout)
-        locale.setlocale(locale.LC_TIME)
-        self.__headers = {'accept': accept, 'date': strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime()),
-                          'X-Requested-With': 'XMLHttpRequest'}
-        canonical__headers = "%s\n\n%s\n%s\n" % (action, content_type, self.__headers['date'])
-        if sign_with_base_path:
-            message_to_sign = "%s%s%s" % (canonical__headers, self.__base_path, url)
-        else:
-            message_to_sign = "%s%s" % (canonical__headers, url)
-        # if self.__verbose : print "message_to_sign = %s " % message_to_sign
-        signature = base64.b64encode(hmac.new(self.__private_key, message_to_sign, sha).digest())
-        authorization = "CYTOMINE %s:%s" % (self.__public_key, signature)
-        if self.__verbose: print "authorization = %s " % authorization
-        self.__headers['authorization'] = authorization
-
-    
-
-    def basic_auth(self, username, password):
-        auth = base64.encodestring(username + ':' + password)
-        self.__headers = {'content-type': 'application/json', 'accept': 'application/json',
-                          'Authorization': 'Basic ' + auth, 'X-Requested-With': 'XMLHttpRequest'}
-
-    def __handle_response(self, status):
-        if self.__verbose: print "HTTP STATUS : %s" % status
-        if status == 200:  # or status == 304 or status == 201:
-            return True
-        elif status == 400:
-            print "Bad Request"
-            return False
-        elif status == 404:
-            print "Not Found"
-            return False
-        elif status == 401:
-            print "Unauthorized"
-            return False
-        elif status == 500:
-            print "Internal Server Error"
-            return False
-        else:
-            print "Error Somewhere"
-            return False
-
-    def fetch(self, model, url="", query=""):
-        if isinstance(model, Collection):
-            if query == "":
-                query = "?%s" % model.get_paginator_query()
-            else:
-                query = "?%s&%s" % (query, model.get_paginator_query())
-        self.__authorize("GET", url=url + model.to_url() + query)
-        if self.__verbose: print "GET %s..." % (self.__host + self.__base_path + url + model.to_url() + query)
-        established = None
-        while (not established):
-            try:
-                self.__conn.request("GET", self.__base_path + url + model.to_url() + query, headers=self.__headers)
-                established = True
-            # except socket.timeout, socket.error, Exception:
-            except Exception:
-                print "socket timeout/error while request GET"
-                time.sleep(1)
-                continue
-
-        response = self.__conn.getresponse()
-        response_text = response.read()
-        if self.__verbose: print "response_text : %s" % response_text
-        if not self.__handle_response(response.status):
-            print response_text
-            return None
-        return model.__class__(json.dumps(json.loads(response_text)))
-
-    def save_collection(self, collection, url="", query=""):
-        if len(collection) < 1: return None
-
-        model = collection[0]
-
-        json_collections = []
-        for model in collection:
-            json_collections.append(model.to_json())
-        data = "[%s]" % ','.join(json_collections)
-
-        self.__authorize("POST", url=url + model.to_url() + query, content_type='application/json')
-        if self.__verbose: print "POST %s..." % (self.__base_path + url + model.to_url() + query)
-        if self.__verbose: print "DATA : %s" % data
-        self.__conn.request("POST", self.__base_path + url + model.to_url() + query, body=data,
-                            headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
-        response = self.__conn.getresponse()
-        response_text = response.read()
-        if self.__verbose: print "response_text : %s" % response_text
-        if not self.__handle_response(response.status):
-            return None
-        response_data = json.loads(response_text)
-        result = []
-        for item in response_data:
-            result_model = model.__class__(json.dumps(item['object']))
-            result.append(result_model)
-        return result
-
-    def save(self, model, url="", query=""):
-        self.__authorize("POST", url=url + model.to_url() + query, content_type='application/json')
-        if self.__verbose: print "POST %s..." % (self.__base_path + url + model.to_url() + query)
-        if self.__verbose: print "DATA : %s" % model.to_json()
-        established = None
-        while (not established):
-            try:
-                if self.__verbose:
-                    print "base_path: %s" % self.__base_path
-                    print "url: %s" % url
-                    print "url: %s" % model.to_url() + query
-                self.__conn.request("POST", self.__base_path + url + model.to_url() + query, body=model.to_json(),
-                                    headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
-                established = True
-            # except socket.timeout, socket.error, error, e, err:
-            except Exception as inst:
-                print "socket timeout/error while request POST"
-                print type(inst)
-                print inst
-                time.sleep(1)
-                continue
-
-        response = self.__conn.getresponse()
-        response_text = response.read()
-        if self.__verbose: print "response_text : %s" % response_text
-        if not self.__handle_response(response.status):
-            return None
-        return model.__class__(json.dumps(json.loads(response_text)[model._callback_identifier]))
-
-    def update(self, model, url="", query=""):
-        self.__authorize("PUT", url=url + model.to_url() + query, content_type='application/json')
-        if self.__verbose: print "PUT %s..." % (self.__base_path + url + model.to_url() + query)
-        if self.__verbose: print "DATA : %s" % model.to_json()
-        self.__conn.request("PUT", self.__base_path + url + model.to_url() + query, body=model.to_json(),
-                            headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
-
-        response = self.__conn.getresponse()
-        response_text = response.read()
-        if not self.__handle_response(response.status):
-            print response_text
-            return None
-        return model.__class__(json.dumps(json.loads(response_text)[model._callback_identifier]))
-
-    def delete(self, model, url="", query=""):
-        self.__authorize("DELETE", url=url + model.to_url() + query, content_type='application/json')
-        if self.__verbose: print "DELETE %s..." % (self.__base_path + url + model.to_url() + query)
-        established = None
-        while (not established):
-            try:
-                self.__conn.request("DELETE", self.__base_path + url + model.to_url() + query,
-                                    headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
-                established = True
-            # except socket.timeout, socket.error, error, e, err:
-            except Exception:
-                print "socket timeout/error while request PUT"
-                time.sleep(1)
-                continue
-        response = self.__conn.getresponse()
-        if not self.__handle_response(response.status):
-            return False
-        return True
-
     def fetch_url_into_file(self, url, filename, is_image=True, override=False):
         if override or not (os.path.exists(filename)):
             if self.__verbose: print "fetch %s \n into %s" % (url, filename)
@@ -366,32 +228,7 @@ class Cytomine(object):
         else:
             return resp, content
 
-    # Project
-    def add_project(self, project_name, id_ontology):
-        project = Project()
-        project.name = project_name
-        project.ontology = id_ontology
-        return self.save(project)
-
-    def get_projects(self):
-        projects = ProjectCollection()
-        projects = self.fetch(projects)
-        return projects
-
-    def get_project(self, id_project):
-        project = Project()
-        project.id = id_project
-        return self.fetch(project)
-
-    def edit_project(self, id_project, project_name, id_ontology):
-        project = self.get_project(id_project)
-        project.name = project_name
-        project.ontology = id_ontology
-        return self.update(project)
-
-    def delete_project(self, id_project):
-        project = self.get_project(id_project)
-        return self.delete(project)
+    
 
     # Ontology
     def add_ontology(self, name):

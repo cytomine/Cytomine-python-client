@@ -20,14 +20,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import six
+import json
 
 from ..cytomine import Cytomine
 
 __author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
 __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
-
-import json
 
 
 class Model(object):
