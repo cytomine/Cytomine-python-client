@@ -73,6 +73,31 @@ class Cytomine(object):
 
         Cytomine.__instance = self
 
+    @classmethod
+    def connect(cls, host, public_key, private_key, verbose=0, use_cache=True):
+        """
+        Connect the client with the given host and the provided credentials.
+
+        Parameters
+        ----------
+        host : str
+            The Cytomine host (without protocol).
+        public_key : str
+            The Cytomine public key.
+        private_key : str
+            The Cytomine private key.
+        verbose : int
+            The verbosity level of the client.
+        use_cache : bool
+            True to use HTTP cache, False otherwise.
+
+        Returns
+        -------
+        client : Cytomine
+            A connected Cytomine client.
+        """
+        return cls(host, public_key, private_key, verbose, use_cache)
+
     @staticmethod
     def get_instance():
         return Cytomine.__instance
