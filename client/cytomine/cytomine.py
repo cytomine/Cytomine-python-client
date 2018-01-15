@@ -190,6 +190,52 @@ class Cytomine(object):
         from .models.project import ProjectCollection
         return ProjectCollection().fetch()
 
+    # Ontology
+    @deprecated
+    def add_ontology(self, name):
+        from .models.ontology import Ontology
+        return Ontology(name).save()
+
+    @deprecated
+    def delete_ontology(self, id_ontology):
+        from .models.ontology import Ontology
+        return Ontology().delete(id_ontology)
+
+    @deprecated
+    def get_ontology(self, id_ontology):
+        from .models.ontology import Ontology
+        return Ontology().fetch(id_ontology)
+
+    # Term
+    @deprecated
+    def add_term(self, name, id_ontology, color="#ff0000"):
+        from .models.ontology import Term
+        return Term(name, id_ontology, color).save()
+
+    @deprecated
+    def delete_term(self, id_term):
+        from .models.ontology import Term
+        return Term().delete(id_term)
+
+    @deprecated
+    def get_term(self, id_term):
+        from .models.ontology import Term
+        return Term().fetch(id_term)
+
+    @deprecated
+    def get_terms(self, id_ontology=None):
+        from .models.ontology import TermCollection
+        terms = TermCollection()
+        if id_ontology:
+            terms.filters["ontology"] = id_ontology
+        return terms.fetch()
+
+    @deprecated
+    def add_relation_term(self, id_parent, id_child):
+        from .models.ontology import RelationTerm
+        return RelationTerm(id_parent, id_child).save()
+
+
 
 
 
@@ -233,53 +279,7 @@ class Cytomine(object):
 
     
 
-    # Ontology
-    def add_ontology(self, name):
-        ontology = Ontology()
-        ontology.name = name
-        return self.save(ontology)
-
-    def delete_ontology(self, id_ontology):
-        ontology = Ontology()
-        ontology.id = id_ontology
-        return self.delete(ontology)
-
-    def get_ontology(self, id_ontology):
-        ontology = Ontology()
-        ontology.id = id_ontology
-        return self.fetch(ontology)
-
-    # Term
-    def add_term(self, name, id_ontology, color="#ff0000"):
-        term = Term()
-        term.name = name
-        term.ontology = id_ontology
-        term.color = color
-        return self.save(term)
-
-    def add_relation_term(self, id_parent, id_child):
-        relation_term = RelationTerm()
-        relation_term.is_new = True
-        relation_term.term1 = id_parent
-        relation_term.term2 = id_child
-        return self.save(relation_term)
-
-    def delete_relation_term(self, id_parent, id_child):
-        relation_term = RelationTerm()
-        relation_term.term1 = id_parent
-        relation_term.term2 = id_child
-        return self.delete(relation_term)
-
-    def delete_term(self, id_term):
-        term = Term()
-        term.id = id_term
-        return self.delete(term)
-
-    def get_terms(self, id_ontology=None):
-        terms = TermCollection()
-        if id_ontology:
-            terms.ontology = id_ontology
-        return self.fetch(terms)
+    
 
     # User
     def get_user(self, id_user=None):
@@ -930,10 +930,7 @@ class Cytomine(object):
         image_instances.project = id_project
         return self.fetch(image_instances)
 
-    def get_term(self, id_term):
-        term = Term()
-        term.id = id_term
-        return self.fetch(term)
+    
 
     # Check / for destPath
     def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None,
