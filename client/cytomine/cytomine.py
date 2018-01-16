@@ -19,10 +19,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
 from time import strftime, gmtime
 
+import os
 import requests
+import shutil
 from cachecontrol import CacheControlAdapter
+from requests_toolbelt import MultipartEncoder
 
 from .utils import CytomineAuth, deprecated
 
@@ -186,6 +190,77 @@ class Cytomine(object):
 
         return model.populate(response.json()[model.callback_identifier])
 
+    def upload_file(self, model, filename, query_parameters=None):
+        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
+        response = self._session.post("{}{}".format(self._base_url(), model.uri()),
+                                      auth=CytomineAuth(
+                                          self._public_key, self._private_key,
+                                          self._base_url(), self._base_path),
+                                      headers=self._headers(content_type=m.content_type),
+                                      params=query_parameters,
+                                      data=m)
+
+        if not response.status_code == requests.codes.ok:
+            self._logger.warning(response.reason)
+            return False
+
+        return model.populate(response.json()[model.callback_identifier])
+
+    def download_file(self, url, destination, override=False, payload=None):
+        if override or not os.path.exists(destination):
+            os.makedirs(destination)
+            response = self._session.get(url,
+                                         auth=CytomineAuth(
+                                             self._public_key, self._private_key,
+                                             self._base_url(), self._base_path),
+                                         headers=self._headers(content_type='application/json'),
+                                         params=payload,
+                                         stream=True)
+
+            if not response.status_code == requests.codes.ok:
+                self._logger.warning(response.reason)
+                return False
+
+            with open(destination, "wb") as f:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, f)
+            return True
+        else:
+            return True
+
+    def upload_image(self, upload_host, filename, id_storage, id_project=None, properties=None, sync=False):
+        from .models.storage import UploadedFile
+
+        query_parameters = {
+            "idStorage": id_storage,
+            "cytomine": "{}://{}".format(self._protocol, self._host),
+            "sync": sync
+        }
+
+        if id_project:
+            query_parameters["idProject"] = id_project
+
+        if properties:
+            query_parameters["keys"] = ','.join(list(properties.keys()))
+            query_parameters["values"] = ','.join(list(properties.values()))
+
+        upload_host = upload_host.replace("http://", "").replace("https://", "").replace("/", "")
+
+        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
+        response = self._session.post("http://{}/upload".format(upload_host),
+                                      auth=CytomineAuth(
+                                          self._public_key, self._private_key,
+                                          "http://{}".format(upload_host), ""),
+                                      headers=self._headers(content_type=m.content_type),
+                                      params=query_parameters,
+                                      data=m)
+
+        if not response.status_code == requests.codes.ok:
+            self._logger.warning(response.reason)
+            return False
+
+        return UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
+
     # Project
     @deprecated
     def add_project(self, project_name, id_ontology):
@@ -270,42 +345,6 @@ class Cytomine(object):
 
 
 """
-    def fetch_url_into_file(self, url, filename, is_image=True, override=False):
-        if override or not (os.path.exists(filename)):
-            if self.__verbose: print "fetch %s \n into %s" % (url, filename)
-            resp, content = self.fetch_url(url)
-            try:
-                f = open(filename, 'wb')
-                f.write(content)
-                f.close()
-                # if (is_image):
-                #    im = Image.open(filename)
-                #    im.verify()
-                return True
-            except IOError:
-                print "CROP ERROR : %s " % filename
-                os.remove(filename)
-                return False
-        elif os.path.exists(filename):
-            return True
-
-    def fetch_url(self, url):
-        if self.__verbose: print "fetch %s" % url
-        self.__authorize("GET", url=url, accept="")
-        #        httplib2.debuglevel=4
-        con = httplib2.Http(self.__cache, timeout=self.__timeout)
-        con.follow_all_redirects = False
-        con.follow_redirects = False
-        resp, content = con.request(url, headers=self.__headers)
-        if (resp.status == 302 or resp.status == 301):  # redirect or moved permanently
-            return self.fetch_url(resp['location'])
-        else:
-            return resp, content
-
-    
-
-    
-
     # User
     def get_user(self, id_user=None):
         if id_user:
@@ -813,63 +852,6 @@ class Cytomine(object):
         job_template = self.get_job_template(id_job_template)
         return self.delete(job_template)
 
-    # Check / for destPath
-
-    # old
-    def _dump_annotations(self, annotations, get_image_url_func=Annotation.get_annotation_crop_url, dest_path="/tmp",
-                          override=False, excluded_terms=[], desired_zoom=None, desired_max_size=None):
-        if not (os.path.exists(dest_path)):
-            os.mkdir(dest_path)
-        nbAnnotations = len(annotations.data())
-
-        images = []
-        pbar = None
-        if self.__verbose:
-            pbar = ProgressBar(maxval=nbAnnotations).start()
-
-        queue = Queue.Queue()
-        threads = []
-        for i in xrange(3):
-            t = ImageFetcher(queue, self, override, pbar)
-            threads.append(t)
-            t.setDaemon(True)
-            t.start()
-
-        for annotation in annotations.data():
-
-            if self.__verbose and not (len(annotation.term)):
-                print "Skip %s/%s : annotation (%s) without term " % (i, nbAnnotations, annotation.id)
-                continue
-
-            for term in annotation.term:
-                if term in excluded_terms:
-                    continue
-                    # Create term path
-                termPath = os.path.join(dest_path, str(term))
-                if not (os.path.exists(termPath)):
-                    os.mkdir(termPath)
-                filename = "%s/%d.png" % (termPath, annotation.id)
-                # print "SETTING filename attribute"
-                # time.sleep(1)
-                setattr(annotation, "filename", filename)
-                if False and annotation.area == 0:
-                    print "Skip %s/%s : annotation (%s) area is equal to 0" % (i, nbAnnotations, annotation.id)
-                    if os.path.exists(filename):
-                        os.remove(filename)
-                else:
-                    print "Get crop at zoom %d" % desired_zoom
-                    cropURL = get_image_url_func(annotation, desired_zoom, desired_max_size)
-                    print cropURL
-                    # print "annotation filename: %s" %annotation.filename
-                    # put into queue
-                    queue.put((cropURL, filename, annotation))
-
-        queue.join()
-        if self.__verbose:
-            pbar.finish()
-
-        return annotations
-
     # dump_annotations takes a collection of annotations and generates in dest_path cropped images according to zoom/translation/tile parameters
     def dump_annotations(self, annotations, get_image_url_func=Annotation.get_annotation_crop_url, dest_path="/tmp",
                          override=False, excluded_terms=[], desired_zoom=None, desired_max_size=None, tile_size=None,
@@ -994,29 +976,7 @@ class Cytomine(object):
         pbar.finish()
         return images
 
-    def upload_job_data_file(self, job_data, filename):
-        from poster.encode import multipart_encode
-        from poster.streaminghttp import register_openers
-
-        url = 'jobdata/%d/upload' % job_data.id
-
-        # Build the request
-        register_openers()
-        file_header = {"files[]": open(filename, "rb")}
-        datagen, headers = multipart_encode(file_header.items())
-        # get the content_type
-        for header in headers.items():
-            if header[0] == "Content-Type":
-                content_type = header[1]
-
-        self.__authorize("POST", url=url, content_type=content_type)
-        fullHeaders = dict(headers.items() + self.__headers.items())
-        fullURL = self.__protocol + self.__host + self.__base_path + url
-        # poster incompatible with httplib2 so we use urllib2
-        request = urllib2.Request(fullURL, datagen, fullHeaders)
-        response = urllib2.urlopen(request, timeout=self.__timeout).read()
-        json_response = json.loads(response)
-        return json_response
+    
 
     def upload_mask(self, url, filename):
         # poster
@@ -1044,85 +1004,13 @@ class Cytomine(object):
         pct = 100 - ((total - current) * 100) / (total)
         self.pbar.update(pct)
 
-    def upload_image(self, filename, project, storage, cytomine_host, sync=False, properties=None):
-        import urllib
-        from poster.encode import multipart_encode
-        from poster.streaminghttp import register_openers
+    
 
-        query_params = {"idStorage": storage, "cytomine": cytomine_host, "sync": sync}
-
-        if properties:
-            keys = []
-            values = []
-            for k, v in properties.iteritems():
-                keys.append(k)
-                values.append(v)
-            query_params["keys"] = ','.join(keys)
-            query_params["values"] = ','.join(values)
-
-        if project:
-            query_params["idProject"] = project
-
-        upload_query = "/upload?%s" % urllib.urlencode(query_params)
-
-        # poster
-        register_openers()
-        content_type = ""
-        file_header = {"files[]": open(filename, "rb")}
-
-        datagen, headers = multipart_encode(file_header.items(), cb=self.prog_callback)
-        # get the content_type
-        for header in headers.items():
-            if header[0] == "Content-Type":
-                content_type = header[1]
-
-        # post boundary
-        self.__authorize("POST", url=upload_query, content_type=content_type, sign_with_base_path=False)
-        fullHeaders = dict(headers.items() + self.__headers.items())
-        fullURL = self.__protocol + self.__host + upload_query
-
-        self.pbar = ProgressBar(100)
-        self.pbar.start()
-        # poster incompatible with httplib2 so we use urllib2
-        request = urllib2.Request(fullURL, datagen, fullHeaders)
-        response = urllib2.urlopen(request, timeout=self.__timeout)
-        json_response = json.loads(response.read())
-        self.pbar.finish()
-        return {'status': json_response[0].get('status'),
-                'uploaded_file': json.loads(json_response[0].get('uploadFile'))}
-
-    def get_sample(self, id_sample):
-        sample = Sample()
-        sample.id = id_sample
-        return self.fetch(sample)
-
-    def add_sample(self, name, index):
-        sample = Sample()
-        sample.name = name
-        sample.index = index
-        return self.save(sample)
-
-    def edit_sample(self, id, name, index):
-        sample = self.get_sample(id)
-        sample.name = name
-        sample.index = index
-        return self.update(sample)
-
-    def delete_sample(self, id):
-        sample = self.get_sample(id)
-        return self.delete(sample)
 
     def get_image(self, id_image):
         image = Image()
         image.id = id_image
         return self.fetch(image)
-
-    #    def edit_image(self, id_image, filename, path, mime):
-    #        image = self.get_image(id_image)
-    #        image.filename = filename
-    #        image.path = path
-    #        image.mime = mime
-    #        return self.update(image)
 
     def edit_image(self, id_image, filename=None, path=None, mime=None, id_sample=None, id_scanner=None,
                    magnification=None, resolution=None):
