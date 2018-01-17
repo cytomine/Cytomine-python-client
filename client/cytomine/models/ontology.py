@@ -24,7 +24,7 @@ from model import Model
 
 class Ontology(Model):
     def __init__(self, name=None, **attributes):
-        super(Ontology, self).__init__(**attributes)
+        super(Ontology, self).__init__()
         self.name = name
         self.user = None
         self.title = None
@@ -33,33 +33,38 @@ class Ontology(Model):
         self.isFolder = None
         self.key = None
         self.children = None
+        self.populate(attributes)
 
 
 class OntologyCollection(Collection):
-    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
-        super(OntologyCollection, self).__init__(Ontology, filters, query_parameters, max, offset)
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(OntologyCollection, self).__init__(Ontology, filters, max, offset)
+        self.set_parameters(parameters)
 
 
 class Term(Model):
     def __init__(self, name=None, id_ontology=None, color=None, id_parent=None, **attributes):
-        super(Term, self).__init__(**attributes)
+        super(Term, self).__init__()
         self.name = name
         self.ontology = id_ontology
         self.parent = id_parent
         self.color = color
+        self.populate(attributes)
 
 
 class TermCollection(Collection):
-    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
-        super(TermCollection, self).__init__(Term, filters, query_parameters, max, offset)
-        self._allowed_filters = ["project", "ontology"]
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(TermCollection, self).__init__(Term, filters, max, offset)
+        self._allowed_filters = ["project", "ontology", "annotation"]
+        self.set_parameters(parameters)
 
 
 class RelationTerm(Model):
     def __init__(self, term1=None, term2=None, **attributes):
-        super(RelationTerm, self).__init__(**attributes)
+        super(RelationTerm, self).__init__()
         self.term1 = term1
         self.term2 = term2
+        self.populate(attributes)
 
     def uri(self):
         if not self.id:

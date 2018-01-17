@@ -207,8 +207,7 @@ class Cytomine(object):
         return model.populate(response.json()[model.callback_identifier])
 
     def download_file(self, url, destination, override=False, payload=None):
-        if override or not os.path.exists(destination):
-            os.makedirs(destination)
+        if override:
             response = self._session.get(url,
                                          auth=CytomineAuth(
                                              self._public_key, self._private_key,
@@ -335,13 +334,139 @@ class Cytomine(object):
         from .models.ontology import RelationTerm
         return RelationTerm(id_parent, id_child).save()
 
+    # uploadedfile
+    @deprecated
+    def get_uploaded_file(self, id_uploaded_file):
+        from .models.storage import UploadedFile
+        return UploadedFile().fetch(id_uploaded_file)
+
+    # storage
+    @deprecated
+    def get_storage(self, id_storage):
+        from .models.storage import Storage
+        return Storage().fetch(id_storage)
+
+    # annotations
+    @deprecated
+    def get_annotation(self, id_annotation=None):
+        from .models.annotation import Annotation, AnnotationCollection
+        if id_annotation:
+            return Annotation().fetch(id_annotation)
+        else:
+            return AnnotationCollection().fetch()
+
+    @deprecated
+    def get_annotations(self, id_project=None, id_user=None, id_image=None, id_term=None, showGIS=None,
+                        showWKT=None, showMeta=None, bbox=None, id_bbox=None, reviewed_only=False):
+        from .models.annotation import AnnotationCollection
+        return AnnotationCollection(project=id_project, user=id_user, image=id_image, term=id_term,
+                                    showMeta=showMeta, bbox=bbox, bboxAnnotation=id_bbox, reviewed=reviewed_only,
+                                    showTerm=(showMeta or showGIS or showWKT)).fetch()
+
+    @deprecated
+    def add_annotation(self, location, id_image, minPoint=None, maxPoint=None):
+        from .models.annotation import Annotation
+        annotation = Annotation(location, id_image)
+        annotation.query_parameters["minPoint"] = minPoint
+        annotation.query_parameters["maxPoint"] = maxPoint
+        annotation.save()
+
+    @deprecated
+    def delete_annotation(self, id_annotation):
+        from .models.annotation import Annotation
+        return Annotation().delete(id_annotation)
+
+    @deprecated
+    def dump_annotations(self, annotations, get_image_url_func=None, dest_path="/tmp", override=False,
+                         excluded_terms=None, desired_zoom=None, desired_max_size=None, tile_size=None,
+                         translate=None):
+        from .models.annotation import Annotation
+
+        if not excluded_terms:
+            excluded_terms = []
+
+        mask = False
+        alpha = False
+        if get_image_url_func == Annotation.get_annotation_alpha_crop_url:
+            mask = True
+            alpha = True
+        elif get_image_url_func == Annotation.get_annotation_mask_url:
+            mask = True
+            alpha = False
+        else:
+            NotImplementedError("Crop tiled translated not implemented")
+            # # extend the area to use a fixed-size tile (assuming the tile is larger than the annotation bounding box)
+            # # print "Fixed tile cropURL"
+            # p_annotation = self.get_annotation(annot.id)
+            # p = loads(p_annotation.location)
+            # minx, miny, maxx, maxy = int(p.bounds[0]), int(p.bounds[1]), int(p.bounds[2]), int(p.bounds[3])
+            # image = self.get_image_instance(p_annotation.image)
+            # for t in range(0, translate):
+            #     original_cropURL = get_image_url_func(annot, desired_zoom, desired_max_size)
+            #     # print "original cropURL = %s" % original_cropURL
+            #     cropURL = self.__protocol + self.__host + self.__base_path
+            # + Annotation.get_annotation_crop_tiled_translated(
+            #         annot, minx, maxx, miny, maxy, p_annotation.image, image.height, tile_size, translate)
+            #     # print "tiled cropURL: %s" % cropURL
+            #     filename = "%s/%d_%d_%d_translated_%d.png" % (termPath, annot.image, annot.id, tile_size, t)
+            #     # queue.put((cropURL, filename, annot))
+
+        dest_pattern = os.path.join(dest_path, "{term}", "{image}_{id}.png")
+        for annotation in annotations:
+            for term in annotation.term:
+                if term in excluded_terms:
+                    continue
+                annotation.dump(dest_pattern, override, mask, alpha, bits=8, zoom=desired_zoom,
+                                max_size=desired_max_size)
+
+        return annotations
+
+    # annotation_term
+    @deprecated
+    def add_annotation_term(self, id_annotation, term, expected_term, rate, annotation_term_model=None):
+        from .models.annotation import AnnotationTerm, AlgoAnnotationTerm
+        if annotation_term_model == AlgoAnnotationTerm:
+            return AlgoAnnotationTerm(id_annotation, term, expected_term, rate).save()
+        else:
+            return AnnotationTerm(id_annotation, term).save()
+
+    @deprecated
+    def add_user_annotation_term(self, id_annotation, term):
+        return self.add_annotation_term(id_annotation, term, None, None)
 
 
 
-
-
-
-
+    # def add_annotations(self, locations, id_image):
+    #     annotations = []
+    #     image = self.get_image_instance(id_image)
+    #     for location in locations:
+    #         annotation = Annotation()
+    #         annotation.location = location
+    #         annotation.image = id_image
+    #         annotation.name = ""
+    #         annotation.project = image.project
+    #         annotations.append(annotation)
+    #     return self.save_collection(annotations)
+    #
+    # def add_annotations_with_term(self, locations, id_image, id_term):
+    #     annotations = []
+    #     image = self.get_image_instance(id_image)
+    #     for location in locations:
+    #         annotation = Annotation()
+    #         annotation.location = location
+    #         annotation.image = id_image
+    #         annotation.name = ""
+    #         annotation.project = image.project
+    #         annotation.term = id_term
+    #         annotations.append(annotation)
+    #     return self.save_collection(annotations)
+    #
+    # def get_reviewed_annotations(self, id_project=None):
+    #     annotations = ReviewedAnnotationCollection()
+    #     if id_project:
+    #         annotations.project = id_project
+    #     annotations = self.fetch(annotations)
+    #     return annotations
 
 
 """
@@ -540,130 +665,9 @@ class Cytomine(object):
             positions = self.fetch(positions, query=query)
         return positions
 
-    # annotations
-    def get_annotations(self, id_project=None, id_user=None, id_image=None, id_term=None, showGIS=None, showWKT=None,
-                        showMeta=None, bbox=None, id_bbox=None, reviewed_only=False):
-        annotations = AnnotationCollection()
-        query = ""
-        if id_project:
-            query += "&project=" + str(id_project)
-        if id_term:
-            query += "&terms=" + str(id_term)  # terms for multiple, term instead
-        if id_user:
-            # TODO use ReviewedAnnotationCollection instead of messing with user field
-            query = "{}&{}={}".format(query, "reviewUsers" if reviewed_only else "users",
-                                      str(id_user).strip('[]').replace(' ', ''))
-        if id_image:
-            query += "&images=%s" % str(id_image).strip('[]').replace(' ', '')
-        if bbox:
-            query += "&bbox=%s" % urllib.quote_plus(bbox)  # %str(bbox).strip('[]').replace(' ','%20')
-        if id_bbox:
-            query += "&bboxAnnotation=%s" % str(id_bbox)
-        if showGIS:
-            query += "&showGIS=true"
-        if showWKT:
-            query += "&showWKT=true"
-        if showMeta:
-            query += "&showMeta=true"
-        if showMeta or showGIS or showWKT:
-            query += "&showTerm=true"
-        if reviewed_only:
-            query += "&reviewed=true"
 
-        # print query
-        annotations = self.fetch(annotations, query=query)
-        return annotations
 
-    def get_reviewed_annotations(self, id_project=None):
-        annotations = ReviewedAnnotationCollection()
-        if id_project:
-            annotations.project = id_project
-        annotations = self.fetch(annotations)
-        return annotations
 
-    def get_annotation(self, id_annotation=None):
-        annotation = AnnotationCollection()
-        if id_annotation:
-            annotation = Annotation()
-            annotation.id = id_annotation
-        return self.fetch(annotation)
-
-    def add_annotation(self, location, id_image, minPoint=None, maxPoint=None):
-        query = ""
-        annotation = Annotation()
-        annotation.location = location
-        annotation.image = id_image
-        annotation.name = ""
-        if minPoint:
-            query = query + "&minPoint=" + str(minPoint)
-        if maxPoint:
-            query = query + "&maxPoint=" + str(maxPoint)
-        return self.save(annotation, query=query)
-
-    def add_annotations(self, locations, id_image):
-        annotations = []
-        image = self.get_image_instance(id_image)
-        for location in locations:
-            annotation = Annotation()
-            annotation.location = location
-            annotation.image = id_image
-            annotation.name = ""
-            annotation.project = image.project
-            annotations.append(annotation)
-        return self.save_collection(annotations)
-
-    def add_annotations_with_term(self, locations, id_image, id_term):
-        annotations = []
-        image = self.get_image_instance(id_image)
-        for location in locations:
-            annotation = Annotation()
-            annotation.location = location
-            annotation.image = id_image
-            annotation.name = ""
-            annotation.project = image.project
-            annotation.term = id_term
-            annotations.append(annotation)
-        return self.save_collection(annotations)
-
-    def delete_annotation(self, id_annotation):
-        annotation = self.get_annotation(id_annotation)
-        return self.delete(annotation)
-
-    def delete_annotations(self, idProject, idUser):
-        success = True
-        annotations = self.get_annotations(idProject)
-        for annotation in annotations.data():
-            if idUser == annotation.user:
-                success = success and self.deleteAnnotation(annotation.id)
-        return success
-
-    # annotation_term
-    def add_annotation_term(self, id_annotation, term, expected_term, rate, annotation_term_model=AnnotationTerm):
-        annotation_term = annotation_term_model()
-        annotation_term.annotationIdent = id_annotation
-        annotation_term.annotation = id_annotation
-        annotation_term.term = term
-        annotation_term.expectedTerm = expected_term
-        annotation_term.rate = rate
-        self.save(annotation_term)
-
-    def add_user_annotation_term(self, id_annotation, term, expected_term, rate, annotation_term_model=AnnotationTerm):
-        annotation_term = annotation_term_model()
-        annotation_term.userannotation = id_annotation
-        annotation_term.annotation = id_annotation
-        annotation_term.term = term
-        annotation_term.expectedTerm = expected_term
-        annotation_term.rate = rate
-        self.save(annotation_term)
-
-    def add_user_annotation_term(self, id_annotation, term):
-        annotation_term = AnnotationTerm()
-        annotation_term.userannotation = id_annotation
-        annotation_term.annotation = id_annotation
-        annotation_term.term = term
-        # annotation_term.expectedTerm =term
-        # annotation_term.rate = 1.0
-        self.save(annotation_term)
 
     # property
     def get_annotation_property(self, annotation_id, annotation_property_id):
@@ -704,18 +708,6 @@ class Cytomine(object):
         abstract_image_properties = AbstractImagePropertyCollection()
         abstract_image_properties.abstract_image_id = abstract_image_id
         return self.fetch(abstract_image_properties)
-
-    # uploadedfile
-    def get_uploaded_file(self, id_uploaded_file):
-        uploaded_file = UploadedFile()
-        uploaded_file.id = id_uploaded_file
-        return self.fetch(uploaded_file)
-
-    # storage
-    def get_storage(self, id_storage):
-        storage = Storage()
-        storage.id = id_storage
-        return self.fetch(storage)
 
     # software
     def get_software(self, id_software):
@@ -852,80 +844,7 @@ class Cytomine(object):
         job_template = self.get_job_template(id_job_template)
         return self.delete(job_template)
 
-    # dump_annotations takes a collection of annotations and generates in dest_path cropped images according to zoom/translation/tile parameters
-    def dump_annotations(self, annotations, get_image_url_func=Annotation.get_annotation_crop_url, dest_path="/tmp",
-                         override=False, excluded_terms=[], desired_zoom=None, desired_max_size=None, tile_size=None,
-                         translate=None):
-        if not (os.path.exists(dest_path)):
-            os.makedirs(dest_path)
-
-        nbAnnotations = len(annotations.data())
-
-        images = []
-        pbar = None
-        if self.__verbose:
-            pbar = ProgressBar(maxval=nbAnnotations).start()
-
-        queue = Queue.Queue()
-        threads = []
-        for i in xrange(3):
-            t = ImageFetcher(queue, self, override, pbar)
-            threads.append(t)
-            t.setDaemon(True)
-            t.start()
-
-        for annot in annotations.data():
-
-            if self.__verbose and not (len(annot.term)):
-                print "Skip %s/%s : annotation (%s) without term " % (i, nbAnnotations, annot.id)
-                continue
-
-            for term in annot.term:
-                if term in excluded_terms:
-                    continue
-                # Create term path
-                termPath = os.path.join(dest_path, str(term))
-                if not (os.path.exists(termPath)):
-                    os.mkdir(termPath)
-                filename = "%s/%d_%d.png" % (termPath, annot.image, annot.id)
-                # print "SETTING filename attribute"
-                # time.sleep(1)
-                setattr(annot, "filename", filename)
-                if False and annot.area == 0:
-                    print "Skip %s/%s : annotation (%s) area is equal to 0" % (i, nbAnnotations, annot.id)
-                    if os.path.exists(filename):
-                        os.remove(filename)
-                else:
-                    if tile_size:
-                        # extend the area to use a fixed-size tile (assuming the tile is larger than the annotation bounding box)
-                        print "Fixed tile cropURL"
-                        p_annotation = self.get_annotation(annot.id)
-                        p = loads(p_annotation.location)
-                        minx, miny, maxx, maxy = int(p.bounds[0]), int(p.bounds[1]), int(p.bounds[2]), int(p.bounds[3])
-                        image = self.get_image_instance(p_annotation.image)
-                        for t in range(0, translate):
-                            original_cropURL = get_image_url_func(annot, desired_zoom, desired_max_size)
-                            print "original cropURL = %s" % original_cropURL
-                            cropURL = self.__protocol + self.__host + self.__base_path + Annotation.get_annotation_crop_tiled_translated(
-                                annot, minx, maxx, miny, maxy, p_annotation.image, image.height, tile_size, translate)
-                            print "tiled cropURL: %s" % cropURL
-                            filename = "%s/%d_%d_%d_translated_%d.png" % (termPath, annot.image, annot.id, tile_size, t)
-                            queue.put((cropURL, filename, annot))
-
-                    else:
-                        # use original cropURL (smallest bounding box around the annotation)
-                        if self.__verbose:
-                            print "Get crop at zoom %d" % desired_zoom
-                        cropURL = get_image_url_func(annot, desired_zoom, desired_max_size)
-                        if self.__verbose:
-                            print "cropURL: %s" % cropURL
-                        queue.put((cropURL, filename, annot))
-
-        queue.join()
-        if self.__verbose:
-            pbar.finish()
-
-        return annotations
+    
 
     def get_project_users(self, id_project):
         users = UserCollection()

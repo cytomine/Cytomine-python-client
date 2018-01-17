@@ -24,7 +24,7 @@ from model import Model
 
 class Project(Model):
     def __init__(self, name=None, id_ontology=None, **attributes):
-        super(Project, self).__init__(**attributes)
+        super(Project, self).__init__()
         self.name = name
         self.ontology = id_ontology
         self.ontologyName = None
@@ -43,36 +43,24 @@ class Project(Model):
         self.isReadOnly = None
         self.hideUsersLayers = None
         self.hideAdminsLayers = None
+        self.populate(attributes)
 
 
 class ProjectCollection(Collection):
-    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
-        super(ProjectCollection, self).__init__(Project, filters, query_parameters, max, offset)
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(ProjectCollection, self).__init__(Project, filters, max, offset)
         self._allowed_filters = ["user", "software", "ontology"]
+        self.set_parameters(parameters)
 
 
 class Discipline(Model):
     def __init__(self, name=None, **attributes):
-        super(Discipline, self).__init__(**attributes)
+        super(Discipline, self).__init__()
         self.name = name
+        self.populate(attributes)
 
 
 class DisciplineCollection(Collection):
-    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
-        super(DisciplineCollection, self).__init__(Discipline, filters, query_parameters, max, offset)
-
-
-# class ProjectProperty(Model):
-#
-#     def __init__(self, params = None):
-#         super(ProjectProperty, self).__init__(params)
-#         self._callback_identifier = "property"
-#
-#     def to_url(self):
-#         if hasattr(self, "domainIdent") and not hasattr(self, "id"):#new
-#             return "project/%d/property.json" % self.domainIdent
-#         elif hasattr(self, "domainIdent") and hasattr(self, "id"):
-#             return "project/%d/property/%d.json" % (self.domainIdent, self.id)
-#
-#     def __str__( self ):
-#         return "Project Property %d,%d " % (self.project, self.id)
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(DisciplineCollection, self).__init__(Discipline, filters, max, offset)
+        self.set_parameters(parameters)

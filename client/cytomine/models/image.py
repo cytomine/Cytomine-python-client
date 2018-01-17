@@ -26,21 +26,6 @@ from model import Model
 from collection import Collection
 
 
-class Storage(Model):
-
-    def __init__(self, params = None):
-        super(Storage, self).__init__(params)
-        self._callback_identifier = "storage"
-
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "storage/%d.json" % self.id
-        else:
-            return "storage.json"
-
-    def __str__( self ):
-        return str(self.id) + " : " + str(self.name)
-
 
 class ImageGroup(Model):
 
@@ -153,47 +138,3 @@ class ImageInstanceCollection(Collection):
         else:
             return "imageinstance.json"
 
-
-
-class AbstractImageProperty(Model):
-
-    def __init__(self, params = None):
-        super(AbstractImageProperty, self).__init__(params)
-        self._callback_identifier = "property"
-
-    def to_url(self):
-        if hasattr(self, "domainIdent") and not hasattr(self, "id"):#new
-            return "domain/be.cytomine.image.AbstractImage/%d/property.json" % self.domainIdent
-        elif hasattr(self, "domainIdent") and hasattr(self, "id"):
-            return "domain/be.cytomine.image.AbstractImage/%d/property/%d.json" % (self.domainIdent, self.id)        
-
-    def __str__( self ):
-        return "Property %s,%s " % (self.domainClassName, self.domainIdent)
-
-class AbstractImagePropertyCollection(Collection):
-
-    def __init__(self, params = None):
-        super(AbstractImagePropertyCollection, self).__init__(AbstractImageProperty, params)        
-
-    def to_url(self):
-        if hasattr(self, "abstract_image_id"):
-            return "domain/be.cytomine.image.AbstractImage/%d/property.json" % self.abstract_image_id
-        else:
-            return None        
-
-    def __str__( self ):
-        return "AbstractImage Properties"
-
-class UploadedFile(Model):
-    def __init__(self, params = None):
-        super(UploadedFile, self).__init__(params)
-        self._callback_identifier = "uploadedfile"
-
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "uploadedfile/%d.json" % self.id
-        else:
-            return "uploadedfile.json"
-
-    def __str__( self ):
-        return "Uploadedfile : " + str(self.id)

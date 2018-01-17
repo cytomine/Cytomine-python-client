@@ -24,20 +24,22 @@ from model import Model
 
 class Storage(Model):
     def __init__(self, name=None, **attributes):
-        super(Storage, self).__init__(**attributes)
+        super(Storage, self).__init__()
         self.name = name
         self.basePath = None
         self.user = None
+        self.populate(attributes)
 
 
 class StorageCollection(Collection):
-    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
-        super(StorageCollection, self).__init__(Storage, filters, query_parameters, max, offset)
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(StorageCollection, self).__init__(Storage, filters, max, offset)
+        self.set_parameters(parameters)
 
 
 class UploadedFile(Model):
     def __init__(self, **attributes):
-        super(UploadedFile, self).__init__(**attributes)
+        super(UploadedFile, self).__init__()
         self.user = None
         self.projects = None
         self.storages = None
@@ -47,11 +49,13 @@ class UploadedFile(Model):
         self.size = None
         self.path = None
         self.status = None
+        self.populate(attributes)
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
 
 
 class UploadedFileCollection(Collection):
-    def __init__(self, filters=None, query_parameters=None, max=0, offset=0):
-        super(UploadedFileCollection, self).__init__(UploadedFile, filters, query_parameters, max, offset)
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(UploadedFileCollection, self).__init__(UploadedFile, filters, max, offset)
+        self.set_parameters(parameters)

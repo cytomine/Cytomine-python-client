@@ -31,22 +31,21 @@ __copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.c
 
 
 class Collection(MutableSequence):
-    def __init__(self, model, filters=None, query_parameters=None, max=0, offset=0):
+    def __init__(self, model, filters=None, max=0, offset=0):
         self._model = model
         self._data = []
+
         self._allowed_filters = []
         self._filters = filters if filters is not None else {}
-        if query_parameters is None:
-            query_parameters = {}
-        self._query_parameters = {"max": max, "offset": offset}.update(query_parameters)
-        self._max = max  # nb_resources by page, 0 = ALL
-        self._offset = offset  # current offset.
 
         self._total = None  # total number of resources
         self._total_pages = None  # total number of pages
 
+        self.max = max
+        self.offset = offset
+
     def fetch(self):
-        return Cytomine.get_instance().get(self, self._query_parameters)
+        return Cytomine.get_instance().get(self, self.parameters)
 
     def fetch_with_filter(self, key, value):
         self._filters[key] = value
@@ -69,17 +68,22 @@ class Collection(MutableSequence):
     def is_filtered_by(self, key):
         return key in self._filters
 
+    def set_parameters(self, parameters):
+        if parameters:
+            for key, value in six.iteritems(parameters):
+                if not key.startswith("_"):
+                    setattr(self, key, value)
+        return self
+
     @property
-    def query_parameters(self):
-        return self._query_parameters
+    def parameters(self):
+        return dict((k, v) for k, v in six.iteritems(self.__dict__) if v is not None and not k.startswith("_"))
 
     @property
     def callback_identifier(self):
         return self._model.__name__.lower()
 
     def uri(self):
-        print(len(self.filters))
-        print(self.filters)
         if len(self.filters) > 1:
             raise ValueError("More than 1 filter not allowed by default.")
 

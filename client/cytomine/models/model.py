@@ -42,9 +42,6 @@ class Model(object):
         self.deleted = None
         self.name = None
 
-        if attributes:
-            self.populate(attributes)
-
     def fetch(self, id=None):
         if self.id is None and id is None:
             raise ValueError("Cannot fetch a model with no ID.")
@@ -79,11 +76,12 @@ class Model(object):
         return self.id is None
 
     def populate(self, attributes):
-        for key, value in six.iteritems(attributes):
-            if key.startswith("id_"):
-                key = key[3:]
-            if not key.startswith("_"):
-                setattr(self, key, value)
+        if attributes:
+            for key, value in six.iteritems(attributes):
+                if key.startswith("id_"):
+                    key = key[3:]
+                if not key.startswith("_"):
+                    setattr(self, key, value)
         return self
 
     def to_json(self, **dump_parameters):
