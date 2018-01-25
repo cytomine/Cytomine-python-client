@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-#
 # * Copyright (c) 2009-2015. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,126 +13,163 @@
 # * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
-# */
+from client.cytomine.cytomine import Cytomine
 
-__author__          = "Stévens Benjamin <b.stevens@ulg.ac.be>" 
-__contributors__    = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]                
-__copyright__       = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
+__author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
+__contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
+__copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
 
-
-
-from model import Model
 from collection import Collection
+from model import Model
 
 
 class Software(Model):
-    def __init__(self, params = None):
-        super(Software, self).__init__(params)
-        self._callback_identifier = "software"
+    def __init__(self, name=None, service_name=None, result_name=None, execute_command=None, **attributes):
+        super(Software, self).__init__()
+        self.name = name
+        self.serviceName = service_name
+        self.resultName = result_name
+        self.executeCommand = execute_command
+        self.description = None
+        self.parameters = None
+        self.numberOfJob = None
+        self.numberOfNotLaunch = None
+        self.numberOfInQueue = None
+        self.numberOfRunning = None
+        self.numberOfSuccess = None
+        self.numberOfFailed = None
+        self.numberOfIndeterminate = None
+        self.numberOfWait = None
+        self.populate(attributes)
 
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "software/%d.json" % self.id
-        else:
-            return "software.json"
 
-    def __str__( self ):
-        return "software : " + str(self.id)
+class SoftwareCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(SoftwareCollection, self).__init__(Software, filters, max, offset)
+        self._allowed_filters = ["project"]
+        self.set_parameters(parameters)
+
 
 class SoftwareProject(Model):
-    def __init__(self, params = None):
-        super(SoftwareProject, self).__init__(params)
-        self._callback_identifier = "softwareproject"
+    def __init__(self, id_software=None, id_project=None, **attributes):
+        super(SoftwareProject, self).__init__()
+        self.software = id_software
+        self.project = id_project
+        self.name = None
+        self.populate(attributes)
 
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "softwareproject/%d.json" % self.id
-        else:
-            return "softwareproject.json"
 
-    def __str__( self ):
-        return "softwareproject : " + str(self.id)
+class SoftwareProjectCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(SoftwareProjectCollection, self).__init__(SoftwareProject, filters, max, offset)
+        self._allowed_filters = ["project"]
+        self.set_parameters(parameters)
+
 
 class SoftwareParameter(Model):
-    def __init__(self, params = None):
-        super(SoftwareParameter, self).__init__(params)
-        self._callback_identifier = "softwareparameter"
+    def __init__(self, name=None, type=None, id_software=None, default_value=None,
+                 required=None, index=None, set_by_server=None, uri=None, uri_sort_attribut=None,
+                 uri_print_attribut=None, **attributes):
+        super(SoftwareParameter, self).__init__()
+        self.name = name
+        self.type = type
+        self.software = id_software
+        self.defaultValue = default_value
+        self.required = required
+        self.index = index
+        self.uri = uri
+        self.uriSortAttribut = uri_sort_attribut
+        self.uriPrintAttribut = uri_print_attribut
+        self.setByServer = set_by_server
+        self.populate(attributes)
 
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "softwareparameter/%d.json" % self.id
-        else:
-            return "softwareparameter.json"
 
-    def __str__( self ):
-        return "softwareparameter : " + str(self.id)
+class SoftwareParameterCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(SoftwareParameterCollection, self).__init__(SoftwareParameter, filters, max, offset)
+        self._allowed_filters = ["software"]
+        self.set_parameters(parameters)
+
 
 class Job(Model):
     
-    (RUNNING,TERMINATED,PREVIEW_DONE) = (2,3,7)
-	
-    def __init__(self, params = None):
-        super(Job, self).__init__(params)
-        self._callback_identifier = "job"
+    NOT_LAUNCH = 0
+    INQUEUE = 1
+    RUNNING = 2
+    SUCCESS = TERMINATED = 3
+    FAILED = 4
+    INDETERMINATE = 5
+    WAIT = 6
+    PREVIEW_DONE = 7
 
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "job/%d.json" % self.id        
-        else:
-            return "job.json"
+    def __init__(self):
+        super(Job, self).__init__()
+        self.algoType = None
+        self.progress = None
+        self.status = None
+        self.number = None
+        self.statusComment = None
+        self.project = None
+        self.software = None
+        self.softwareNone = None
+        self.rate = None
+        self.dataDeleted = None
+        self.username = None
+        self.userJob = None
+        self.jobParameters = None
 
     def set_running(self):
         self.status = Job.RUNNING
-	
+
     def set_terminated(self):
         self.status = Job.TERMINATED
 
-    def __str__( self ):
-        return "Job : " + str(self.id)
 
 class JobParameter(Model):
+    def __init__(self, id_job=None, id_software_parameter=None, value=None, **attributes):
+        super(JobParameter, self).__init__()
+        self.job = id_job
+        self.softwareParameter = id_software_parameter
+        self.value = value
+        self.populate(attributes)
 
-    def __init__(self, params = None):
-        super(JobParameter, self).__init__(params)
-        self._callback_identifier = "jobparameter"
 
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "jobparameter/%d.json" % self.id
-        else:
-            return "jobparameter.json"
-
-    def __str__( self ):
-        return "Jobparameter : " + str(self.id)
+class JobParameterCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(JobParameterCollection, self).__init__(JobParameter, filters, max, offset)
+        self._allowed_filters = ["job"]
+        self.set_parameters(parameters)
 
 
 class JobTemplate(Model):
-
-    def __init__(self, params = None):
-        super(JobTemplate, self).__init__(params)
-        self._callback_identifier = "jobtemplate"
-
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "jobtemplate/%d.json" % self.id
-        else:
-            return "jobtemplate.json"
-
-    def __str__( self ):
-        return "Jobparameter : " + str(self.id)
+    def __init__(self, name=None, id_software=None, id_project=None, **attributes):
+        super(JobTemplate, self).__init__()
+        self.name = name
+        self.software = id_software
+        self.project = id_project
+        self.populate(attributes)
 
 
 class JobData(Model):
+    def __init__(self, id_job=None, key=None, filename=None, **attributes):
+        super(JobData, self).__init__()
+        self.job = id_job
+        self.key = key
+        self.filename = filename
+        self.size = None
+        self.dir = None
+        self.value = None
+        self.populate(attributes)
 
-    def __init__(self, params = None):
-        super(JobData, self).__init__(params)
-        self._callback_identifier = "jobdata"
+    def upload(self, filename):
+        if self.is_new():
+            raise ValueError("Cannot upload file if not existing ID.")
+        return Cytomine.get_instance().upload_file(self, filename,
+                                                   uri="{}/{}/upload".format(self.callback_identifier, self.id))
 
-    def to_url(self):
-        if hasattr(self, "id"):
-            return "jobdata/%d.json" % self.id
-        else:
-            return "jobdata.json"
-
-    def __str__( self ):
-        return "JobData : " + str(self.id)  
+    def download(self, destination, override=False):
+        if self.is_new():
+            raise ValueError("Cannot download file if not existing ID.")
+        return Cytomine.get_instance().download_file("{}{}/{}/download".format(Cytomine.get_instance()._base_url(),
+                                                                               self.callback_identifier, self.id),
+                                                     destination, override)

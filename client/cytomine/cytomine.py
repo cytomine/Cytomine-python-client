@@ -71,6 +71,9 @@ class Cytomine(object):
         self._base_path = "/api/"
         self._logger = None  # TODO
 
+        # Deprecated
+        self._working_path = working_path
+
         self._session = requests.session()
         if self._use_cache:
             self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
@@ -132,8 +135,10 @@ class Cytomine(object):
 
         return headers
 
-    def get(self, model, query_parameters=None):
-        response = self._session.get("{}{}".format(self._base_url(), model.uri()),
+    def get(self, model, query_parameters=None, uri=None):
+        if not uri:
+            uri = model.uri()
+        response = self._session.get("{}{}".format(self._base_url(), uri),
                                      auth=CytomineAuth(
                                          self._public_key, self._private_key,
                                          self._base_url(), self._base_path),
@@ -146,8 +151,10 @@ class Cytomine(object):
 
         return model.populate(response.json())
 
-    def put(self, model, query_parameters=None):
-        response = self._session.put("{}{}".format(self._base_url(), model.uri()),
+    def put(self, model, query_parameters=None, uri=None):
+        if not uri:
+            uri = model.uri()
+        response = self._session.put("{}{}".format(self._base_url(), uri),
                                      auth=CytomineAuth(
                                          self._public_key, self._private_key,
                                          self._base_url(), self._base_path),
@@ -161,8 +168,10 @@ class Cytomine(object):
 
         return model.populate(response.json()[model.callback_identifier])
 
-    def delete(self, model, query_parameters=None):
-        response = self._session.delete("{}{}".format(self._base_url(), model.uri()),
+    def delete(self, model, query_parameters=None, uri=None):
+        if not uri:
+            uri = model.uri()
+        response = self._session.delete("{}{}".format(self._base_url(), uri),
                                         auth=CytomineAuth(
                                             self._public_key, self._private_key,
                                             self._base_url(), self._base_path),
@@ -175,8 +184,10 @@ class Cytomine(object):
 
         return True
 
-    def post(self, model, query_parameters=None):
-        response = self._session.post("{}{}".format(self._base_url(), model.uri()),
+    def post(self, model, query_parameters=None, uri=None):
+        if not uri:
+            uri = model.uri()
+        response = self._session.post("{}{}".format(self._base_url(), uri),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
                                           self._base_url(), self._base_path),
@@ -190,9 +201,11 @@ class Cytomine(object):
 
         return model.populate(response.json()[model.callback_identifier])
 
-    def upload_file(self, model, filename, query_parameters=None):
+    def upload_file(self, model, filename, query_parameters=None, uri=None):
+        if not uri:
+            uri = model.uri()
         m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
-        response = self._session.post("{}{}".format(self._base_url(), model.uri()),
+        response = self._session.post("{}{}".format(self._base_url(), uri),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
                                           self._base_url(), self._base_path),
@@ -372,6 +385,18 @@ class Cytomine(object):
         annotation.save()
 
     @deprecated
+    def add_annotations(self, locations, id_image):
+        return self.add_annotations_with_term(locations, id_image, None)
+
+    @deprecated
+    def add_annotations_with_term(self, locations, id_image, id_term):
+        from .models.image import ImageInstance
+        from .models.annotation import Annotation
+        image = ImageInstance.fetch(id_image)
+        id_term = [id_term] if id_term else None
+        return [Annotation(location, id_image, id_term, image.project).save() for location in locations]
+
+    @deprecated
     def delete_annotation(self, id_annotation):
         from .models.annotation import Annotation
         return Annotation().delete(id_annotation)
@@ -434,32 +459,182 @@ class Cytomine(object):
     def add_user_annotation_term(self, id_annotation, term):
         return self.add_annotation_term(id_annotation, term, None, None)
 
+    # abstract image
+    @deprecated
+    def get_image(self, id_image):
+        from .models.image import AbstractImage
+        return AbstractImage().fetch(id_image)
 
+    @deprecated
+    def edit_image(self, id_image, filename=None, path=None, mime=None, id_sample=None, id_scanner=None,
+                   magnification=None, resolution=None):
+        from .models.image import AbstractImage
+        image = AbstractImage()
+        image = image.fetch(id_image)
+        image.filename = filename if filename else image.filename
+        image.path = path if path else image.path
+        image.mime = mime if mime else image.mime
+        image.scanner = id_scanner if id_scanner else image.scanner
+        image.sample = id_sample if id_sample else image.sample
+        image.magnification = magnification if magnification else image.magnification
+        image.resolution = resolution if resolution else image.resolution
+        image.update()
 
-    # def add_annotations(self, locations, id_image):
-    #     annotations = []
-    #     image = self.get_image_instance(id_image)
-    #     for location in locations:
-    #         annotation = Annotation()
-    #         annotation.location = location
-    #         annotation.image = id_image
-    #         annotation.name = ""
-    #         annotation.project = image.project
-    #         annotations.append(annotation)
-    #     return self.save_collection(annotations)
+    @deprecated
+    def delete_image(self, id_image):
+        from .models.image import AbstractImage
+        return AbstractImage().delete(id_image)
+
+    # image_instance
+    @deprecated
+    def add_image_instance(self, id_base_image, id_project):
+        from .models.image import ImageInstance
+        return ImageInstance(id_base_image, id_project).save()
+
+    @deprecated
+    def delete_image_instance(self, id_image_instance):
+        from .models.image import ImageInstance
+        return ImageInstance().delete(id_image_instance)
+
+    @deprecated
+    def get_image_instance(self, id_image_instance, include_server_urls=False):
+        from .models.image import ImageInstance
+
+        if include_server_urls:
+            return ImageInstance().fetch_with_image_servers(id_image_instance)
+        else:
+            return ImageInstance().fetch(id_image_instance)
+
+    @deprecated
+    def get_project_image_instances(self, id_project):
+        from .models.image import ImageInstanceCollection
+        return ImageInstanceCollection(filters={"project": id_project}).fetch()
+
+    @deprecated
+    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False,
+                            image_instances=None, max_size=None):
+        from .models.image import ImageInstanceCollection
+
+        dest_pattern = os.path.join(self._working_path, dest_path, "{project}", "{id}.jpg")
+
+        if not image_instances:
+            image_instances = ImageInstanceCollection({"project": id_project}).fetch()
+        for image_instance in image_instances:
+            image_instance.dump(dest_pattern, override, max_size=max_size)
+
+        return image_instances
+
+    # software
+    @deprecated
+    def get_software(self, id_software):
+        from .models.software import Software
+        return Software().fetch(id_software)
+
+    @deprecated
+    def add_software(self, name, service_name, result_name, execute_command=None):
+        from .models.software import Software
+        return Software(name, service_name, result_name, execute_command).save()
+
+    # software project
+    @deprecated
+    def add_software_project(self, project, software):
+        from .models.software import SoftwareProject
+        return SoftwareProject(software, project).save()
+
+    # software_parameters
+    @deprecated
+    def add_software_parameter(self, name, id_software, type, default_value, required, index, set_by_server,
+                               uri=None, uriPrintAttribut=None, uriSortAttribut=None):
+        from .models.software import SoftwareParameter
+        return SoftwareParameter(name, type, id_software, default_value, required, index, set_by_server, uri,
+                                 uriSortAttribut, uriPrintAttribut).save()
+
+    @deprecated
+    def get_software_parameter(self, id_software_parameter):
+        from .models.software import SoftwareParameter
+        return SoftwareParameter().fetch(id_software_parameter)
+
+    @deprecated
+    def delete_software_parameter(self, id_software_parameter):
+        from .models.software import SoftwareParameter
+        return SoftwareParameter().delete(id_software_parameter)
+
+    # Job
+    @deprecated
+    def get_job(self, id_job):
+        from .models.software import Job
+        return Job().fetch(id_job)
+
+    @deprecated
+    def update_job_status(self, job, status=None, status_comment=None, progress=None):
+        job.status = status if status else job.status
+        job.statusComment = status_comment if status_comment else job.statusComment
+        job.progress = progress if progress else job.progress
+        job.update()
+
+    # Job Parameter
+    @deprecated
+    def add_job_parameter(self, id_job, id_software_parameter, value):
+        from .models.software import JobParameter
+        return JobParameter(id_job, id_software_parameter, value).save()
+
+    # def add_job_parameters(self, job, software, values):
+    #     job_parameters_values = {}
+    #     cytomine_job = self.get_job(job)
+    #     for software_parameter in software.parameters:
+    #         software_parameter_name = software_parameter["name"]
+    #         if values[software_parameter["name"]]:
+    #             job_parameters_values[software_parameter["id"]] = software_parameter_name, values[
+    #                 software_parameter_name]
+    #         elif (cytomine_job.algoType == "jobtemplate" and software_parameter_name == "annotation"):
+    #             print
+    #             "Do not add annotation param if JobTemplate"
+    #         else:
+    #             job_parameters_values[software_parameter["id"]] = software_parameter_name, software_parameter[
+    #                 "defaultParamValue"]
     #
-    # def add_annotations_with_term(self, locations, id_image, id_term):
-    #     annotations = []
-    #     image = self.get_image_instance(id_image)
-    #     for location in locations:
-    #         annotation = Annotation()
-    #         annotation.location = location
-    #         annotation.image = id_image
-    #         annotation.name = ""
-    #         annotation.project = image.project
-    #         annotation.term = id_term
-    #         annotations.append(annotation)
-    #     return self.save_collection(annotations)
+    #     for software_parameter_id in job_parameters_values:
+    #         name, value = job_parameters_values[software_parameter_id]
+    #         self.add_job_parameter(job, software_parameter_id, value)
+    #     return job_parameters_values
+
+
+    # JobTemplate
+    @deprecated
+    def get_job_template(self, id_job_template):
+        from .models.software import JobTemplate
+        return JobTemplate.fetch(id_job_template)
+
+    @deprecated
+    def add_job_template(self, name, id_project, id_software):
+        from .models.software import JobTemplate
+        return JobTemplate(name, id_software, id_project).save()
+
+    @deprecated
+    def delete_job_template(self, id_job_template):
+        from .models.software import JobTemplate
+        return JobTemplate().delete(id_job_template)
+
+    # JobData
+    @deprecated
+    def add_job_data(self, job, key, filename):
+        from .models.software import JobData
+        job_data = JobData(id_job=job, key=key, filename=filename).save()
+        job_data.upload(filename)
+        return job_data
+
+    @deprecated
+    def get_job_data_file(self, id_job_data, dest_path):
+        from .models.software import JobData
+        return JobData().fetch(id_job_data).download(dest_path)
+
+
+
+
+
+
+
+
     #
     # def get_reviewed_annotations(self, id_project=None):
     #     annotations = ReviewedAnnotationCollection()
@@ -571,30 +746,7 @@ class Cytomine(object):
         group = self.get_group(id_group)
         return self.delete(group)
 
-    # image_instance
-    def add_image_instance(self, id_base_image, id_project):
-        image = ImageInstance()
-        image.baseImage = id_base_image
-        image.project = id_project
-        return self.save(image)
-
-    def get_image_instance(self, id_image_instance=None, include_server_urls=False):
-        image = ImageInstance()
-        if id_image_instance:
-            image.id = id_image_instance
-
-        image = self.fetch(image)
-        if include_server_urls:
-            server_urls = ImageInstanceServersURL()
-            server_urls.id = image.baseImage
-            server_urls = self.fetch(server_urls)
-            image.server_urls = server_urls.imageServersURLs
-
-        return image
-
-    def delete_image_instance(self, id_image_instance):
-        image = self.get_image_instance(id_image_instance)
-        return self.delete(image)
+    
 
     # imagegroup
     def get_image_group(self, id_image_group=None):
@@ -709,193 +861,12 @@ class Cytomine(object):
         abstract_image_properties.abstract_image_id = abstract_image_id
         return self.fetch(abstract_image_properties)
 
-    # software
-    def get_software(self, id_software):
-        software = Software()
-        software.id = id_software
-        return self.fetch(software)
-
-    def add_software(self, name, service_name, result_name):
-        software = Software()
-        software.name = name
-        software.serviceName = service_name
-        software.resultName = result_name
-        return self.save(software)
-
-    def add_software(self, name, service_name, result_name, execute_command=None):
-        software = Software()
-        software.name = name
-        software.serviceName = service_name
-        software.resultName = result_name
-        software.executeCommand = execute_command
-        return self.save(software)
-
-    # software project
-    def add_software_project(self, project, software):
-        software_project = SoftwareProject()
-        software_project.project = project
-        software_project.software = software
-        return self.save(software_project)
-
-        # software_parameters
-
-    def add_software_parameter(self, name, id_software, type, default_value, required, index, set_by_server, uri=None,
-                               uriPrintAttribut=None, uriSortAttribut=None):
-        software_parameter = SoftwareParameter()
-        software_parameter.name = name
-        software_parameter.software = id_software
-        software_parameter.type = type  # String #Integer
-        software_parameter.defaultValue = default_value
-        software_parameter.required = required
-        software_parameter.index = index
-        software_parameter.setByServer = set_by_server
-        software_parameter.uri = uri
-        software_parameter.uriPrintAttribut = uriPrintAttribut
-        software_parameter.uriSortAttribut = uriSortAttribut
-        return self.save(software_parameter)
-
-    def get_software_parameter(self, id_software_parameter):
-        software_parameter = SoftwareParameter()
-        software_parameter.id = id_software_parameter
-        return self.fetch(software_parameter)
-
-    def delete_software_parameter(self, id_software_parameter):
-        software_parameter = self.get_software_parameter(id_software_parameter)
-        if software_parameter:
-            return self.delete(software_parameter)
-        else:
-            return None
-
-    # Job
-    def get_job(self, id_job):
-        job = Job()
-        job.id = id_job
-        return self.fetch(job)
-
-    # Job Parameter
-    def add_job_parameter(self, id_job, id_software_parameter, value):
-        job_parameter = JobParameter()
-        job_parameter.job = id_job
-        job_parameter.softwareParameter = id_software_parameter
-        job_parameter.value = value
-        return self.save(job_parameter)
-
-    def add_job_parameters(self, job, software, values):
-        job_parameters_values = {}
-        cytomine_job = self.get_job(job)
-        for software_parameter in software.parameters:
-            software_parameter_name = software_parameter["name"]
-            if values[software_parameter["name"]]:
-                job_parameters_values[software_parameter["id"]] = software_parameter_name, values[
-                    software_parameter_name]
-            elif (cytomine_job.algoType == "jobtemplate" and software_parameter_name == "annotation"):
-                print "Do not add annotation param if JobTemplate"
-            else:
-                job_parameters_values[software_parameter["id"]] = software_parameter_name, software_parameter[
-                    "defaultParamValue"]
-
-        for software_parameter_id in job_parameters_values:
-            name, value = job_parameters_values[software_parameter_id]
-            self.add_job_parameter(job, software_parameter_id, value)
-        return job_parameters_values
-
-    def add_job_data(self, job, key, filename):
-        job_data = JobData()
-        job_data.job = job.id
-        job_data.key = key
-        job_data.filename = filename
-        job_data = self.save(job_data)
-        self.upload_job_data_file(job_data, filename)
-        return job_data
-        # Read filename and upload
-
-    def get_job_data_file(self, id_job_data, dest_path):
-        job_data = JobData()
-        job_data.id = id_job_data
-        job_data = self.fetch(job_data)
-        url = "jobdata/%d/download" % job_data.id
-        fullURL = self.__protocol + self.__host + self.__base_path + url
-        return self.fetch_url_into_file(fullURL, dest_path, is_image, False)
-
-    def update_job_status(self, job, status=None, status_comment=None, progress=None):
-        if self.__verbose: print status_comment
-        if status: job.status = status
-        if status_comment: job.statusComment = str(status_comment)
-        if progress: job.progress = int(progress)
-        if (status or status_comment) or progress:
-            return self.update(job)
-        else:
-            return job
-
-    # JobTemplate
-    def get_job_template(self, id_job_template):
-        job_template = JobTemplate()
-        job_template.id = id_job_template
-        return self.fetch(job_template)
-
-    def add_job_template(self, name, id_project, id_software):
-        job_template = JobTemplate()
-        job_template.name = name
-        job_template.project = id_project
-        job_template.software = id_software
-        return self.save(job_template)
-
-    def delete_job_template(self, id_job_template):
-        job_template = self.get_job_template(id_job_template)
-        return self.delete(job_template)
-
     
 
     def get_project_users(self, id_project):
         users = UserCollection()
         users.project = id_project
         return self.fetch(users)
-
-    def get_project_image_instances(self, id_project):
-        image_instances = ImageInstanceCollection()
-        image_instances.project = id_project
-        return self.fetch(image_instances)
-
-    
-
-    # Check / for destPath
-    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None,
-                            max_size=None):
-        images = []
-        if not (os.path.exists(self.__working_path)):
-            print "Working path (%s) does not exist" % self.__working_path
-            return False
-        projectPath = self.__working_path + dest_path
-        if not (os.path.exists(projectPath)):
-            os.mkdir(projectPath)
-        projectPath += str(id_project)
-        if not (os.path.exists(projectPath)):
-            os.mkdir(projectPath)
-        if not (image_instances):  # fetch all images from project
-            image_instances = ImageInstanceCollection()
-            image_instances.project = id_project
-            image_instances = self.fetch(image_instances)
-            image_instances = image_instances.data()  # acces to models
-        pbar = ProgressBar(maxval=len(image_instances)).start()
-        i = 0
-        for image_instance in image_instances:
-            filename = projectPath + "/" + str(image_instance.id) + ".jpg"
-            setattr(image_instance, "filename", filename)
-            images.append(image_instance)
-            if (not (os.path.exists(filename)) or (os.path.exists(filename) and override)):
-                if (type(max_size) is int):
-                    url = image_instance.preview[0:image_instance.preview.index('?')] + "?maxSize=" + str(max_size)
-                elif (max_size):
-                    url = image_instance.preview[0:image_instance.preview.index('?')] + "?maxSize=" + str(
-                        max(image_instance.width, image_instance.height))
-                else:
-                    url = image_instance.preview
-                self.fetch_url_into_file(url, filename, override)
-            pbar.update(i)
-        pbar.finish()
-        return images
-
-    
 
     def upload_mask(self, url, filename):
         # poster
@@ -922,37 +893,6 @@ class Cytomine(object):
     def prog_callback(self, param, current, total):
         pct = 100 - ((total - current) * 100) / (total)
         self.pbar.update(pct)
-
-    
-
-
-    def get_image(self, id_image):
-        image = Image()
-        image.id = id_image
-        return self.fetch(image)
-
-    def edit_image(self, id_image, filename=None, path=None, mime=None, id_sample=None, id_scanner=None,
-                   magnification=None, resolution=None):
-        image = self.get_image(id_image)
-        if filename:
-            image.filename = filename
-        if path:
-            image.path = path
-        if mime:
-            image.mime = mime
-        if id_sample:
-            image.sample = id_sample
-        if id_scanner:
-            image.scanner = id_scanner
-        if magnification:
-            image.magnification = magnification
-        if resolution:
-            image.resolution = resolution
-        return self.update(image)
-
-    def delete_image(self, id_image):
-        image = self.get_image(id_image)
-        return self.delete(image)
 
     def union_polygons(self, id_user, id_image, id_term, min_intersection_length, area, buffer_length=None):
         annotation_union = AnnotationUnion()

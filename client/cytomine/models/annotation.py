@@ -47,7 +47,7 @@ class Annotation(Model):
         return "[{}] {}".format(self.callback_identifier, self.id)
 
     def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
-             zoom=None, max_size=None, contrast=None, gamma=None, colormap=None, inverse=None):
+             zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None):
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
@@ -55,8 +55,7 @@ class Annotation(Model):
         dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
 
         destination = os.path.dirname(dest_pattern)
-        filename = os.path.basename(dest_pattern)
-        extension = os.path.splitext(filename)[1]
+        filename, extension = os.path.splitext(os.path.basename(dest_pattern))
 
         if extension not in ("jpg", "png", "tif", "tiff"):
             extension = "jpg"
@@ -67,6 +66,7 @@ class Annotation(Model):
         parameters = {
             "zoom": zoom,
             "maxSize": max_size,
+            "increaseArea": increase_area,
             "contrast": contrast,
             "gamma": gamma,
             "colormap": colormap,
@@ -171,7 +171,7 @@ class AnnotationCollection(Collection):
 
 
 class AnnotationTerm(Model):
-    def __init__(self, id_annotation, id_term, **attributes):
+    def __init__(self, id_annotation=None, id_term=None, **attributes):
         super(AnnotationTerm, self).__init__()
         self.userannotation = id_annotation
         self.term = id_term
@@ -189,7 +189,7 @@ class AnnotationTerm(Model):
 
 
 class AlgoAnnotationTerm(Model):
-    def __init__(self, id_annotation, id_term, id_expected_term, rate=1.0, **attributes):
+    def __init__(self, id_annotation=None, id_term=None, id_expected_term=None, rate=1.0, **attributes):
         super(AlgoAnnotationTerm, self).__init__()
         self.annotation = id_annotation
         self.term = id_term
