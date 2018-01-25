@@ -45,7 +45,7 @@ class Collection(MutableSequence):
         self.offset = offset
 
     def fetch(self):
-        return Cytomine.get_instance().get(self, self.parameters)
+        return Cytomine.get_instance().get_model(self, self.parameters)
 
     def fetch_with_filter(self, key, value):
         self._filters[key] = value

@@ -48,7 +48,7 @@ class Model(object):
         if id is not None:
             self.id = id
 
-        return Cytomine.get_instance().get(self, self.query_parameters)
+        return Cytomine.get_instance().get_model(self, self.query_parameters)
 
     def save(self):
         self.id = None

@@ -135,9 +135,7 @@ class Cytomine(object):
 
         return headers
 
-    def get(self, model, query_parameters=None, uri=None):
-        if not uri:
-            uri = model.uri()
+    def get(self, uri, query_parameters=None):
         response = self._session.get("{}{}".format(self._base_url(), uri),
                                      auth=CytomineAuth(
                                          self._public_key, self._private_key,
@@ -149,7 +147,15 @@ class Cytomine(object):
             self._logger.warning(response.reason)
             return False
 
-        return model.populate(response.json())
+        return response.json()
+
+    def get_model(self, model, query_parameters=None):
+        response = self.get(model.uri(), query_parameters)
+
+        if response:
+            return model.populate(response)
+        else:
+            return False
 
     def put(self, model, query_parameters=None, uri=None):
         if not uri:
@@ -524,6 +530,20 @@ class Cytomine(object):
 
         return image_instances
 
+    # imagegroup
+    @deprecated
+    def get_image_group(self, id_image_group=None):
+        from .models.imagegroup import ImageGroup, ImageGroupCollection
+        if id_image_group:
+            return ImageGroup().fetch(id_image_group)
+        else:
+            return ImageGroupCollection().fetch()
+
+    @deprecated
+    def delete_image_group(self, id_image_group):
+        from .models.imagegroup import ImageGroup
+        return ImageGroup().delete(id_image_group)
+
     # software
     @deprecated
     def get_software(self, id_software):
@@ -746,18 +766,6 @@ class Cytomine(object):
         group = self.get_group(id_group)
         return self.delete(group)
 
-    
-
-    # imagegroup
-    def get_image_group(self, id_image_group=None):
-        image_group = ImageGroup()
-        if id_image_group:
-            image_group.id = id_image_group
-        return self.fetch(image_group)
-
-    def delete_image_group(self, id_image_group):
-        imagegrp = self.get_image_group(id_image_group)
-        return self.delete(imagegrp)
 
     # userGroup
     def add_user_group(self, id_user, id_group):
