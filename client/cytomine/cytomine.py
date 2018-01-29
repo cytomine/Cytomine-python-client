@@ -43,7 +43,7 @@ import Queue
 
 import socket
 
-from .utils import ImageFetcher
+from utils import ImageFetcher
 from models import *
 
 #API
@@ -699,6 +699,46 @@ class Cytomine(object):
         abstract_image_properties = AbstractImagePropertyCollection()
         abstract_image_properties.abstract_image_id = abstract_image_id
         return self.fetch(abstract_image_properties)
+
+    # attached file
+    def get_attached_file(self, id_attached_file):
+        attached_file = AttachedFile()
+        attached_file.id = id_attached_file
+        return self.fetch(attached_file)
+
+    def get_and_download_attached_file(self, id_attached_file, filename, override=False):
+        af = self.get_attached_file(id_attached_file)
+        self.fetch_url_into_file(self.__protocol + self.__host + af.url, filename, override=override)
+        return af
+
+    def get_attached_files(self, domain_class=None, domain_id=None):
+        attached_files = AttachedFileCollection()
+        attached_files.domainClassName = domain_class
+        attached_files.domainIdent = domain_id
+        return self.fetch(attached_files)
+
+    def add_and_upload_attached_file(self, filename, domain_class, domain_id):
+        from poster.encode import multipart_encode
+        from poster.streaminghttp import register_openers
+
+        url = "attachedfile.json?domainClassName={}&domainIdent={}".format(domain_class, domain_id)
+
+        # Build the request
+        register_openers()
+        file_header = {"files[]": open(filename, "rb")}
+        datagen, headers = multipart_encode(file_header.items())
+        # get the content_type
+        for header in headers.items():
+            if header[0] == "Content-Type":
+                content_type = header[1]
+
+        self.__authorize("POST", url=url, content_type=content_type)
+        fullHeaders = dict(headers.items() + self.__headers.items())
+        fullURL = self.__protocol + self.__host + self.__base_path + url
+        # poster incompatible with httplib2 so we use urllib2
+        request = urllib2.Request(fullURL, datagen, fullHeaders)
+        response = urllib2.urlopen(request, timeout=self.__timeout).read()
+        return AttachedFile(json.dumps(json.loads(response)))
 
     # uploadedfile
     def get_uploaded_file(self, id_uploaded_file):
