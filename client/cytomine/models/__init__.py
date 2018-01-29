@@ -34,3 +34,4 @@ from .software import *
 from .user import *
 from .storage import *
 from .position import *
+from .annotationAction import *
