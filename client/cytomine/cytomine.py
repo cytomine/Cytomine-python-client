@@ -789,6 +789,11 @@ class Cytomine(object):
         software.id = id_software
         return self.fetch(software)
 
+    def delete_software(self, id_software):
+        software = Software()
+        software.id = id_software
+        return self.delete(software)
+
     def add_software(self, name, service_name, result_name):
         software = Software()
         software.name = name
@@ -812,6 +817,12 @@ class Cytomine(object):
         software_project.project = project
         software_project.software = software
         return self.save(software_project)
+
+    def delete_software_project(self, id_project, id_software):
+        sp = SoftwareProject()
+        sp.project = id_project
+        sp.software = id_software
+        return self.delete(sp)
 
         #software_parameters
 
@@ -1068,7 +1079,8 @@ class Cytomine(object):
         return self.fetch(term)
 
     # Check / for destPath
-    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None, max_size=None):
+    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None,
+                            max_size=None):
         images = []
         if not (os.path.exists(self.__working_path)):
             print "Working path (%s) does not exist" % self.__working_path
