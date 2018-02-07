@@ -80,6 +80,9 @@ class Cytomine(object):
 
         Cytomine.__instance = self
 
+        self._current_user = None
+        self.set_current_user()
+
     @classmethod
     def connect(cls, host, public_key, private_key, verbose=0, use_cache=True):
         """
@@ -113,9 +116,18 @@ class Cytomine(object):
     def host(self):
         return self._host
 
+    @property
+    def current_user(self):
+        return self._current_user
+
+    def set_current_user(self):
+        from client.cytomine.models.user import CurrentUser
+        self._current_user = CurrentUser().fetch()
+
     def set_credentials(self, public_key, private_key):
         self._public_key = public_key
         self._private_key = private_key
+        self.set_current_user()
 
     def _base_url(self):
         return "{}://{}{}".format(self._protocol, self._host, self._base_path)
@@ -144,7 +156,7 @@ class Cytomine(object):
                                      params=query_parameters)
 
         if not response.status_code == requests.codes.ok:
-            self._logger.warning(response.reason)
+            # self._logger.warning(response.reason)
             return False
 
         return response.json()
@@ -172,7 +184,7 @@ class Cytomine(object):
             self._logger.warning(response.reason)
             return False
 
-        return model.populate(response.json()[model.callback_identifier])
+        return model.populate(response.json()[model.callback_identifier.lower()])
 
     def delete(self, model, query_parameters=None, uri=None):
         if not uri:
@@ -202,10 +214,10 @@ class Cytomine(object):
                                       data=model.to_json())
 
         if not response.status_code == requests.codes.ok:
-            self._logger.warning(response.reason)
+            # self._logger.warning(response.reason)
             return False
 
-        return model.populate(response.json()[model.callback_identifier])
+        return model.populate(response.json()[model.callback_identifier.lower()])
 
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
@@ -223,7 +235,7 @@ class Cytomine(object):
             self._logger.warning(response.reason)
             return False
 
-        return model.populate(response.json()[model.callback_identifier])
+        return model.populate(response.json()[model.callback_identifier.lower()])
 
     def download_file(self, url, destination, override=False, payload=None):
         if override:
@@ -274,10 +286,12 @@ class Cytomine(object):
                                       data=m)
 
         if not response.status_code == requests.codes.ok:
-            self._logger.warning(response.reason)
+            # self._logger.warning(response.reason)
             return False
 
-        return UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
+        uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
+        uf.images = response.json()[0]["images"]
+        return uf
 
     # Project
     @deprecated
@@ -648,9 +662,136 @@ class Cytomine(object):
         from .models.software import JobData
         return JobData().fetch(id_job_data).download(dest_path)
 
+    # positions
+    @deprecated
+    def get_positions(self, id_image, id_user=None, showDetails=None, afterthan=None,
+                      beforethan=None, maxperpage=None):
+        from .models.social import PositionCollection
+        positions = PositionCollection(filters={"imageinstance":id_image}, max=maxperpage)
+        positions.user = id_user
+        positions.afterThan = afterthan
+        positions.beforeThan = beforethan
+        positions.showDetails = showDetails
+        return positions.fetch()
 
+    # User
+    @deprecated
+    def get_user(self, id_user=None):
+        from .models.user import User, UserCollection
+        if id_user:
+            return User().fetch(id_user)
+        else:
+            return UserCollection().fetch()
 
+    @deprecated
+    def get_project_users(self, id_project):
+        from .models.user import UserCollection
+        return UserCollection(filters={"project": id_project}).fetch()
 
+    @deprecated
+    def get_current_user(self):
+        return self.current_user
+
+    @deprecated
+    def add_user(self, username, firstname, lastname, email, password):
+        from .models.user import User
+        return User(username, firstname, lastname, email, password).save()
+
+    @deprecated
+    def edit_user(self, id_user, username, firstname, lastname, email, password):
+        from .models.user import User
+        user = User().fetch(id_user)
+        user.username = username
+        user.firstname = firstname
+        user.lastname = lastname
+        user.email = email
+        user.password = password
+        return user.update()
+
+    @deprecated
+    def delete_user(self, id_user):
+        from .models.user import User
+        return User().delete(id_user)
+
+    # tmp service, should be done by add job service
+    # def add_user_job(self, software, project):
+    #     user = User()
+    #     user.software = software
+    #     user.project = project
+    #     return self.save(user)
+
+    # Role
+    @deprecated
+    def get_role(self, id):
+        from .models.user import Role
+        return Role().fetch(id)
+
+    @deprecated
+    def get_roles(self, filter_by_authority=None):
+        # filter_by_authority : ROLE_USER or ROLE_ADMIN
+        from .models.user import RoleCollection
+        roles = RoleCollection().fetch()
+        if filter_by_authority:
+            roles = [role for role in roles if role.authority == filter_by_authority]
+        return roles
+
+    # UserRole
+    @deprecated
+    def add_user_role(self, id_user, id_role):
+        from .models.user import UserRole
+        return UserRole(id_user, id_role).save()
+
+    @deprecated
+    def delete_user_role(self, id_user, id_role):
+        from .models.user import UserRole
+        return UserRole().fetch(id_user, id_role).delete()
+
+    @deprecated
+    def get_user_role(self, id_user=None, id_role=None):
+        from .models.user import UserRole
+        return UserRole().fetch(id_user, id_role)
+
+    # group
+    @deprecated
+    def add_group(self, name):
+        from .models.user import Group
+        return Group(name).save()
+
+    @deprecated
+    def get_group(self, id_group=None):
+        from .models.user import Group, GroupCollection
+        if id_group:
+            return Group().fetch(id_group)
+        else:
+            return GroupCollection().fetch()
+
+    @deprecated
+    def edit_group(self, id_group, name):
+        from .models.user import Group
+        group = Group().fetch(id_group)
+        group.name = name
+        return group.update()
+
+    @deprecated
+    def delete_group(self, id_group):
+        from .models.user import Group
+        return Group().delete(id_group)
+
+    # userGroup
+    @deprecated
+    def add_user_group(self, id_user, id_group):
+        from .models.user import UserGroup
+        return UserGroup(id_user, id_group).save()
+
+    @deprecated
+    def get_user_group(self, id_user, id_group):
+        from .models.user import UserGroup
+        return UserGroup().fetch(id_user, id_group)
+
+    @deprecated
+    def delete_user_group(self, id_user, id_group):
+        from .models.user import UserGroup
+        return UserGroup().fetch(id_user, id_group).delete()
 
 
 
@@ -665,170 +806,9 @@ class Cytomine(object):
 
 
 """
-    # User
-    def get_user(self, id_user=None):
-        if id_user:
-            user = User()
-            user.id = id_user
-            return self.fetch(user)
-        else:
-            user = UserCollection()
-            return self.fetch(user)
+    
 
-    def get_current_user(self):
-        user = User()
-        user.current = True
-        return self.fetch(user)
-
-    def add_user(self, username, firstname, lastname, email, password):
-        user = User()
-        user.username = username
-        user.firstname = firstname
-        user.lastname = lastname
-        user.email = email
-        user.password = password
-        return self.save(user)
-
-    # tmp service, should be done by add job service
-    def add_user_job(self, software, project):
-        user = User()
-        user.software = software
-        user.project = project
-        return self.save(user)
-
-    def edit_user(self, id_user, username, firstname, lastname, email, password):
-        user = self.get_user(id_user)
-        user.username = username
-        user.firstname = firstname
-        user.lastname = lastname
-        user.email = email
-        user.password = password
-        return self.update(user)
-
-    def delete_user(self, id_user):
-        user = self.get_user(id_user)
-        return self.delete(user)
-
-    # Role
-    def get_role(self, id):
-        role = Role()
-        role.id = id
-        return self.fetch(role)
-
-    def get_roles(self, filter_by_authority=None):
-        # filter_by_authority : ROLE_USER or ROLE_ADMIN
-        roles = RoleCollection()
-        roles = self.fetch(roles)
-        if filter_by_authority:
-            roles = [i for i in roles.data() if i.authority == filter_by_authority]
-            roles = roles.pop()
-        return roles
-
-    # UserRole
-    def add_user_role(self, id_user, id_role):
-        role = UserRole()
-        role.user = id_user
-        role.role = id_role
-        return self.save(role)
-
-    def delete_user_role(self, id_user, id_role):
-        role = self.get_user_role(id_user, id_role)
-        if role:
-            return self.delete(role)
-        else:
-            return False
-
-    def get_user_role(self, id_user=None, id_role=None):
-        user_role = UserRole()
-        user_role.role = id_role
-        user_role.user = id_user
-        user_role.id = id_role * id_user  # fake_id
-        return self.fetch(user_role)
-
-    # group
-    def add_group(self, name):
-        group = Group()
-        group.name = name
-        return self.save(group)
-
-    def get_group(self, id_group=None):
-        group = Group()
-        if id_group:
-            group.id = id_group
-        return self.fetch(group)
-
-    def edit_group(self, id_group, name):
-        group = self.get_group(id_group)
-        group.name = name
-        return self.update(group)
-
-    def delete_group(self, id_group):
-        group = self.get_group(id_group)
-        return self.delete(group)
-
-
-    # userGroup
-    def add_user_group(self, id_user, id_group):
-        userGroup = UserGroup()
-        userGroup.user = id_user
-        userGroup.group = id_group
-        return self.save(userGroup)
-
-    # userGroup
-    def get_user_group(self, id_user, id_group):
-        if not id_group:
-            userGroup = RoleCollection()
-            if id_user:
-                userGroup.user = id_user
-            return self.fetch(userGroup)
-        else:
-            userGroup = UserGroup()
-            userGroup.group = id_group
-            if id_user:
-                userGroup.user = id_user
-                userGroup.id = id_user * id_group
-            return self.fetch(userGroup)
-
-    # userGroup
-    def delete_user_group(self, id_user, id_group):
-        userGroup = self.get_user_group(id_user, id_group)
-        return self.delete(userGroup)
-
-    # get positions (as a single request or with multiple requests (paging)
-    def get_positions(self, id_image=None, id_user=None, showDetails=None, afterthan=None, beforethan=None,
-                      maxperpage=None):
-        positions = PositionCollection()
-        positions.imageinstance = id_image
-        query = ""
-        if id_user:
-            query += "user=" + str(id_user)
-        if showDetails:
-            query += "&showDetails=true"
-        if afterthan:
-            query += "&afterThan=" + str(afterthan)
-        if beforethan:
-            query += "&beforeThan=" + str(beforethan)
-        # use paginator for large collections
-        if maxperpage:
-            positions_tmp = PositionCollection()
-            positions_tmp.init_paginator(maxperpage, 0)
-            while True:
-                positions_tmp.imageinstance = id_image
-                positions_tmp = self.fetch(positions_tmp, query=query)
-                if not positions:
-                    positions = positions_tmp
-                else:
-                    positions.data().extend(positions_tmp.data())
-                if not (positions_tmp.next_page()):
-                    break
-        else:
-            positions = self.fetch(positions, query=query)
-        return positions
-
-
-
-
-
+    
     # property
     def get_annotation_property(self, annotation_id, annotation_property_id):
         annotation_property = AnnotationProperty()
@@ -871,10 +851,7 @@ class Cytomine(object):
 
     
 
-    def get_project_users(self, id_project):
-        users = UserCollection()
-        users.project = id_project
-        return self.fetch(users)
+    
 
     def upload_mask(self, url, filename):
         # poster
