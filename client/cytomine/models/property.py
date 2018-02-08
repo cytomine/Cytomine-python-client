@@ -65,8 +65,6 @@ class Property(DomainModel):
 class PropertyCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
         super(PropertyCollection, self).__init__(Property, object, filters, max, offset)
-        if object.is_new():
-            raise ValueError("The object must be fetched or saved before.")
 
         if isinstance(object, Annotation):
             self._domainClassName = "annotation"
@@ -80,3 +78,53 @@ class PropertyCollection(DomainCollection):
         if self._domainClassName == "annotation":
             uri = uri.replace("domain/", "")
         return uri
+
+
+class AttachedFile(DomainModel):
+    def __init__(self, object, filename=None, **attributes):
+        super(AttachedFile, self).__init__(object)
+        self.domainClassName = object.class_
+        self.domainIdent = object.id
+        self.filename = filename
+        self.url = None
+        self.populate(attributes)
+
+    def uri(self):
+        if self.is_new():
+            return "{}.json".format(self.callback_identifier)
+        else:
+            return "{}/{}.json".format(self.callback_identifier, self.id)
+
+    def save(self):
+        return self.upload()
+
+    def upload(self):
+        return Cytomine.get_instance().upload_file(self, self.filename,
+                                                   query_parameters={"domainClassName": self.domainClassName,
+                                                                     "domainIdent": self.domainIdent})
+
+    def download(self, destination, override=False):
+        if self.is_new():
+            raise ValueError("Cannot download file if not existing ID.")
+        return Cytomine.get_instance().download_file("{}attachedfile/{}/download".format(Cytomine.get_instance()._base_url(), self.id),
+                                                     destination, override)
+
+
+class AttachedFileCollection(DomainCollection):
+    def __init__(self, object, filters=None, max=0, offset=0, **parameters):
+        super(AttachedFileCollection, self).__init__(object, filters, max, offset)
+        self._domainClassName = object.class_
+        self._domainIdent = object.id
+        self.set_parameters(parameters)
+
+
+class Description(DomainModel):
+    def __init__(self, object, data=None, **attributes):
+        super(Description, self).__init__(object)
+        self.domainClassName = object.class_
+        self.domainIdent = object.id
+        self.data = data
+        self.populate(attributes)
+
+    def uri(self):
+        return "domain/{}/{}/{}.json".format(self._object.class_, self._object.id, self.callback_identifier)
