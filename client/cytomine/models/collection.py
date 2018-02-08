@@ -170,3 +170,21 @@ class Collection(MutableSequence):
         #     self._per_page = per_page
         #     self._page_index = page_index
         #
+
+
+class DomainCollection(Collection):
+    def __init__(self, model, object, filters=None, max=0, offset=0):
+        super(DomainCollection, self).__init__(model, filters, max, offset)
+
+        if object.is_new():
+            raise ValueError("The object must be fetched or saved before.")
+
+        self._object = object
+
+    def uri(self):
+        return "domain/{}/{}/{}".format(self._object.class_, self._object.id,
+                                        super(DomainCollection, self).uri())
+
+    def populate(self, attributes):
+        self._data = [self._model(self._object).populate(instance) for instance in attributes["collection"]]
+        return self

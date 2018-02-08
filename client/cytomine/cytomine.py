@@ -466,6 +466,31 @@ class Cytomine(object):
 
         return annotations
 
+    # def included_annotations(self, id_image, id_user, id_annotation_roi, id_terms=[], reviewed_only=False):
+    #     annotations = AnnotationCollection()
+    #     annotations.included = True
+    #     annotations.imageinstance = id_image
+    #     # annotations.id_user = id_user
+    #     # annotations.id_annotation_roi = id_annotation_roi
+    #     # terms...
+    #     if id_terms:
+    #         query = "annotation=%d&user=%d&terms=%s" % (
+    #         id_annotation_roi, id_user, str(id_terms).strip('[]').replace(' ', ''))
+    #     else:
+    #         query = "annotation=%d&user=%d" % (id_annotation_roi, id_user)
+    #
+    #     if reviewed_only:
+    #         query = query + "&reviewed=true"
+    #     annotations = self.fetch(annotations, query=query)
+    #     return annotations
+
+    # def get_reviewed_annotations(self, id_project=None):
+    #     annotations = ReviewedAnnotationCollection()
+    #     if id_project:
+    #         annotations.project = id_project
+    #     annotations = self.fetch(annotations)
+    #     return annotations
+
     # annotation_term
     @deprecated
     def add_annotation_term(self, id_annotation, term, expected_term, rate, annotation_term_model=None):
@@ -793,140 +818,103 @@ class Cytomine(object):
         from .models.user import UserGroup
         return UserGroup().fetch(id_user, id_group).delete()
 
-
-
-
-    #
-    # def get_reviewed_annotations(self, id_project=None):
-    #     annotations = ReviewedAnnotationCollection()
-    #     if id_project:
-    #         annotations.project = id_project
-    #     annotations = self.fetch(annotations)
-    #     return annotations
-
-
-"""
-    
-
-    
     # property
+    @deprecated
     def get_annotation_property(self, annotation_id, annotation_property_id):
-        annotation_property = AnnotationProperty()
-        annotation_property.domainIdent = annotation_id
-        annotation_property.id = annotation_property_id
-        return self.fetch(annotation_property)
+        from .models.annotation import Annotation
+        from .models.property import Property
+        return Property(Annotation().fetch(annotation_id)).fetch(id=annotation_property_id)
 
+    @deprecated
     def add_annotation_property(self, annotation_id, key, value):
-        annotation_property = AnnotationProperty()
-        annotation_property.domainIdent = annotation_id
-        annotation_property.key = key
-        annotation_property.value = value
-        return self.save(annotation_property)
+        from .models.annotation import Annotation
+        from .models.property import Property
+        return Property(Annotation().fetch(annotation_id), key, value).save()
 
+    @deprecated
     def edit_annotation_property(self, annotation_id, annotation_property_id, key, value):
-        annotation_property = self.get_annotation_property(annotation_id, annotation_property_id)
-        if annotation_property:
-            annotation_property.key = key
-            annotation_property.value = value
-            return self.update(annotation_property)
-        else:
-            return None
+        from .models.annotation import Annotation
+        from .models.property import Property
+        prop = Property(Annotation().fetch(annotation_id)).fetch(annotation_property_id)
+        prop.key = key
+        prop.value = value
+        return prop.update()
 
+    @deprecated
     def delete_annotation_property(self, annotation_id, annotation_property_id):
-        annotation_property = self.get_annotation_property(annotation_id, annotation_property_id)
-        if annotation_property:
-            return self.delete(annotation_property)
-        else:
-            return None
+        from .models.annotation import Annotation
+        from .models.property import Property
+        return Property(Annotation().fetch(annotation_id)).delete(annotation_property_id)
 
+    @deprecated
     def get_annotation_properties(self, annotation_id):
-        annotation_properties = AnnotationPropertyCollection()
-        annotation_properties.annotation_id = annotation_id
-        return self.fetch(annotation_properties)
+        from .models.annotation import Annotation
+        from .models.property import PropertyCollection
+        return PropertyCollection(Annotation().fetch(annotation_id)).fetch()
 
+    @deprecated
     def get_abstract_image_properties(self, abstract_image_id):
-        abstract_image_properties = AbstractImagePropertyCollection()
-        abstract_image_properties.abstract_image_id = abstract_image_id
-        return self.fetch(abstract_image_properties)
+        from .models.property import PropertyCollection
+        from .models.image import AbstractImage
+        ai = AbstractImage()
+        ai.id = abstract_image_id
+        return PropertyCollection(ai).fetch()
 
-    
-
-    
-
-    def upload_mask(self, url, filename):
-        # poster
-        register_openers()
-        content_type = ""
-        file_header = {"mask": open(filename, "rb")}
-        datagen, headers = multipart_encode(file_header.items())
-        # get the content_type
-        for header in headers.items():
-            if header[0] == "Content-Type":
-                content_type = header[1]
-
-        # post boundary
-        self.__authorize("POST", url=url, content_type=content_type)
-        fullHeaders = dict(headers.items() + self.__headers.items())
-        fullURL = self.__protocol + self.__host + self.__base_path + url
-        print "fullURL : %s " % fullURL
-        # poster incompatible with httplib2 so we use urllib2
-        request = urllib2.Request(fullURL, datagen, fullHeaders)
-        response = urllib2.urlopen(request, timeout=self.__timeout)
-        json_response = json.loads(response.read())
-        return json_response['polygons']
-
-    def prog_callback(self, param, current, total):
-        pct = 100 - ((total - current) * 100) / (total)
-        self.pbar.update(pct)
-
-    def union_polygons(self, id_user, id_image, id_term, min_intersection_length, area, buffer_length=None):
-        annotation_union = AnnotationUnion()
-        annotation_union.id_user = id_user
-        annotation_union.id_image = id_image
-        annotation_union.id_term = id_term
-        annotation_union.min_intersection_length = min_intersection_length
-        annotation_union.buffer_length = buffer_length
-        annotation_union.area = area
-        # return self.update(annotation_union)
-        return self.fetch(annotation_union)
-
-    def included_annotations(self, id_image, id_user, id_annotation_roi, id_terms=[], reviewed_only=False):
-        annotations = AnnotationCollection()
-        annotations.included = True
-        annotations.imageinstance = id_image
-        # annotations.id_user = id_user
-        # annotations.id_annotation_roi = id_annotation_roi
-        # terms...
-        if id_terms:
-            query = "annotation=%d&user=%d&terms=%s" % (
-            id_annotation_roi, id_user, str(id_terms).strip('[]').replace(' ', ''))
-        else:
-            query = "annotation=%d&user=%d" % (id_annotation_roi, id_user)
-
-        if reviewed_only:
-            query = query + "&reviewed=true"
-        annotations = self.fetch(annotations, query=query)
-        return annotations
-
-    def init_storage_for_user(self, id):  # tmp method pour storage creation
-        url = "storage/create/%d" % id
-        self.__authorize("POST", url=url, content_type='application/json')
-        if self.__verbose: print "POST %s..." % (self.__base_path + url)
-        self.__conn.request("POST", self.__base_path + url, body="",
-                            headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
-        response = self.__conn.getresponse()
-        response_text = response.read()
-        if self.__verbose: print "response_text : %s" % response_text
-
-    def build_token_key(self, username, validity):
-        upload_query = "token.json?username=%s&validity=%d" % (username, validity)
-        fullURL = self.__protocol + self.__host + self.__base_path + upload_query
-        resp, content = self.fetch_url(fullURL)
-        print "%s => %s" % (resp, content)
-        json_response = json.loads(content)
-        return json_response.get('token')
-
-    def __getstate__(self):  # Make cytomine client serializable
-        self.__conn = None
-        return self.__dict__
-"""
+    # def upload_mask(self, url, filename):
+    #     # poster
+    #     register_openers()
+    #     content_type = ""
+    #     file_header = {"mask": open(filename, "rb")}
+    #     datagen, headers = multipart_encode(file_header.items())
+    #     # get the content_type
+    #     for header in headers.items():
+    #         if header[0] == "Content-Type":
+    #             content_type = header[1]
+    #
+    #     # post boundary
+    #     self.__authorize("POST", url=url, content_type=content_type)
+    #     fullHeaders = dict(headers.items() + self.__headers.items())
+    #     fullURL = self.__protocol + self.__host + self.__base_path + url
+    #     print "fullURL : %s " % fullURL
+    #     # poster incompatible with httplib2 so we use urllib2
+    #     request = urllib2.Request(fullURL, datagen, fullHeaders)
+    #     response = urllib2.urlopen(request, timeout=self.__timeout)
+    #     json_response = json.loads(response.read())
+    #     return json_response['polygons']
+    #
+    # def prog_callback(self, param, current, total):
+    #     pct = 100 - ((total - current) * 100) / (total)
+    #     self.pbar.update(pct)
+    #
+    # def union_polygons(self, id_user, id_image, id_term, min_intersection_length, area, buffer_length=None):
+    #     annotation_union = AnnotationUnion()
+    #     annotation_union.id_user = id_user
+    #     annotation_union.id_image = id_image
+    #     annotation_union.id_term = id_term
+    #     annotation_union.min_intersection_length = min_intersection_length
+    #     annotation_union.buffer_length = buffer_length
+    #     annotation_union.area = area
+    #     # return self.update(annotation_union)
+    #     return self.fetch(annotation_union)
+    #
+    # def init_storage_for_user(self, id):  # tmp method pour storage creation
+    #     url = "storage/create/%d" % id
+    #     self.__authorize("POST", url=url, content_type='application/json')
+    #     if self.__verbose: print "POST %s..." % (self.__base_path + url)
+    #     self.__conn.request("POST", self.__base_path + url, body="",
+    #                         headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
+    #     response = self.__conn.getresponse()
+    #     response_text = response.read()
+    #     if self.__verbose: print "response_text : %s" % response_text
+    #
+    # def build_token_key(self, username, validity):
+    #     upload_query = "token.json?username=%s&validity=%d" % (username, validity)
+    #     fullURL = self.__protocol + self.__host + self.__base_path + upload_query
+    #     resp, content = self.fetch_url(fullURL)
+    #     print "%s => %s" % (resp, content)
+    #     json_response = json.loads(content)
+    #     return json_response.get('token')
+    #
+    # def __getstate__(self):  # Make cytomine client serializable
+    #     self.__conn = None
+    #     return self.__dict__

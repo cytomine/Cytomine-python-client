@@ -81,6 +81,8 @@ class Model(object):
                 if key.startswith("id_"):
                     key = key[3:]
                 if not key.startswith("_"):
+                    if key == "class":
+                        key += "_"
                     setattr(self, key, value)
         return self
 
@@ -111,3 +113,20 @@ class Model(object):
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.name)
+
+
+class DomainModel(Model):
+    def __init__(self, object, **attributes):
+        super(DomainModel, self).__init__(**attributes)
+
+        if object.is_new():
+            raise ValueError("The object must be fetched or saved before.")
+
+        self._object = object
+
+    def uri(self):
+        if self.is_new():
+            return "domain/{}/{}/{}.json".format(self._object.class_, self._object.id, self.callback_identifier)
+        else:
+            return "domain/{}/{}/{}/{}.json".format(self._object.class_, self._object.id,
+                                                    self.callback_identifier, self.id)
