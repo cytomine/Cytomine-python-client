@@ -629,25 +629,25 @@ class Cytomine(object):
         from .models.software import JobParameter
         return JobParameter(id_job, id_software_parameter, value).save()
 
-    # def add_job_parameters(self, job, software, values):
-    #     job_parameters_values = {}
-    #     cytomine_job = self.get_job(job)
-    #     for software_parameter in software.parameters:
-    #         software_parameter_name = software_parameter["name"]
-    #         if values[software_parameter["name"]]:
-    #             job_parameters_values[software_parameter["id"]] = software_parameter_name, values[
-    #                 software_parameter_name]
-    #         elif (cytomine_job.algoType == "jobtemplate" and software_parameter_name == "annotation"):
-    #             print
-    #             "Do not add annotation param if JobTemplate"
-    #         else:
-    #             job_parameters_values[software_parameter["id"]] = software_parameter_name, software_parameter[
-    #                 "defaultParamValue"]
-    #
-    #     for software_parameter_id in job_parameters_values:
-    #         name, value = job_parameters_values[software_parameter_id]
-    #         self.add_job_parameter(job, software_parameter_id, value)
-    #     return job_parameters_values
+    @deprecated
+    def add_job_parameters(self, job, software, values):
+        from .models.software import JobParameter, Job
+        param_values = {}
+
+        cjob = Job().fetch(job)
+        for software_parameter in software.parameters:
+            id = software_parameter["id"]
+            name = software_parameter["name"]
+            if cjob.algoType == "jobtemplate" and name == "annotation":
+                print("Do not add annotation param if JobTemplate")
+            else:
+                if values[name]:
+                    v = values[name]
+                else:
+                    v = software_parameter["defaultParamValue"]
+                param_values[id] = name, v
+                JobParameter(job, id, v).save()
+        return param_values
 
     # JobTemplate
     @deprecated
