@@ -75,6 +75,7 @@ class Cytomine(object):
         self._base_path = "/api/"
 
         self._logger = logging.getLogger()
+        self._logger.handlers = []
 
         if not verbose:
             verbose = logging.INFO
