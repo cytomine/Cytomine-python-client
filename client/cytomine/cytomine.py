@@ -397,8 +397,18 @@ class Cytomine(object):
                                     showTerm=(showMeta or showGIS or showWKT)).fetch()
 
     @deprecated
-    def included_annotations(self, id_image, id_user, id_annotation_roi, id_terms=[], reviewed_only=False):
+    def get_reviewed_annotations(self, id_project=None):
         from .models.annotation import AnnotationCollection
+        return AnnotationCollection(project=id_project, reviewed=True, showMeta=True,
+                                    showTerm=True, showGIS=True).fetch()
+
+    @deprecated
+    def included_annotations(self, id_image, id_user, id_annotation_roi, id_terms=None, reviewed_only=False):
+        from .models.annotation import AnnotationCollection
+
+        if not id_terms:
+            id_terms = []
+
         return AnnotationCollection(user=id_user, image=id_image, terms=id_terms, reviewed=reviewed_only,
                                     included=True, annotation=id_annotation_roi).fetch()
 
@@ -471,13 +481,6 @@ class Cytomine(object):
                                 max_size=desired_max_size)
 
         return annotations
-
-    # def get_reviewed_annotations(self, id_project=None):
-    #     annotations = ReviewedAnnotationCollection()
-    #     if id_project:
-    #         annotations.project = id_project
-    #     annotations = self.fetch(annotations)
-    #     return annotations
 
     # annotation_term
     @deprecated
@@ -645,7 +648,6 @@ class Cytomine(object):
     #         self.add_job_parameter(job, software_parameter_id, value)
     #     return job_parameters_values
 
-
     # JobTemplate
     @deprecated
     def get_job_template(self, id_job_template):
@@ -680,7 +682,7 @@ class Cytomine(object):
     def get_positions(self, id_image, id_user=None, showDetails=None, afterthan=None,
                       beforethan=None, maxperpage=None):
         from .models.social import PositionCollection
-        positions = PositionCollection(filters={"imageinstance":id_image}, max=maxperpage)
+        positions = PositionCollection(filters={"imageinstance": id_image}, max=maxperpage)
         positions.user = id_user
         positions.afterThan = afterthan
         positions.beforeThan = beforethan
