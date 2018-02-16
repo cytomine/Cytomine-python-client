@@ -138,7 +138,7 @@ class Cytomine(object):
         return self._current_user
 
     def set_current_user(self):
-        from client.cytomine.models.user import CurrentUser
+        from cytomine.models.user import CurrentUser
         self._current_user = CurrentUser().fetch()
 
     def set_credentials(self, public_key, private_key):

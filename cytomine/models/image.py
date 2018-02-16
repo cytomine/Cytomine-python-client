@@ -26,9 +26,9 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 import re
 import os
 
-from client.cytomine.cytomine import Cytomine
-from client.cytomine.models.collection import Collection
-from client.cytomine.models.model import Model
+from cytomine.cytomine import Cytomine
+from cytomine.models.collection import Collection
+from cytomine.models.model import Model
 
 
 class AbstractImage(Model):

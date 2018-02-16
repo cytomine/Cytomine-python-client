@@ -23,8 +23,8 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
-from client.cytomine.models.collection import Collection
-from client.cytomine.models.model import Model
+from cytomine.models.collection import Collection
+from cytomine.models.model import Model
 
 
 class Project(Model):

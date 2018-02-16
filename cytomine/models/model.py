@@ -26,7 +26,7 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 import six
 import json
 
-from client.cytomine.cytomine import Cytomine
+from cytomine.cytomine import Cytomine
 
 
 class Model(object):

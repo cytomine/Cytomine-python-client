@@ -27,7 +27,7 @@ from collections import MutableSequence
 
 import six
 
-from client.cytomine.cytomine import Cytomine
+from cytomine.cytomine import Cytomine
 
 
 class Collection(MutableSequence):

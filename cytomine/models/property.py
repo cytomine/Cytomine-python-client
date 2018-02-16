@@ -23,10 +23,10 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
-from client.cytomine.cytomine import Cytomine
-from client.cytomine.models.annotation import Annotation
-from client.cytomine.models.collection import DomainCollection
-from client.cytomine.models.model import DomainModel
+from cytomine.cytomine import Cytomine
+from cytomine.models.annotation import Annotation
+from cytomine.models.collection import DomainCollection
+from cytomine.models.model import DomainModel
 
 
 class Property(DomainModel):
