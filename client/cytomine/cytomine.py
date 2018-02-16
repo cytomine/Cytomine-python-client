@@ -397,6 +397,12 @@ class Cytomine(object):
                                     showTerm=(showMeta or showGIS or showWKT)).fetch()
 
     @deprecated
+    def included_annotations(self, id_image, id_user, id_annotation_roi, id_terms=[], reviewed_only=False):
+        from .models.annotation import AnnotationCollection
+        return AnnotationCollection(user=id_user, image=id_image, terms=id_terms, reviewed=reviewed_only,
+                                    included=True, annotation=id_annotation_roi).fetch()
+
+    @deprecated
     def add_annotation(self, location, id_image, minPoint=None, maxPoint=None):
         from .models.annotation import Annotation
         annotation = Annotation(location, id_image)
@@ -465,24 +471,6 @@ class Cytomine(object):
                                 max_size=desired_max_size)
 
         return annotations
-
-    # def included_annotations(self, id_image, id_user, id_annotation_roi, id_terms=[], reviewed_only=False):
-    #     annotations = AnnotationCollection()
-    #     annotations.included = True
-    #     annotations.imageinstance = id_image
-    #     # annotations.id_user = id_user
-    #     # annotations.id_annotation_roi = id_annotation_roi
-    #     # terms...
-    #     if id_terms:
-    #         query = "annotation=%d&user=%d&terms=%s" % (
-    #         id_annotation_roi, id_user, str(id_terms).strip('[]').replace(' ', ''))
-    #     else:
-    #         query = "annotation=%d&user=%d" % (id_annotation_roi, id_user)
-    #
-    #     if reviewed_only:
-    #         query = query + "&reviewed=true"
-    #     annotations = self.fetch(annotations, query=query)
-    #     return annotations
 
     # def get_reviewed_annotations(self, id_project=None):
     #     annotations = ReviewedAnnotationCollection()

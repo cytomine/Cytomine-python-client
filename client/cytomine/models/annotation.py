@@ -167,7 +167,19 @@ class AnnotationCollection(Collection):
         self.baseAnnotation = None
         self.maxDistanceBaseAnnotation = None
 
+        self.included = False
+        self.annotation = None
+
         self.set_parameters(parameters)
+
+    def uri(self):
+        if self.included:
+            self.add_filter("imageinstance", self.image)
+        uri = super(AnnotationCollection, self).uri()
+        if self.included:
+            return uri.replace(".json", "/included.json")
+
+        return uri
 
 
 class AnnotationTerm(Model):

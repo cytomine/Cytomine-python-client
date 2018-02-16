@@ -68,6 +68,9 @@ class Collection(MutableSequence):
     def is_filtered_by(self, key):
         return key in self._filters
 
+    def add_filter(self, key, value):
+        self._filters[key] = value
+
     def set_parameters(self, parameters):
         if parameters:
             for key, value in six.iteritems(parameters):
