@@ -23,14 +23,17 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
+import logging
 import json
 from time import strftime, gmtime
 
+import sys
 import os
 import requests
 import shutil
 from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
+from requests_toolbelt.utils import dump
 
 from .utils import CytomineAuth, deprecated
 
@@ -38,8 +41,8 @@ from .utils import CytomineAuth, deprecated
 class Cytomine(object):
     __instance = None
 
-    def __init__(self, host, public_key, private_key, verbose=0, use_cache=True, protocol="http",
-                 working_path="/tmp", **kwargs):
+    def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol="http",
+                 logging_handlers=None, working_path="/tmp", **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
 
@@ -65,11 +68,25 @@ class Cytomine(object):
         self._host = host.replace("http://", "").replace("https://", "")
         self._public_key = public_key
         self._private_key = private_key
-        self._verbose = verbose
+
         self._use_cache = use_cache
         self._protocol = protocol.replace("://", "")
         self._base_path = "/api/"
-        self._logger = None  # TODO
+
+        self._logger = logging.getLogger()
+
+        if not verbose:
+            verbose = logging.INFO
+        self._verbose = verbose
+        self._logger.setLevel(verbose)
+
+        if not logging_handlers:
+            stream_handler = logging.StreamHandler(sys.stdout)
+            stream_handler.setFormatter(logging.Formatter("[%(asctime)s][%(levelname)s] %(message)s"))
+            logging_handlers = [stream_handler]
+
+        for handler in logging_handlers:
+            self._logger.addHandler(handler)
 
         # Deprecated
         self._working_path = working_path
@@ -147,6 +164,17 @@ class Cytomine(object):
 
         return headers
 
+    def _log_response(self, response, message):
+        if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
+            self._logger.info("[{}] {} | {} {}".format(response.request.method, message,
+                                                       response.status_code, response.reason))
+        else:
+            self._logger.error("[{}] {} | {} {} ({})".format(response.request.method, message,
+                                                             response.status_code, response.reason,
+                                                             response.json()["errors"]))
+
+        self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
+
     def get(self, uri, query_parameters=None):
         response = self._session.get("{}{}".format(self._base_url(), uri),
                                      auth=CytomineAuth(
@@ -155,19 +183,30 @@ class Cytomine(object):
                                      headers=self._headers(),
                                      params=query_parameters)
 
+        self._log_response(response, uri)
+
         if not response.status_code == requests.codes.ok:
-            # self._logger.warning(response.reason)
             return False
 
         return response.json()
 
     def get_model(self, model, query_parameters=None):
-        response = self.get(model.uri(), query_parameters)
+        response = self._session.get("{}{}".format(self._base_url(), model.uri()),
+                                     auth=CytomineAuth(
+                                         self._public_key, self._private_key,
+                                         self._base_url(), self._base_path),
+                                     headers=self._headers(),
+                                     params=query_parameters)
 
-        if response:
-            return model.populate(response)
-        else:
-            return False
+        if response.status_code == requests.codes.ok:
+            model = model.populate(response.json())
+
+        self._log_response(response, model)
+
+        if not response.status_code == requests.codes.ok:
+            model = False
+
+        return model
 
     def put(self, model, query_parameters=None, uri=None):
         if not uri:
@@ -180,11 +219,15 @@ class Cytomine(object):
                                      params=query_parameters,
                                      data=model.to_json())
 
-        if not response.status_code == requests.codes.ok:
-            self._logger.warning(response.reason)
-            return False
+        if response.status_code == requests.codes.ok:
+            model = model.populate(response.json()[model.callback_identifier.lower()])
 
-        return model.populate(response.json()[model.callback_identifier.lower()])
+        self._log_response(response, model)
+
+        if not response.status_code == requests.codes.ok:
+            model = False
+
+        return model
 
     def delete(self, model, query_parameters=None, uri=None):
         if not uri:
@@ -196,11 +239,11 @@ class Cytomine(object):
                                         headers=self._headers(content_type='application/json'),
                                         params=query_parameters)
 
-        if not response.status_code == requests.codes.ok:
-            self._logger.warning(response.reason)
-            return False
+        self._log_response(response, model)
+        if response.status_code == requests.codes.ok:
+            return True
 
-        return True
+        return False
 
     def post(self, model, query_parameters=None, uri=None):
         if not uri:
@@ -213,11 +256,15 @@ class Cytomine(object):
                                       params=query_parameters,
                                       data=model.to_json())
 
-        if not response.status_code == requests.codes.ok:
-            # self._logger.warning(response.reason)
-            return False
+        if response.status_code == requests.codes.ok:
+            model = model.populate(response.json()[model.callback_identifier.lower()])
 
-        return model.populate(response.json()[model.callback_identifier.lower()])
+        self._log_response(response, model)
+
+        if not response.status_code == requests.codes.ok:
+            model = False
+
+        return model
 
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
@@ -231,11 +278,15 @@ class Cytomine(object):
                                       params=query_parameters,
                                       data=m)
 
-        if not response.status_code == requests.codes.ok:
-            self._logger.warning(response.reason)
-            return False
+        if response.status_code == requests.codes.ok:
+            model = model.populate(response.json()[model.callback_identifier.lower()])
 
-        return model.populate(response.json()[model.callback_identifier.lower()])
+        self._log_response(response, model)
+
+        if not response.status_code == requests.codes.ok:
+            model = False
+
+        return model
 
     def download_file(self, url, destination, override=False, payload=None):
         if override:
@@ -247,8 +298,8 @@ class Cytomine(object):
                                          params=payload,
                                          stream=True)
 
+            self._log_response(response, url)
             if not response.status_code == requests.codes.ok:
-                self._logger.warning(response.reason)
                 return False
 
             with open(destination, "wb") as f:
@@ -285,13 +336,14 @@ class Cytomine(object):
                                       params=query_parameters,
                                       data=m)
 
-        if not response.status_code == requests.codes.ok:
-            # self._logger.warning(response.reason)
+        if response.status_code == requests.codes.ok:
+            uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
+            uf.images = response.json()[0]["images"]
+            self._log_response(response, uf)
+            return uf
+        else:
+            self._log_response(response, "Upload {}".format(filename))
             return False
-
-        uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
-        uf.images = response.json()[0]["images"]
-        return uf
 
     # Project
     @deprecated
