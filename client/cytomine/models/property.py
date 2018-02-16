@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2017. Authors: see NOTICE file.
+# * Copyright (c) 2009-2018. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -14,13 +14,19 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+__author__ = "Rubens Ulysse <urubens@uliege.be>"
+__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
+__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
+
 from client.cytomine.cytomine import Cytomine
 from client.cytomine.models.annotation import Annotation
 from client.cytomine.models.collection import DomainCollection
 from client.cytomine.models.model import DomainModel
-
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
-__copyright__ = "Copyright 2010-2017 University of Liège, Belgium, http://www.cytomine.be/"
 
 
 class Property(DomainModel):
@@ -106,8 +112,9 @@ class AttachedFile(DomainModel):
     def download(self, destination, override=False):
         if self.is_new():
             raise ValueError("Cannot download file if not existing ID.")
-        return Cytomine.get_instance().download_file("{}attachedfile/{}/download".format(Cytomine.get_instance()._base_url(), self.id),
-                                                     destination, override)
+        return Cytomine.get_instance().download_file(
+            "{}attachedfile/{}/download".format(Cytomine.get_instance()._base_url(), self.id),
+            destination, override)
 
 
 class AttachedFileCollection(DomainCollection):

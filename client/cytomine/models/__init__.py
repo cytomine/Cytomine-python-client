@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
-#
-# * Copyright (c) 2009-2015. Authors: see NOTICE file.
+# * Copyright (c) 2009-2018. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -15,23 +13,7 @@
 # * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
-# */
 
-__author__          = "Stévens Benjamin <b.stevens@ulg.ac.be>" 
-__contributors__    = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]                
-__copyright__       = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
-
-
-
-
-
-# from .model import *
-# from .collection import *
-# from .annotation import *
-# from .image import *
-# from .ontology import *
-# from .project import *
-# from .software import *
-# from .user import *
-# from .storage import *
-# from .position import *
+__author__ = "Rubens Ulysse <urubens@uliege.be>"
+__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
+__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"

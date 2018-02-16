@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2015. Authors: see NOTICE file.
+# * Copyright (c) 2009-2018. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+__author__ = "Rubens Ulysse <urubens@uliege.be>"
+__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
+__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
+
 import json
 from time import strftime, gmtime
 
@@ -29,10 +33,6 @@ from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 
 from .utils import CytomineAuth, deprecated
-
-__author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
-__copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
 
 
 class Cytomine(object):
@@ -430,6 +430,7 @@ class Cytomine(object):
         from .models.annotation import Annotation
         image = ImageInstance.fetch(id_image)
         id_term = [id_term] if id_term else None
+        # TODO: use save() from collection
         return [Annotation(location, id_image, id_term, image.project).save() for location in locations]
 
     @deprecated
@@ -850,61 +851,6 @@ class Cytomine(object):
         ai.id = abstract_image_id
         return PropertyCollection(ai).fetch()
 
-    # def upload_mask(self, url, filename):
-    #     # poster
-    #     register_openers()
-    #     content_type = ""
-    #     file_header = {"mask": open(filename, "rb")}
-    #     datagen, headers = multipart_encode(file_header.items())
-    #     # get the content_type
-    #     for header in headers.items():
-    #         if header[0] == "Content-Type":
-    #             content_type = header[1]
-    #
-    #     # post boundary
-    #     self.__authorize("POST", url=url, content_type=content_type)
-    #     fullHeaders = dict(headers.items() + self.__headers.items())
-    #     fullURL = self.__protocol + self.__host + self.__base_path + url
-    #     print "fullURL : %s " % fullURL
-    #     # poster incompatible with httplib2 so we use urllib2
-    #     request = urllib2.Request(fullURL, datagen, fullHeaders)
-    #     response = urllib2.urlopen(request, timeout=self.__timeout)
-    #     json_response = json.loads(response.read())
-    #     return json_response['polygons']
-    #
-    # def prog_callback(self, param, current, total):
-    #     pct = 100 - ((total - current) * 100) / (total)
-    #     self.pbar.update(pct)
-    #
-    # def union_polygons(self, id_user, id_image, id_term, min_intersection_length, area, buffer_length=None):
-    #     annotation_union = AnnotationUnion()
-    #     annotation_union.id_user = id_user
-    #     annotation_union.id_image = id_image
-    #     annotation_union.id_term = id_term
-    #     annotation_union.min_intersection_length = min_intersection_length
-    #     annotation_union.buffer_length = buffer_length
-    #     annotation_union.area = area
-    #     # return self.update(annotation_union)
-    #     return self.fetch(annotation_union)
-    #
-    # def init_storage_for_user(self, id):  # tmp method pour storage creation
-    #     url = "storage/create/%d" % id
-    #     self.__authorize("POST", url=url, content_type='application/json')
-    #     if self.__verbose: print "POST %s..." % (self.__base_path + url)
-    #     self.__conn.request("POST", self.__base_path + url, body="",
-    #                         headers=dict(self.__headers.items() + [('content-type', 'application/json')]))
-    #     response = self.__conn.getresponse()
-    #     response_text = response.read()
-    #     if self.__verbose: print "response_text : %s" % response_text
-    #
-    # def build_token_key(self, username, validity):
-    #     upload_query = "token.json?username=%s&validity=%d" % (username, validity)
-    #     fullURL = self.__protocol + self.__host + self.__base_path + upload_query
-    #     resp, content = self.fetch_url(fullURL)
-    #     print "%s => %s" % (resp, content)
-    #     json_response = json.loads(content)
-    #     return json_response.get('token')
-    #
     # def __getstate__(self):  # Make cytomine client serializable
     #     self.__conn = None
     #     return self.__dict__
