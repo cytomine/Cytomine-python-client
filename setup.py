@@ -12,10 +12,5 @@ setup(
     license='LICENSE',
     description='Cytomine Python Client.',
     long_description=open('README.txt').read(),    
-    install_requires=[
-        'httplib2',
-        'progressbar',
-        'poster',
-        'Pillow',
-    ]
+    install_requires=[ ]
 )

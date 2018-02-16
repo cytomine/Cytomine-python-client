@@ -35,7 +35,8 @@ from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 from requests_toolbelt.utils import dump
 
-from .utils import CytomineAuth, deprecated
+from cytomine.utilities.http import CytomineAuth
+from cytomine.utilities.version import deprecated
 
 
 class Cytomine(object):

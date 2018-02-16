@@ -23,9 +23,6 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
-import functools
-import warnings
-
 from future.builtins import bytes
 
 import base64
@@ -52,19 +49,3 @@ class CytomineAuth(requests.auth.AuthBase):
         authorization = "CYTOMINE {}:{}".format(self.public_key, signature.decode('utf-8'))
         r.headers['authorization'] = authorization
         return r
-
-
-def deprecated(func):
-    """This is a decorator which can be used to mark functions
-    as deprecated. It will result in a warning being emmitted
-    when the function is used."""
-
-    @functools.wraps(func)
-    def new_func(*args, **kwargs):
-        warnings.simplefilter('always', DeprecationWarning)  # turn off filter
-        warnings.warn("Call to deprecated function {}.".format(func.__name__), category=DeprecationWarning,
-                      stacklevel=2)
-        warnings.simplefilter('default', DeprecationWarning)  # reset filter
-        return func(*args, **kwargs)
-
-    return new_func
