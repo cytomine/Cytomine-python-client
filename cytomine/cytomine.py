@@ -259,7 +259,10 @@ class Cytomine(object):
                                       data=model.to_json())
 
         if response.status_code == requests.codes.ok:
-            model = model.populate(response.json()[model.callback_identifier.lower()])
+            try:
+                model = model.populate(response.json()[model.callback_identifier.lower()])
+            except KeyError:
+                self._logger.warning(response.json())
 
         self._log_response(response, model)
 
@@ -481,11 +484,12 @@ class Cytomine(object):
     @deprecated
     def add_annotations_with_term(self, locations, id_image, id_term):
         from .models.image import ImageInstance
-        from .models.annotation import Annotation
+        from .models.annotation import Annotation, AnnotationCollection
         image = ImageInstance.fetch(id_image)
         id_term = [id_term] if id_term else None
-        # TODO: use save() from collection
-        return [Annotation(location, id_image, id_term, image.project).save() for location in locations]
+        collection = AnnotationCollection()
+        [collection.append(Annotation(location, id_image, id_term, image.project)) for location in locations]
+        return collection
 
     @deprecated
     def delete_annotation(self, id_annotation):

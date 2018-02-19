@@ -185,6 +185,12 @@ class AnnotationCollection(Collection):
 
         return uri
 
+    def save(self):
+        return Cytomine.get_instance().post(self)
+
+    def to_json(self, **dump_parameters):
+        return "[{}]".format(",".join([d.to_json() for d in self._data]))
+
 
 class AnnotationTerm(Model):
     def __init__(self, id_annotation=None, id_term=None, **attributes):
