@@ -90,7 +90,13 @@ class Collection(MutableSequence):
 
     @property
     def parameters(self):
-        return dict((k, v) for k, v in six.iteritems(self.__dict__) if v is not None and not k.startswith("_"))
+        params = dict()
+        for k, v in six.iteritems(self.__dict__):
+            if v is not None and not k.startswith("_"):
+                if isinstance(v, list):
+                    v = ",".join(str(item) for item in v)
+                params[k] = v
+        return params
 
     @property
     def callback_identifier(self):
