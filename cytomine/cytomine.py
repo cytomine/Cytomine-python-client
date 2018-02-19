@@ -601,11 +601,12 @@ class Cytomine(object):
     @deprecated
     def get_image_instance(self, id_image_instance, include_server_urls=False):
         from .models.image import ImageInstance
+        image = ImageInstance().fetch(id_image_instance)
 
         if include_server_urls:
-            return ImageInstance().fetch_with_image_servers(id_image_instance)
-        else:
-            return ImageInstance().fetch(id_image_instance)
+            image.image_servers()
+
+        return image
 
     @deprecated
     def get_project_image_instances(self, id_project):
