@@ -47,11 +47,13 @@ class AbstractImage(Model):
         self.preview = None
 
         self.populate(attributes)
+        self._image_servers = None
 
-    def fetch_with_image_servers(self, id):
-        self.fetch(id)
-        self.imageServersURLs = ImageServersURL.fetch(self.id).imageServersURLs
-        return self
+    def image_servers(self):
+        if not self._image_servers:
+            data = Cytomine.get_instance().get("{}/{}/imageservers.json".format(self.callback_identifier, self.id))
+            self._image_servers = data["imageServersURLs"]
+        return self._image_servers
 
     def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
         if self.id is None:
@@ -103,11 +105,13 @@ class ImageInstance(Model):
         self.numberOfReviewedAnnotations = None
         self.reviewed = None
         self.populate(attributes)
+        self._image_servers = None
 
-    def fetch_with_image_servers(self, id):
-        self.fetch(id)
-        self.imageServersURLs = ImageServersURL.fetch(self.baseImage).imageServersURLs
-        return self
+    def image_servers(self):
+        if not self._image_servers:
+            data = Cytomine.get_instance().get("abstractimage/{}/imageservers.json".format(self.baseImage))
+            self._image_servers = data["imageServersURLs"]
+        return self._image_servers
 
     def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
         if self.id is None:
@@ -168,17 +172,3 @@ class ImageInstanceCollection(Collection):
         super(ImageInstanceCollection, self).__init__(ImageInstance, filters, max, offset)
         self._allowed_filters = ["project"]  # "user"
         self.set_parameters(parameters)
-
-
-class ImageServersURL(Model):
-    def __init__(self):
-        super(ImageServersURL, self).__init__()
-        self.id = None
-        self.imageServersURLs = None
-        self._callback_identifier = "imageServersURLs"
-
-    def uri(self):
-        return "abstractimage/{}/imageservers.json".format(self.id)
-
-    def __str__(self):
-        return "ImageInstanceServersURL"
