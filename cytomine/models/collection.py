@@ -38,27 +38,37 @@ class Collection(MutableSequence):
         self._allowed_filters = []
         self._filters = filters if filters is not None else {}
 
-        self._total = None  # total number of resources
-        self._total_pages = None  # total number of pages
+        self._total = 0  # total number of resources
+        self._total_pages = 0  # total number of pages
 
         self.max = max
         self.offset = offset
 
-    def fetch(self):
+    def fetch(self, max=None, offset=None):
+        if max:
+            self.max = max
+
+        if offset:
+            self.offset = offset
+
         return Cytomine.get_instance().get_model(self, self.parameters)
 
-    def fetch_with_filter(self, key, value):
+    def fetch_with_filter(self, key, value, max=None, offset=None):
         self._filters[key] = value
-        self.fetch()
+        return self.fetch(max, offset)
 
     def fetch_next_page(self):
-        pass
+        self.offset = min(self._total, self.offset + self.max)
+        return self.fetch()
 
     def fetch_previous_page(self):
-        pass
+        self.offset = max(0, self.offset - self.max)
+        return self.fetch()
 
     def populate(self, attributes):
         self._data = [self._model().populate(instance) for instance in attributes["collection"]]
+        self._total = attributes["size"]
+        self._total_pages = attributes["totalPages"]
         return self
 
     @property
@@ -139,40 +149,6 @@ class Collection(MutableSequence):
     @DeprecationWarning
     def data(self):
         return self._data
-
-        # def parse(self, params = None):
-        #     response = json.loads(params)
-        #     if hasattr(self, "collection_identifier"):
-        #         data = response[self.collection_identifier]
-        #         self._total = int(response["size"])
-        #         self._offset = int(response["offset"])
-        #         self._total_pages = int(response["totalPages"])
-        #         self._per_page = int(response["perPage"])
-        #         if self._per_page != 0:
-        #             self._page_index = self._offset / self._per_page
-        #         else:
-        #            self._page_index = 0
-        #     for model in data:
-        #         self._data.append(self._model().__class__(json.dumps(model)))
-        #
-        # def next_page(self):
-        #     if self._total_pages:
-        #         if self._page_index == self._total_pages - 1:
-        #             return None
-        #         else :
-        #             self._page_index = self._page_index + 1
-        #             return self._page_index
-        #     else :
-        #         return None #to do : should we thrown something here, like first page not fetch ?
-        #
-        # def previous_page(self):
-        #     self._per_page = max(1, self._per_page - 1)
-        #     return self._per_page
-        #
-        # def init_paginator(self, per_page, page_index = 0):
-        #     self._per_page = per_page
-        #     self._page_index = page_index
-        #
 
 
 class DomainCollection(Collection):
