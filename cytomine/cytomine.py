@@ -174,8 +174,10 @@ class Cytomine(object):
             self._logger.error("[{}] {} | {} {} ({})".format(response.request.method, message,
                                                              response.status_code, response.reason,
                                                              response.json()["errors"]))
-
-        self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
+        try:
+            self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
+        except UnicodeDecodeError:
+            self._logger.debug("DUMP:\nImpossible to decode.")
 
     def get(self, uri, query_parameters=None):
         response = self._session.get("{}{}".format(self._base_url(), uri),
@@ -294,6 +296,9 @@ class Cytomine(object):
         return model
 
     def download_file(self, url, destination, override=False, payload=None):
+        if not url.startswith("http"):
+            url = "{}{}".format(self._base_url(), url)
+
         if override:
             response = self._session.get(url,
                                          auth=CytomineAuth(
@@ -303,13 +308,15 @@ class Cytomine(object):
                                          params=payload,
                                          stream=True)
 
-            self._log_response(response, url)
             if not response.status_code == requests.codes.ok:
+                self._log_response(response, url)
                 return False
 
             with open(destination, "wb") as f:
                 response.raw.decode_content = True
                 shutil.copyfileobj(response.raw, f)
+
+            self._log_response(response, url)
             return True
         else:
             return True

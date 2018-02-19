@@ -53,6 +53,17 @@ class AbstractImage(Model):
         self.imageServersURLs = ImageServersURL.fetch(self.id).imageServersURLs
         return self
 
+    def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
+        if self.id is None:
+            raise ValueError("Cannot dump an annotation with no ID.")
+
+        pattern = re.compile("{(.*?)}")
+        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        parameters = {"parent": parent}
+
+        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
+                                                     dest_pattern, override, parameters)
+
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
 
@@ -97,6 +108,17 @@ class ImageInstance(Model):
         self.fetch(id)
         self.imageServersURLs = ImageServersURL.fetch(self.baseImage).imageServersURLs
         return self
+
+    def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
+        if self.id is None:
+            raise ValueError("Cannot dump an annotation with no ID.")
+
+        pattern = re.compile("{(.*?)}")
+        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        parameters = {"parent": parent}
+
+        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
+                                                     dest_pattern, override, parameters)
 
     def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None):
         if self.id is None:

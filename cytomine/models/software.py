@@ -106,21 +106,22 @@ class Job(Model):
     WAIT = 6
     PREVIEW_DONE = 7
 
-    def __init__(self):
+    def __init__(self, project_id=None, software_id=None, **attributes):
         super(Job, self).__init__()
         self.algoType = None
         self.progress = None
         self.status = None
         self.number = None
         self.statusComment = None
-        self.project = None
-        self.software = None
+        self.project = project_id
+        self.software = software_id
         self.softwareNone = None
         self.rate = None
         self.dataDeleted = None
         self.username = None
         self.userJob = None
         self.jobParameters = None
+        self.populate(attributes)
 
     def set_running(self):
         self.status = Job.RUNNING
@@ -174,6 +175,5 @@ class JobData(Model):
     def download(self, destination, override=False):
         if self.is_new():
             raise ValueError("Cannot download file if not existing ID.")
-        return Cytomine.get_instance().download_file("{}{}/{}/download".format(Cytomine.get_instance()._base_url(),
-                                                                               self.callback_identifier, self.id),
+        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      destination, override)

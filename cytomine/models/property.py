@@ -112,9 +112,8 @@ class AttachedFile(DomainModel):
     def download(self, destination, override=False):
         if self.is_new():
             raise ValueError("Cannot download file if not existing ID.")
-        return Cytomine.get_instance().download_file(
-            "{}attachedfile/{}/download".format(Cytomine.get_instance()._base_url(), self.id),
-            destination, override)
+        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
+                                                     destination, override)
 
 
 class AttachedFileCollection(DomainCollection):
