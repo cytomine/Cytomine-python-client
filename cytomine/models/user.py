@@ -200,7 +200,7 @@ class UserRole(Model):
     def fetch(self, id_user=None, id_role=None):
         if self.user is None and id_user is None:
             raise ValueError("Cannot fetch a model with no user ID.")
-        elif self.group is None and id_role is None:
+        elif self.role is None and id_role is None:
             raise ValueError("Cannot fetch a model with no role ID.")
 
         if id_user is not None:
