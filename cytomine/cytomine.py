@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from json import JSONDecodeError
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -37,13 +39,14 @@ from requests_toolbelt.utils import dump
 
 from cytomine.utilities.http import CytomineAuth
 from cytomine.utilities.version import deprecated
+from cytomine.utilities.logging import StdoutHandler
 
 
 class Cytomine(object):
     __instance = None
 
     def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol="http",
-                 logging_handlers=None, working_path="/tmp", **kwargs):
+                 logging_handlers=[StdoutHandler()], working_path="/tmp", **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
 
@@ -81,11 +84,6 @@ class Cytomine(object):
             verbose = logging.INFO
         self._verbose = verbose
         self._logger.setLevel(verbose)
-
-        if not logging_handlers:
-            stream_handler = logging.StreamHandler(sys.stdout)
-            stream_handler.setFormatter(logging.Formatter("[%(asctime)s][%(levelname)s] %(message)s"))
-            logging_handlers = [stream_handler]
 
         for handler in logging_handlers:
             self._logger.addHandler(handler)
@@ -167,16 +165,16 @@ class Cytomine(object):
         return headers
 
     def _log_response(self, response, message):
-        if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
-            self._logger.info("[{}] {} | {} {}".format(response.request.method, message,
-                                                       response.status_code, response.reason))
-        else:
-            self._logger.error("[{}] {} | {} {} ({})".format(response.request.method, message,
-                                                             response.status_code, response.reason,
-                                                             response.json()["errors"]))
         try:
+            if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
+                self._logger.info("[{}] {} | {} {}".format(response.request.method, message,
+                                                           response.status_code, response.reason))
+            else:
+                self._logger.error("[{}] {} | {} {} ({})".format(response.request.method, message,
+                                                                 response.status_code, response.reason,
+                                                                 response.json()["errors"]))
             self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
 
     def get(self, uri, query_parameters=None):
@@ -351,10 +349,10 @@ class Cytomine(object):
         if response.status_code == requests.codes.ok:
             uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
             uf.images = response.json()[0]["images"]
-            self._log_response(response, uf)
+            # self._log_response(response, uf)
             return uf
         else:
-            self._log_response(response, "Upload {}".format(filename))
+            # self._log_response(response, "Upload {}".format(filename))
             return False
 
     # Project
