@@ -48,13 +48,17 @@ class Project(Model):
         self.isReadOnly = None
         self.hideUsersLayers = None
         self.hideAdminsLayers = None
+
+        self.admins = None
+        self.users = None
+        self.mode = None
         self.populate(attributes)
 
 
 class ProjectCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(ProjectCollection, self).__init__(Project, filters, max, offset)
-        self._allowed_filters = ["user", "software", "ontology"]
+        self._allowed_filters = [None, "user", "software", "ontology"]
         self.set_parameters(parameters)
 
 
@@ -68,4 +72,5 @@ class Discipline(Model):
 class DisciplineCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(DisciplineCollection, self).__init__(Discipline, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)

@@ -39,6 +39,7 @@ class Storage(Model):
 class StorageCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(StorageCollection, self).__init__(Storage, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 
@@ -74,4 +75,5 @@ class UploadedFile(Model):
 class UploadedFileCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(UploadedFileCollection, self).__init__(UploadedFile, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)

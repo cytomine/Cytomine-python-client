@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from cytomine.cytomine import Cytomine
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -44,6 +46,7 @@ class Ontology(Model):
 class OntologyCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(OntologyCollection, self).__init__(Ontology, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 
@@ -60,15 +63,15 @@ class Term(Model):
 class TermCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(TermCollection, self).__init__(Term, filters, max, offset)
-        self._allowed_filters = ["project", "ontology", "annotation"]
+        self._allowed_filters = [None, "project", "ontology", "annotation"]
         self.set_parameters(parameters)
 
 
 class RelationTerm(Model):
-    def __init__(self, term1=None, term2=None, **attributes):
+    def __init__(self, id_term1=None, id_term2=None, **attributes):
         super(RelationTerm, self).__init__()
-        self.term1 = term1
-        self.term2 = term2
+        self.term1 = id_term1
+        self.term2 = id_term2
         self.populate(attributes)
 
     def uri(self):
@@ -76,6 +79,22 @@ class RelationTerm(Model):
             return "relation/parent/term.json"
         else:
             return "relation/parent/term1/{}/term2/{}.json".format(self.term1, self.term2)
+
+    def fetch(self, id_term1=None, id_term2=None):
+        self.id = -1
+
+        if self.term1 is None and id_term1 is None:
+            raise ValueError("Cannot fetch a model with no term 1 ID.")
+        elif self.term2 is None and id_term2 is None:
+            raise ValueError("Cannot fetch a model with no term 2 ID.")
+
+        if id_term1 is not None:
+            self.term1 = id_term1
+
+        if id_term2 is not None:
+            self.term2 = id_term2
+
+        return Cytomine.get_instance().get_model(self, self.query_parameters)
 
     def __str__(self):
         return "[{}] {} : parent {} - child {}".format(self.callback_identifier, self.id, self.term1, self.term2)
