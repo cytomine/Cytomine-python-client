@@ -28,11 +28,11 @@ from cytomine.models.model import Model
 
 
 class Storage(Model):
-    def __init__(self, name=None, **attributes):
+    def __init__(self, name=None, base_path=None, id_user=None, **attributes):
         super(Storage, self).__init__()
         self.name = name
-        self.basePath = None
-        self.user = None
+        self.basePath = base_path
+        self.user = id_user
         self.populate(attributes)
 
 
@@ -43,17 +43,28 @@ class StorageCollection(Collection):
 
 
 class UploadedFile(Model):
-    def __init__(self, **attributes):
+    UPLOADED = 0
+    CONVERTED = 1
+    DEPLOYED = 2
+    ERROR_FORMAT = 3
+    ERROR_CONVERT = 4
+    UNCOMPRESSED = 5
+    TO_DEPLOY = 6
+
+    def __init__(self, original_filename=None, filename=None, path=None, size=None, ext=None, content_type=None,
+                 id_projects=None, id_storages=None, id_user=None, status=None, id_parent=None, **attributes):
         super(UploadedFile, self).__init__()
-        self.user = None
-        self.projects = None
-        self.storages = None
-        self.filename = None
-        self.originalFilename = None
-        self.ext = None
-        self.size = None
-        self.path = None
-        self.status = None
+        self.originalFilename = original_filename
+        self.filename = filename
+        self.path = path
+        self.size = size
+        self.ext = ext
+        self.contentType = content_type
+        self.projects = id_projects
+        self.storages = id_storages
+        self.user = id_user
+        self.status = status
+        self.parent = id_parent
         self.populate(attributes)
 
     def __str__(self):
