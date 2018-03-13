@@ -47,9 +47,6 @@ class User(Model, CytomineUser):
         self.guest = None
         self.populate(attributes)
 
-    def keys(self, public_key):
-        return Cytomine.get_instance().get("userkey/{}/keys.json".format(public_key))
-
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.username)
 
@@ -64,6 +61,9 @@ class CurrentUser(User):
     def uri(self):
         return "user/current.json"
 
+    def keys(self):
+        return Cytomine.get_instance().get("userkey/{}/keys.json".format(self.publicKey))
+
     def signature(self):
         return Cytomine.get_instance().get("signature.json")
 
@@ -74,7 +74,7 @@ class CurrentUser(User):
 class UserCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(UserCollection, self).__init__(User, filters, max, offset)
-        self._allowed_filters = ["project", "ontology"]
+        self._allowed_filters = [None, "project", "ontology"]
 
         self.online = None
         self.showJob = None
@@ -123,6 +123,7 @@ class Group(Model):
 class GroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(GroupCollection, self).__init__(Group, filters, max, offset)
+        self._allowed_filters = [None]
         self.withUser = None
         self.set_parameters(parameters)
 
@@ -164,11 +165,24 @@ class UserGroupCollection(Collection):
         self._allowed_filters = ["user"]
         self.set_parameters(parameters)
 
+    @property
+    def callback_identifier(self):
+        return "group"
+
 
 class Role(Model):
     def __init__(self):
         super(Role, self).__init__()
         self.authority = None
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save a new role by client.")
+
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError("Cannot delete a role by client.")
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a role by client.")
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.authority)
@@ -177,6 +191,7 @@ class Role(Model):
 class RoleCollection(Collection):
     def __init__(self):
         super(RoleCollection, self).__init__(Role)
+        self._allowed_filters = [None]
 
 
 class UserRole(Model):
@@ -219,3 +234,7 @@ class UserRoleCollection(Collection):
     def __init__(self, filters=None):
         super(UserRoleCollection, self).__init__(UserRole, filters)
         self._allowed_filters = ["user"]
+
+    @property
+    def callback_identifier(self):
+        return "role"
