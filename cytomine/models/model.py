@@ -126,11 +126,23 @@ class DomainModel(Model):
         if object.is_new():
             raise ValueError("The object must be fetched or saved before.")
 
-        self._object = object
+        self.domainClassName = None
+        self.domainIdent = None
+        self.obj = object
 
     def uri(self):
         if self.is_new():
-            return "domain/{}/{}/{}.json".format(self._object.class_, self._object.id, self.callback_identifier)
+            return "domain/{}/{}/{}.json".format(self.domainClassName, self.domainIdent, self.callback_identifier)
         else:
-            return "domain/{}/{}/{}/{}.json".format(self._object.class_, self._object.id,
+            return "domain/{}/{}/{}/{}.json".format(self.domainClassName, self.domainIdent,
                                                     self.callback_identifier, self.id)
+
+    @property
+    def obj(self):
+        return self._object
+
+    @obj.setter
+    def obj(self, value):
+        self._object = value
+        self.domainClassName = value.class_
+        self.domainIdent = value.id

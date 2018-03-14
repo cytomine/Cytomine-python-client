@@ -164,12 +164,24 @@ class DomainCollection(Collection):
         if object.is_new():
             raise ValueError("The object must be fetched or saved before.")
 
-        self._object = object
+        self._domainClassName = None
+        self._domainIdent = None
+        self._obj = object
 
     def uri(self):
-        return "domain/{}/{}/{}".format(self._object.class_, self._object.id,
+        return "domain/{}/{}/{}".format(self._domainClassName, self._domainIdent,
                                         super(DomainCollection, self).uri())
 
     def populate(self, attributes):
         self._data = [self._model(self._object).populate(instance) for instance in attributes["collection"]]
         return self
+
+    @property
+    def _obj(self):
+        return self._object
+
+    @_obj.setter
+    def _obj(self, value):
+        self._object = value
+        self._domainClassName = value.class_
+        self._domainIdent = value.id

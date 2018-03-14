@@ -32,18 +32,26 @@ from cytomine.models.model import DomainModel
 class Property(DomainModel):
     def __init__(self, object, key=None, value=None, **attributes):
         super(Property, self).__init__(object)
-
-        if isinstance(object, Annotation):
-            self.domainClassName = "annotation"
-        else:
-            self.domainClassName = object.class_
-        self.domainIdent = object.id
         self.key = key
         self.value = value
         self.populate(attributes)
+        self._by_key = False
+
+    @property
+    def obj(self):
+        return self._object
+
+    @obj.setter
+    def obj(self, value):
+        self._object = value
+        if isinstance(value, Annotation):
+            self.domainClassName = "annotation"
+        else:
+            self.domainClassName = value.class_
+        self.domainIdent = value.id
 
     def uri(self):
-        if self.is_new() and self.domainClassName and self.domainIdent and self.key:
+        if self._by_key and self.domainClassName and self.domainIdent and self.key:
             uri = "domain/{}/{}/key/{}/property.json".format(self.domainClassName, self.domainIdent, self.key)
         else:
             uri = super(Property, self).uri()
@@ -60,8 +68,11 @@ class Property(DomainModel):
             self.id = id
         if key is not None:
             self.key = key
+            self._by_key = True
 
-        return Cytomine.get_instance().get_model(self, self.query_parameters)
+        model = Cytomine.get_instance().get_model(self, self.query_parameters)
+        self._by_key = False
+        return model
 
     def __str__(self):
         return "[{}] {} : {} ({}) - Key: {} - Value {}".format(self.callback_identifier, self.id, self.domainClassName,
@@ -71,12 +82,6 @@ class Property(DomainModel):
 class PropertyCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
         super(PropertyCollection, self).__init__(Property, object, filters, max, offset)
-
-        if isinstance(object, Annotation):
-            self._domainClassName = "annotation"
-        else:
-            self._domainClassName = object.class_
-        self._domainIdent = object.id
         self.set_parameters(parameters)
 
     def uri(self):
@@ -85,12 +90,23 @@ class PropertyCollection(DomainCollection):
             uri = uri.replace("domain/", "")
         return uri
 
+    @property
+    def _obj(self):
+        return self._object
+
+    @_obj.setter
+    def _obj(self, value):
+        self._object = value
+        if isinstance(value, Annotation):
+            self._domainClassName = "annotation"
+        else:
+            self._domainClassName = value.class_
+        self._domainIdent = value.id
+
 
 class AttachedFile(DomainModel):
     def __init__(self, object, filename=None, **attributes):
         super(AttachedFile, self).__init__(object)
-        self.domainClassName = object.class_
-        self.domainIdent = object.id
         self.filename = filename
         self.url = None
         self.populate(attributes)
@@ -118,17 +134,13 @@ class AttachedFile(DomainModel):
 
 class AttachedFileCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
-        super(AttachedFileCollection, self).__init__(object, filters, max, offset)
-        self._domainClassName = object.class_
-        self._domainIdent = object.id
+        super(AttachedFileCollection, self).__init__(AttachedFile, object, filters, max, offset)
         self.set_parameters(parameters)
 
 
 class Description(DomainModel):
     def __init__(self, object, data=None, **attributes):
         super(Description, self).__init__(object)
-        self.domainClassName = object.class_
-        self.domainIdent = object.id
         self.data = data
         self.populate(attributes)
 

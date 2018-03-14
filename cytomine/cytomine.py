@@ -284,9 +284,9 @@ class Cytomine(object):
                                       data=m)
 
         if response.status_code == requests.codes.ok:
-            model = model.populate(response.json()[model.callback_identifier.lower()])
+            model = model.populate(response.json())  # [model.callback_identifier.lower()])
 
-        self._log_response(response, model)
+        # self._log_response(response, model)
 
         if not response.status_code == requests.codes.ok:
             model = False
