@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from cytomine.cytomine import Cytomine
 from cytomine.models.annotation import Annotation
 from cytomine.models.image import AbstractImage, ImageInstance
-from cytomine.models.imagegroup import ImageGroup
+from cytomine.models.imagegroup import ImageGroup, ImageSequence
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
 from cytomine.models.software import Software, Job, SoftwareParameter
@@ -59,21 +59,27 @@ def connect(request):
 @pytest.fixture(scope="session")
 def dataset(request):
     data = {}
+    data["user"] = User(random_string(), random_string(), random_string(), "mail@cytomine.org", random_string()).save()
+    data["group"] = Group(random_string(), 50).save()
+
     data["ontology"] = Ontology(random_string()).save()
     data["term1"] = Term(random_string(), data["ontology"].id, "#000000").save()
     data["term2"] = Term(random_string(), data["ontology"].id, "#000000").save()
-    data["project"] = Project(random_string(), data["ontology"].id).save()
+
+    data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
+    data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
+
     data["abstract_image"] = AbstractImage(random_string(), "tiff").save()
+
+    data["project"] = Project(random_string(), data["ontology"].id).save()
     data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
     data["annotation"] = Annotation("POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", data["image_instance"].id, [data["term1"].id]).save()
     data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
-    data["user"] = User(random_string(), random_string(), random_string(), "mail@cytomine.org", random_string()).save()
-    data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
-    data["group"] = Group(random_string(), 50).save()
+    # data["image_sequence"] = ImageSequence(data["image_group"].id, data["image_instance"].id, 0, 0, 0, 0).save()
     data["job"] = Job(data["project"].id, data["software"].id).save()
-    data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
     def teardown():
+        # ImageSequence().delete(data["image_sequence"].id)
         ImageInstance().delete(data["image_instance"].id)
         Annotation().delete(data["annotation"].id)
         ImageGroup().delete(data["image_group"].id)
