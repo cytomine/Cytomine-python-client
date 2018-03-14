@@ -25,8 +25,8 @@ from cytomine.models.image import AbstractImage, ImageInstance
 from cytomine.models.imagegroup import ImageGroup
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
-from cytomine.models.software import Software
-from cytomine.models.user import User
+from cytomine.models.software import Software, Job, SoftwareParameter
+from cytomine.models.user import User, Group
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -68,7 +68,10 @@ def dataset(request):
     data["annotation"] = Annotation("POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", data["image_instance"].id, [data["term1"].id]).save()
     data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
     data["user"] = User(random_string(), random_string(), random_string(), "mail@cytomine.org", random_string()).save()
-    data["software"] = Software(random_string(), random_string(), random_string(), random_string()).save()
+    data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
+    data["group"] = Group(random_string(), 50).save()
+    data["job"] = Job(data["project"].id, data["software"].id).save()
+    data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
     def teardown():
         ImageInstance().delete(data["image_instance"].id)
@@ -77,10 +80,14 @@ def dataset(request):
         AbstractImage().delete(data["abstract_image"].id)
         Term().delete(data["term1"].id)
         Term().delete(data["term2"].id)
+        Group().delete(data["group"].id)
+        Job().delete(data["job"].id)
         Project().delete(data["project"].id)
         Ontology().delete(data["ontology"].id)
         User().delete(data["user"].id)
-        # Software().delete(data["software"].id)
+        SoftwareParameter().delete(data["software_parameter"].id)
+        Software().delete(data["software"].id)
+
     # request.addfinalizer(teardown)
 
     return data

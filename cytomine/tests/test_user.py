@@ -118,7 +118,15 @@ class TestGroup:
 
 class TestUserGroup:
     def test_user_group(self, connect, dataset):
-        pass
+        user_group = UserGroup(dataset["user"].id, dataset["group"].id).save()
+        assert (isinstance(user_group, UserGroup))
+        assert (user_group.group == dataset["group"].id)
+
+        user_group = UserGroup().fetch(dataset["user"].id, dataset["group"].id)
+        assert (isinstance(user_group, UserGroup))
+
+        user_group.delete()
+        assert (not UserGroup().fetch(dataset["user"].id, dataset["group"].id))
 
     # def test_user_groups(self, connect, dataset):
     #     user_groups = UserGroupCollection().fetch()
@@ -144,7 +152,17 @@ class TestRole:
 
 class TestUserRole:
     def test_user_role(self, connect, dataset):
-        pass
+        roles = RoleCollection().fetch()
+        if len(roles) > 0:
+            user_role = UserRole(dataset["user"].id, roles[-1].id).save()
+            assert (isinstance(user_role, UserRole))
+            assert (user_role.user == dataset["user"].id)
+
+            user_role = UserRole().fetch(dataset["user"].id, roles[-1].id)
+            assert (isinstance(user_role, UserRole))
+
+            user_role.delete()
+            assert (not UserRole().fetch(dataset["user"].id, roles[-1].id))
 
     # def test_user_roles(self, connect, dataset):
     #     user_roles = UserRoleCollection().fetch()

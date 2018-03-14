@@ -80,6 +80,8 @@ class Model(object):
             for key, value in six.iteritems(attributes):
                 if key.startswith("id_"):
                     key = key[3:]
+                if key == "uri":
+                    key = "uri_"
                 if not key.startswith("_"):
                     if key == "class":
                         key += "_"
@@ -88,6 +90,8 @@ class Model(object):
 
     def to_json(self, **dump_parameters):
         d = dict((k, v) for k, v in six.iteritems(self.__dict__) if v is not None and not k.startswith("_"))
+        if "uri_" in d:
+            d["uri"] = d.pop("uri_")
         return json.dumps(d, **dump_parameters)
 
     def uri(self):

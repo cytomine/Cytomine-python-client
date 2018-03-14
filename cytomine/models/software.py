@@ -51,7 +51,7 @@ class Software(Model):
 class SoftwareCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(SoftwareCollection, self).__init__(Software, filters, max, offset)
-        self._allowed_filters = ["project"]
+        self._allowed_filters = [None, "project"]
         self.set_parameters(parameters)
 
 
@@ -63,11 +63,14 @@ class SoftwareProject(Model):
         self.name = None
         self.populate(attributes)
 
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a software-project by client.")
+
 
 class SoftwareProjectCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(SoftwareProjectCollection, self).__init__(SoftwareProject, filters, max, offset)
-        self._allowed_filters = ["project"]
+        self._allowed_filters = [None, "project"]
         self.set_parameters(parameters)
 
 
@@ -82,7 +85,7 @@ class SoftwareParameter(Model):
         self.defaultValue = default_value
         self.required = required
         self.index = index
-        self.uri = uri
+        self.uri_ = uri
         self.uriSortAttribut = uri_sort_attribut
         self.uriPrintAttribut = uri_print_attribut
         self.setByServer = set_by_server
@@ -94,6 +97,10 @@ class SoftwareParameterCollection(Collection):
         super(SoftwareParameterCollection, self).__init__(SoftwareParameter, filters, max, offset)
         self._allowed_filters = ["software"]
         self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "parameter"
 
 
 class Job(Model):
@@ -125,9 +132,23 @@ class Job(Model):
 
     def set_running(self):
         self.status = Job.RUNNING
+        self.update()
 
     def set_terminated(self):
         self.status = Job.TERMINATED
+        self.update()
+
+
+class JobCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(JobCollection, self).__init__(Job, filters, max, offset)
+        self._allowed_filters = [None]
+
+        self.project = None
+        self.software = None
+        self.light = None
+
+        self.set_parameters(parameters)
 
 
 class JobParameter(Model):
@@ -144,6 +165,10 @@ class JobParameterCollection(Collection):
         super(JobParameterCollection, self).__init__(JobParameter, filters, max, offset)
         self._allowed_filters = ["job"]
         self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "parameter"
 
 
 class JobTemplate(Model):

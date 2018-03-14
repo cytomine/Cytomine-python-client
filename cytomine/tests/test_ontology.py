@@ -95,11 +95,5 @@ class TestRelationTerm:
         rt = RelationTerm().fetch(dataset["term1"].id, dataset["term2"].id)
         assert (rt.term1 == dataset["term1"].id)
 
-        # TODO: impossible to update since we need old term1 and term2 in URI.
-        # rt.term1 = dataset["term2"].id
-        # rt.term2 = dataset["term1"].id
-        # rt.update()
-        # assert (rt.term1 == dataset["term2"].id)
-
         rt.delete()
         assert (not RelationTerm().fetch(dataset["term1"].id, dataset["term2"].id))

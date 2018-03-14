@@ -142,6 +142,8 @@ class UserGroup(Model):
             return "user/{}/group/{}.json".format(self.user, self.group)
 
     def fetch(self, id_user=None, id_group=None):
+        self.id = -1
+
         if self.user is None and id_user is None:
             raise ValueError("Cannot fetch a model with no user ID.")
         elif self.group is None and id_group is None:
@@ -154,6 +156,9 @@ class UserGroup(Model):
             self.group = id_group
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a user-group.")
 
     def __str__(self):
         return "[{}] {} : User {} - Group {}".format(self.callback_identifier, self.id, self.user, self.group)
@@ -213,6 +218,8 @@ class UserRole(Model):
             return "user/{}/role/{}.json".format(self.user, self.role)
 
     def fetch(self, id_user=None, id_role=None):
+        self.id = -1
+
         if self.user is None and id_user is None:
             raise ValueError("Cannot fetch a model with no user ID.")
         elif self.role is None and id_role is None:
@@ -225,6 +232,9 @@ class UserRole(Model):
             self.role = id_role
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a user-role.")
 
     def __str__(self):
         return "[{}] {} : User {} - Role {}".format(self.callback_identifier, self.id, self.user, self.role)

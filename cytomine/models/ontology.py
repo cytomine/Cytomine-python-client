@@ -96,5 +96,8 @@ class RelationTerm(Model):
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a relation-term.")
+
     def __str__(self):
         return "[{}] {} : parent {} - child {}".format(self.callback_identifier, self.id, self.term1, self.term2)
