@@ -37,6 +37,10 @@ class ImageGroup(Model):
         self.project = id_project
         self.populate(attributes)
 
+    def characteristics(self):
+        uri = "imagegroup/{}/characteristics.json".format(self.id)
+        return Cytomine.get_instance().get(uri)
+
 
 class ImageGroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -72,11 +76,15 @@ class ImageGroupHDF5(Model):
         return spectrum.reshape((width, height, depth))
 
 
-class ImageGroupHDF5Collection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ImageGroupHDF5Collection, self).__init__(ImageGroupHDF5, filters, max, offset)
-        self._allowed_filters = ["project"]
-        self.set_parameters(parameters)
+# class ImageGroupHDF5Collection(Collection):
+#     def __init__(self, filters=None, max=0, offset=0, **parameters):
+#         super(ImageGroupHDF5Collection, self).__init__(ImageGroupHDF5, filters, max, offset)
+#         self._allowed_filters = ["project"]
+#         self.set_parameters(parameters)
+#
+#     @property
+#     def callback_identifier(self):
+#         return "imagegroupHDF5"
 
 
 class ImageSequence(Model):
