@@ -19,17 +19,15 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from json import JSONDecodeError
-
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import logging
 import json
+from json import JSONDecodeError
 from time import strftime, gmtime
 
-import sys
 import os
 import requests
 import shutil
@@ -65,7 +63,7 @@ class Cytomine(object):
         protocol : str ("http", "https")
             The protocol.
         working_path : str
-            Deprecated.
+            Deprecated. Only for backwards compatibility.
         kwargs : dict
             Deprecated arguments.
         """
@@ -91,14 +89,8 @@ class Cytomine(object):
         # Deprecated
         self._working_path = working_path
 
-        self._session = requests.session()
-        if self._use_cache:
-            self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
-
-        Cytomine.__instance = self
-
-        self._current_user = None
-        self.set_current_user()
+        # Should be only in connect() and __enter__(), but here for backwards compatibility.
+        self._start()
 
     @classmethod
     def connect(cls, host, public_key, private_key, verbose=0, use_cache=True):
@@ -124,6 +116,23 @@ class Cytomine(object):
             A connected Cytomine client.
         """
         return cls(host, public_key, private_key, verbose, use_cache)
+
+    def _start(self):
+        self._session = requests.session()
+        if self._use_cache:
+            self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
+
+        Cytomine.__instance = self
+
+        self._current_user = None
+        self.set_current_user()
+
+    def __enter__(self):
+        # self._start()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        pass
 
     @staticmethod
     def get_instance():
@@ -285,11 +294,10 @@ class Cytomine(object):
 
         if response.status_code == requests.codes.ok:
             model = model.populate(response.json())  # [model.callback_identifier.lower()])
-
-        # self._log_response(response, model)
-
-        if not response.status_code == requests.codes.ok:
+            self._logger.info("File uploaded successfully to {}".format(uri))
+        else:
             model = False
+            self._logger.error("Error during file uploading to {}".format(uri))
 
         return model
 
@@ -319,8 +327,15 @@ class Cytomine(object):
         else:
             return True
 
-    def upload_image(self, upload_host, filename, id_storage, id_project=None, properties=None, sync=False):
+    def upload_image(self, upload_host, filename, id_storage, id_project=None, properties=None,
+                     sync=False, protocol=None):
         from .models.storage import UploadedFile
+
+        if not protocol:
+            protocol = self._protocol
+
+        upload_host.replace("http://", "").replace("https://", "").replace("/", "")
+        upload_host = "{}://{}".format(protocol, upload_host)
 
         query_parameters = {
             "idStorage": id_storage,
@@ -335,13 +350,11 @@ class Cytomine(object):
             query_parameters["keys"] = ','.join(list(properties.keys()))
             query_parameters["values"] = ','.join(list(properties.values()))
 
-        upload_host = upload_host.replace("http://", "").replace("https://", "").replace("/", "")
-
         m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
-        response = self._session.post("http://{}/upload".format(upload_host),
+        response = self._session.post("{}/upload".format(upload_host),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
-                                          "http://{}".format(upload_host), ""),
+                                          upload_host, ""),
                                       headers=self._headers(content_type=m.content_type),
                                       params=query_parameters,
                                       data=m)
@@ -349,11 +362,20 @@ class Cytomine(object):
         if response.status_code == requests.codes.ok:
             uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
             uf.images = response.json()[0]["images"]
-            # self._log_response(response, uf)
+            self._logger.info("Image uploaded successfully to {}".format(upload_host))
             return uf
         else:
-            # self._log_response(response, "Upload {}".format(filename))
+            self._logger.error("Error during image upload.")
             return False
+
+    """
+    Following methods are deprecated methods, only temporary here for backwards compatibility.
+    Do not use them on new projects.
+    Please update your existing projects with client's new methods.
+    All old methods (should) have an equivalent with this new client, except:
+    - add_user_job() : use CytomineJob utility instead.
+    - union_polygons() : already deprecated in previous client.
+    """
 
     # Project
     @deprecated

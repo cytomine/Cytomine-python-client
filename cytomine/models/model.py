@@ -30,9 +30,8 @@ from cytomine.cytomine import Cytomine
 
 
 class Model(object):
-
     def __init__(self, **attributes):
-        self._filters = {}
+        # In some cases, a model can have some request parameters.
         self._query_parameters = {}
 
         # Attributes common to all models
@@ -101,13 +100,6 @@ class Model(object):
             return "{}/{}.json".format(self.callback_identifier, self.id)
 
     @property
-    def filters(self):
-        return self._filters
-
-    def is_filtered_by(self, key):
-        return key in self._filters
-
-    @property
     def query_parameters(self):
         return self._query_parameters
 
@@ -132,7 +124,8 @@ class DomainModel(Model):
 
     def uri(self):
         if self.is_new():
-            return "domain/{}/{}/{}.json".format(self.domainClassName, self.domainIdent, self.callback_identifier)
+            return "domain/{}/{}/{}.json".format(self.domainClassName, self.domainIdent,
+                                                 self.callback_identifier)
         else:
             return "domain/{}/{}/{}/{}.json".format(self.domainClassName, self.domainIdent,
                                                     self.callback_identifier, self.id)

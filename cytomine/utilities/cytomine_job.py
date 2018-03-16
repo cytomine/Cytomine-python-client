@@ -1,21 +1,35 @@
 # -*- coding: utf-8 -*-
-"""
-Copyright 2010-2013 University of LiÃ¨ge, Belgium.
 
-This software is provided 'as-is', without any express or implied warranty.
-In no event will the authors be held liable for any damages arising from the
-use of this software.
+# * Copyright (c) 2009-2018. Authors: see NOTICE file.
+# *
+# * Licensed under the Apache License, Version 2.0 (the "License");
+# * you may not use this file except in compliance with the License.
+# * You may obtain a copy of the License at
+# *
+# *      http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
 
-Permission is only granted to use this software for non-commercial purposes.
-"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from cytomine.cytomine import Cytomine
+from cytomine.models.project import Project
+from cytomine.models.software import Software, Job, JobParameter
+from cytomine.models.user import User
 
 __author__ = "Begon Jean-Michel <jm.begon@gmail.com>"
-__contributors = ["Mormont Romain <romainmormont@gmail.com"]
-__copyright__ = "Copyright 2010-2013 University of Liège, Belgium"
-__version__ = '0.1'
+__contributors = ["Mormont Romain <romainmormont@gmail.com", "Rubens Ulysse <urubens@uliege.be>"]
+__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 
-class CytomineJob(object):
+class CytomineJob(Cytomine):
     """
     ===========
     CytomineJob
@@ -27,16 +41,14 @@ class CytomineJob(object):
 
     Usage
     -----
-    Either use the :meth:`connect`/meth:`close`methods or use it with a 
+    Either use the :meth:`connect`/meth:`close`methods or use it with a
     with statement:
-     
+
     with CytomineJob(...) as job:
          do_your_stuff()
 
     Constructor parameters
     ----------------------
-    cytomine_client : :class:`Cytomine`
-        The Cytomine client through which to communicate with the server
     software_id : int
         The identifier of the software on the Cytomine server
     project_id : int
@@ -45,13 +57,13 @@ class CytomineJob(object):
         A dictionary mapping job parameters with their values (the dictionary must not contain any other key than
         the parameters names)
     """
-    def __init__(self, cytomine_client, software_id, project_id, parameters=None):
-        self.__cytomine = cytomine_client
-        self.__software_id = software_id
-        self.__project_id = project_id
-        self.__job_done = False
-        self.__job = None
-        self.__parameters = parameters
+    def __init__(self, host, public_key, private_key, software_id, project_id, parameters=None, **kwargs):
+        super(CytomineJob, self).__init__(host, public_key, private_key, **kwargs)
+        self._job = None
+        self._project = Project().fetch(project_id)
+        self._software = Software().fetch(software_id)
+        self._job_done = False
+        self._parameters = parameters
 
     @property
     def job(self):
@@ -62,22 +74,10 @@ class CytomineJob(object):
         job: cytomine.Job
             The job model
         """
-        return self.__job
+        return self._job
 
     @property
-    def cytomine_client(self):
-        """
-        Protected method
-
-        Return
-        ------
-        cytomine : :class:`Cytomine`
-            The Cytomine client
-        """
-        return self.__cytomine
-
-    @property
-    def project_id(self):
+    def project(self):
         """
         Protected method
 
@@ -86,10 +86,10 @@ class CytomineJob(object):
         project_id : int
             The id of the project
         """
-        return self.__project_id
+        return self._project
 
     @property
-    def software_id(self):
+    def software(self):
         """
         Protected method
 
@@ -98,7 +98,7 @@ class CytomineJob(object):
         software_id : int
             The id of the software
         """
-        return self.__software_id
+        return self._software
 
     def done(self, status=True):
         """
@@ -109,7 +109,7 @@ class CytomineJob(object):
         status : bool
             Whether the process is finished
         """
-        self.__job_done = status
+        self._job_done = status
 
     def is_done(self):
         """
@@ -118,45 +118,49 @@ class CytomineJob(object):
         job_status : bool
             Whether the process is finished
         """
-        return self.__job_done
+        return self._job_done
 
     def start(self):
         """
         Connect to the Cytomine server and switch to job connection
         Incurs dataflows
         """
-        current_user = self.__cytomine.get_current_user()
-        if not current_user.algo:  # If user connects as a human (CLI execution)
-            user_job = self.__cytomine.add_user_job(
-                self.__software_id,
-                self.__project_id
-            )
-            self.__cytomine.set_credentials(
-                str(user_job.publicKey),
-                str(user_job.privateKey)
-            )
-        else:  # If the user executes the job through the Cytomine interface
-            user_job = current_user
+
+        if not self.current_user.algo:
+            # If user connects as a human (CLI execution)
+            self._job = Job(self._project.id, self._software.id).save()
+            user_job = User().fetch(self._job.userJob)
+            self.set_credentials(user_job.publicKey, user_job.privateKey)
+        else:
+            # If the user executes the job through the Cytomine interface
+            self._job = Job().fetch(self.current_user.job)
 
         # set job state to RUNNING
-        job = self.__cytomine.get_job(user_job.job)
-        self.__job = self.__cytomine.update_job_status(job, status=job.RUNNING)
+        self._job.status = Job.RUNNING
+        self._job.update()
 
         # add software parameters
-        if self.__parameters is not None:
-            software = self.__cytomine.get_software(self.__software_id)
-            self.__cytomine.add_job_parameters(self.__job.id, software, self.__parameters)
+        if self._parameters is not None:
+            for software_param in self._software.parameters:
+                name = software_param["name"]
+                if name in self._parameters:
+                    value = self._parameters[name]
+                else:
+                    value = software_param["defaultParamValue"]
+
+                JobParameter(self._job.id, software_param["id"], value).save()
 
     def close(self):
         """
         Notify the Cytomine server of the job's end
         Incurs a dataflows
         """
-        status = 4  # status code for FAILED
+        status = Job.FAILED  # status code for FAILED
         if self.is_done():
-            status = self.__job.TERMINATED
+            status = Job.TERMINATED
 
-        self.__cytomine.update_job_status(self.__job, status=status)
+        self._job.status = status
+        self._job.update()
 
     def __enter__(self):
         self.start()
