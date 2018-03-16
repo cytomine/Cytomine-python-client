@@ -39,6 +39,15 @@ class Position(Model):
         self.x = None
         self.y = None
 
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save a new position by client.")
+
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError("Cannot delete a position.")
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a position.")
+
 
 class PositionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -66,6 +75,15 @@ class AnnotationAction(Model):
         self.annotationIdent = None
         self.annotationCreator = None
         self.action = None
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save a new annotation action by client.")
+
+    def delete(self, *args, **kwargs):
+        raise NotImplementedError("Cannot delete an annotation action.")
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update an annotation action.")
 
 
 class AnnotationActionCollection(Collection):

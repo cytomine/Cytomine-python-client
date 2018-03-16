@@ -42,6 +42,8 @@ class AbstractImage(Model):
         self.height = None
         self.resolution = None
         self.magnification = None
+        self.bitdepth = None
+        self.colorspace = None
 
         self.thumb = None
         self.preview = None
@@ -79,7 +81,7 @@ class AbstractImage(Model):
 class AbstractImageCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(AbstractImageCollection, self).__init__(AbstractImage, filters, max, offset)
-        self._allowed_filters = ["project"]
+        self._allowed_filters = [None]  # "project"]
         self.set_parameters(parameters)
 
 
@@ -98,6 +100,8 @@ class ImageInstance(Model):
         self.height = None
         self.resolution = None
         self.magnification = None
+        self.bitdepth = None
+        self.colorspace = None
         self.preview = None
         self.thumb = None
         self.numberOfAnnotations = None

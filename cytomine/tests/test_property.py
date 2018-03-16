@@ -68,6 +68,8 @@ class TestAttachedFile:
         assert (isinstance(attached_file, AttachedFile))
         assert (attached_file.filename == filename_base)
 
+        # TODO: Download
+
         # filename = "data/attached_file2.txt"
         # filename_base = os.path.basename(filename)
         # attached_file.filename = filename

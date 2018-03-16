@@ -139,17 +139,17 @@ class AnnotationCollection(Collection):
         self._allowed_filters = []
 
         self.showBasic = True
-        self.showMeta = False
-        self.showWKT = False
-        self.showGIS = False
-        self.showTerm = False
-        self.showAlgo = False
-        self.showUser = False
-        self.showImage = False
-        self.reviewed = False
-        self.noTerm = False
-        self.noAlgoTerm = False
-        self.multipleTerm = False
+        self.showMeta = True
+        self.showWKT = None
+        self.showGIS = None
+        self.showTerm = None
+        self.showAlgo = None
+        self.showUser = None
+        self.showImage = None
+        self.reviewed = None
+        self.noTerm = None
+        self.noAlgoTerm = None
+        self.multipleTerm = None
 
         self.project = None
 
@@ -201,10 +201,26 @@ class AnnotationTerm(Model):
         self.populate(attributes)
 
     def uri(self):
-        if self.is_new():
-            return "annotation/{}/term.json".format(self.userannotation)
-        else:
-            return "annotation/{}/term/{}.json".format(self.userannotation, self.term)
+        return "annotation/{}/term/{}.json".format(self.userannotation, self.term)
+
+    def fetch(self, id_annotation=None, id_term=None):
+        self.id = -1
+
+        if self.userannotation is None and id_annotation is None:
+            raise ValueError("Cannot fetch a model with no annotation ID.")
+        elif self.term is None and id_term is None:
+            raise ValueError("Cannot fetch a model with no term ID.")
+
+        if id_annotation is not None:
+            self.userannotation = id_annotation
+
+        if id_term is not None:
+            self.term = id_term
+
+        return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a annotation-term.")
 
     def __str__(self):
         return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.userannotation, self.term)
@@ -221,32 +237,31 @@ class AlgoAnnotationTerm(Model):
         self.populate(attributes)
 
     def uri(self):
-        if self.is_new():
-            return "annotation/{}/term.json".format(self.annotation)
-        else:
-            return "annotation/{}/term/{}.json".format(self.annotation, self.term)
+        return "annotation/{}/term/{}.json".format(self.annotation, self.term)
+
+    def fetch(self, id_annotation=None, id_term=None):
+        self.id = -1
+
+        if self.annotation is None and id_annotation is None:
+            raise ValueError("Cannot fetch a model with no annotation ID.")
+        elif self.term is None and id_term is None:
+            raise ValueError("Cannot fetch a model with no term ID.")
+
+        if id_annotation is not None:
+            self.annotation = id_annotation
+
+        if id_term is not None:
+            self.term = id_term
+
+        return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update a annotation-term.")
 
     def __str__(self):
         return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.annotation, self.term)
 
 
-# class AnnotationUnion(Model):
-#     def __init__(self, params=None):
-#         super(AnnotationUnion, self).__init__(params)
-#         self._callback_identifier = "annotationunion"
-#
-#     def to_url(self):
-#         if self.buffer_length:
-#             return "algoannotation/union.json?idUser=%d&idImage=%d&idTerm=%d&minIntersectionLength=%d&bufferLength=%d" % (
-#             self.id_user, self.id_image, self.id_term, self.min_intersection_length, self.buffer_length)
-#         else:
-#             return "algoannotation/union.json?idUser=%d&idImage=%d&idTerm=%d&minIntersectionLength=%d" % (
-#             self.id_user, self.id_image, self.id_term, self.min_intersection_length)
-#
-#     def __str__(self):
-#         return "Annotation Union %d,%d,%d,%d " % (
-#         self.id_user, self.id_image, self.id_term, self.min_intersection_length)
-#
 # class ReviewedAnnotationCollection(Collection):
 #     def __init__(self, params=None):
 #         super(ReviewedAnnotationCollection, self).__init__(Annotation, params)

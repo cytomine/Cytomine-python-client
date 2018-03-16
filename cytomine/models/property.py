@@ -120,6 +120,9 @@ class AttachedFile(DomainModel):
     def save(self):
         return self.upload()
 
+    def update(self, id=None, **attributes):
+        return self.upload()
+
     def upload(self):
         return Cytomine.get_instance().upload_file(self, self.filename,
                                                    query_parameters={"domainClassName": self.domainClassName,
