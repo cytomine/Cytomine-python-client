@@ -82,6 +82,7 @@ class Property(DomainModel):
 class PropertyCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
         super(PropertyCollection, self).__init__(Property, object, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)
 
     def uri(self):
@@ -138,6 +139,7 @@ class AttachedFile(DomainModel):
 class AttachedFileCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
         super(AttachedFileCollection, self).__init__(AttachedFile, object, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 

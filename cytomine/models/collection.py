@@ -51,6 +51,9 @@ class Collection(MutableSequence):
         if offset:
             self.offset = offset
 
+        if len(self._filters) == 0 and None not in self._allowed_filters:
+            raise ValueError("This collection cannot be fetched without a filter.")
+
         return Cytomine.get_instance().get_model(self, self.parameters)
 
     def fetch_with_filter(self, key, value, max=None, offset=None):
@@ -152,7 +155,6 @@ class Collection(MutableSequence):
         collection += other.data()
         return collection
 
-    @DeprecationWarning
     def data(self):
         return self._data
 

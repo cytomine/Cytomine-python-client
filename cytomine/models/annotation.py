@@ -136,7 +136,7 @@ class Annotation(Model):
 class AnnotationCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(AnnotationCollection, self).__init__(Annotation, filters, max, offset)
-        self._allowed_filters = []
+        self._allowed_filters = [None]
 
         self.showBasic = True
         self.showMeta = True
