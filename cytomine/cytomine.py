@@ -25,8 +25,12 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 
 import logging
 import json
-from json import JSONDecodeError
 from time import strftime, gmtime
+
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
 
 import os
 import requests
@@ -136,6 +140,8 @@ class Cytomine(object):
 
     @staticmethod
     def get_instance():
+        if Cytomine.__instance is None:
+            raise ConnectionError("You must be connected to get the Cytomine instance.")
         return Cytomine.__instance
 
     @property
@@ -322,7 +328,7 @@ class Cytomine(object):
                 response.raw.decode_content = True
                 shutil.copyfileobj(response.raw, f)
 
-            self._log_response(response, url)
+                self._logger.info("File downloaded successfully from {}".format(url))
             return True
         else:
             return True
@@ -375,6 +381,7 @@ class Cytomine(object):
     All old methods (should) have an equivalent with this new client, except:
     - add_user_job() : use CytomineJob utility instead.
     - union_polygons() : already deprecated in previous client.
+    - upload_job_data_file() : already in add_job_data()
     """
 
     # Project
@@ -815,12 +822,12 @@ class Cytomine(object):
         from .models.user import User
         return User().delete(id_user)
 
-    # tmp service, should be done by add job service
-    # def add_user_job(self, software, project):
-    #     user = User()
-    #     user.software = software
-    #     user.project = project
-    #     return self.save(user)
+    @deprecated
+    def add_user_job(self, software, project):
+        from .models.user import User
+        from .models.software import Job
+        job = Job(project, software).save()
+        return User().fetch(job.userJob)
 
     # Role
     @deprecated
@@ -936,6 +943,10 @@ class Cytomine(object):
         ai = AbstractImage()
         ai.id = abstract_image_id
         return PropertyCollection(ai).fetch()
+
+    @deprecated
+    def fetch_url_into_file(self, url, filename, is_image=True, override=False):
+        return self.download_file(url, filename, override)
 
     # def __getstate__(self):  # Make cytomine client serializable
     #     self.__conn = None

@@ -17,3 +17,19 @@
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
+
+from .model import Model, DomainModel
+from .collection import Collection, DomainCollection
+from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm
+from .image import AbstractImage, AbstractImageCollection, ImageInstance, ImageInstanceCollection
+from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupHDF5, ImageSequence, ImageSequenceCollection
+from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm
+from .project import Project, ProjectCollection, Discipline, DisciplineCollection
+from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description
+from .social import AnnotationAction, AnnotationActionCollection, Position, PositionCollection
+from .software import Software, SoftwareCollection, SoftwareParameter, SoftwareParameterCollection, \
+    SoftwareProject, SoftwareProjectCollection, Job, JobCollection, JobParameter, \
+    JobParameterCollection, JobTemplate, JobData
+from .storage import Storage, StorageCollection, UploadedFile, UploadedFileCollection
+from .user import User, CurrentUser, UserJob, UserCollection, UserJobCollection, \
+    Group, GroupCollection, UserGroup, UserGroupCollection, Role, RoleCollection, UserRole, UserRoleCollection
