@@ -65,6 +65,10 @@ class AbstractImage(Model):
         dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
         parameters = {"parent": parent}
 
+        destination = os.path.dirname(dest_pattern)
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      dest_pattern, override, parameters)
 
@@ -125,6 +129,10 @@ class ImageInstance(Model):
         dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
         parameters = {"parent": parent}
 
+        destination = os.path.dirname(dest_pattern)
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      dest_pattern, override, parameters)
 
@@ -160,12 +168,59 @@ class ImageInstance(Model):
             self.filename = file_path
         return result
 
-    # def get_crop_url(self, position):
-    #     return "imageinstance/%d/window-%d-%d-%d-%d.png" % (
-    #     self.id, position['x'], position['y'], position['w'], position['h'])
-    #
-    # def get_crop_geometry_url(self, geometry):
-    #     return "imageinstance/%d/cropgeometry?geometry=%s" % (self.id, geometry.replace(" ", "%20"))
+    def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
+               bits=8, annotations=None, terms=None, users=None, reviewed=None):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        pattern = re.compile("{(.*?)}")
+        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        del self.x
+        del self.y
+        del self.w
+        del self.h
+
+        destination = os.path.dirname(dest_pattern)
+        filename, extension = os.path.splitext(os.path.basename(dest_pattern))
+
+        if extension not in ("jpg", "png", "tif", "tiff"):
+            extension = "jpg"
+
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
+        if mask is None and alpha is None:
+            alphamask = None
+        elif mask and alpha:
+            alphamask = True
+            if extension == "jpg":
+                extension = "png"
+        else:
+            alphamask = False
+
+        # Temporary fix due to Cytomine-core
+        if mask is not None:
+            mask = str(mask).lower()
+
+        if alphamask is not None:
+            alphamask = str(alphamask).lower()
+        # ===
+
+        parameters = {
+            "annotations": ",".join(str(item) for item in annotations) if annotations else None,
+            "terms": ",".join(str(item) for item in terms) if terms else None,
+            "users": ",".join(str(item) for item in users) if users else None,
+            "reviewed": reviewed,
+            "bits": bits,
+            "mask": mask,
+            "alphaMask": alphamask
+        }
+
+        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
+
+        return Cytomine.get_instance().download_file("{}/{}/window-{}-{}-{}-{}.{}".format(
+            self.callback_identifier, self.id, x, y, w, h, extension), file_path, override, parameters)
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
