@@ -23,10 +23,10 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-import os
+from shapely.geometry import Point, box
 
 from cytomine import Cytomine
-from cytomine.models.image import ImageInstanceCollection
+from cytomine.models import Property, Annotation, AnnotationTerm, AnnotationCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -40,29 +40,33 @@ if __name__ == '__main__':
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_id_project', dest='id_project',
-                        help="The project from which we want the images")
-    parser.add_argument('--download_path', required=False,
-                        help="Where to store images")
-    params, other = parser.parse_known_args(sys.argv[1:])
 
-    if params.download_path:
-        original_path = os.path.join(params.download_path, "original")
-        dump_path = os.path.join(params.download_path, "dump")
+    parser.add_argument('--cytomine_id_image_instance', dest='id_image_instance',
+                        help="The image to which the annotation will be added")
+    parser.add_argument('--cytomine_id_term', dest='id_term', required=False,
+                        help="The term to associate to the annotations (optional)")
+    params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
                   verbose=logging.INFO) as cytomine:
-        image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
-        print(image_instances)
 
-        for image in image_instances:
-            print("Image ID: {} | Width: {} | Height: {} | Resolution: {} | Magnification: {} | Filename: {}".format(
-                image.id, image.width, image.height, image.resolution, image.magnification, image.filename
-            ))
+        # We first add a point in (10,10) where (0,0) is bottom-left corner
+        point = Point(10, 10)
+        annotation_point = Annotation(location=point.wkt, id_image=params.id_image_instance).save()
+        if params.id_term:
+            AnnotationTerm(annotation_point.id, params.id_term).save()
 
-            if params.download_path:
-                # We will dump the images in a specified directory.
-                # Attributes of ImageInstance are parsed in the filename
-                image.dump(os.path.join(dump_path, str(params.id_project), "{id}_{width}px_{height}px.jpg"))
-                # To download the original files that have been uploaded to Cytomine
-                image.download(os.path.join(original_path, str(params.id_project), "{originalFilename}"))
+        # Then, we add a rectangle as annotation
+        rectangle = box(20, 20, 100, 100)
+        annotation_rectangle = Annotation(location=rectangle.wkt, id_image=params.id_image_instance).save()
+        if params.id_term:
+            AnnotationTerm(annotation_rectangle.id, params.id_term).save()
+
+        # We can also add a property (key-value pair) to an annotation
+        Property(annotation_rectangle, key="my_property", value=10).save()
+
+        # Print the list of annotations in the given image:
+        annotations = AnnotationCollection()
+        annotations.image = params.id_image_instance
+        annotations.fetch()
+        print(annotations)

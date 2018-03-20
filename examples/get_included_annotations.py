@@ -23,10 +23,8 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-import os
-
 from cytomine import Cytomine
-from cytomine.models.image import ImageInstanceCollection
+from cytomine.models import AnnotationCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -40,29 +38,27 @@ if __name__ == '__main__':
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_id_project', dest='id_project',
-                        help="The project from which we want the images")
-    parser.add_argument('--download_path', required=False,
-                        help="Where to store images")
+    parser.add_argument('--cytomine_id_image_instance', dest='id_image_instance',
+                        help="The image in which we work")
+    parser.add_argument('--cytomine_id_roi_term', dest='id_roi_term',
+                        help="The term that represents regions of interest")
+    parser.add_argument('--cytomine_id_object_term', dest='id_object_term',
+                        help="The term that represents objects")
     params, other = parser.parse_known_args(sys.argv[1:])
-
-    if params.download_path:
-        original_path = os.path.join(params.download_path, "original")
-        dump_path = os.path.join(params.download_path, "dump")
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
                   verbose=logging.INFO) as cytomine:
-        image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
-        print(image_instances)
+        roi_annotations = AnnotationCollection()
+        roi_annotations.image = params.id_image_instance
+        roi_annotations.term = params.id_roi_term
+        roi_annotations.fetch()
+        print(roi_annotations)
 
-        for image in image_instances:
-            print("Image ID: {} | Width: {} | Height: {} | Resolution: {} | Magnification: {} | Filename: {}".format(
-                image.id, image.width, image.height, image.resolution, image.magnification, image.filename
-            ))
-
-            if params.download_path:
-                # We will dump the images in a specified directory.
-                # Attributes of ImageInstance are parsed in the filename
-                image.dump(os.path.join(dump_path, str(params.id_project), "{id}_{width}px_{height}px.jpg"))
-                # To download the original files that have been uploaded to Cytomine
-                image.download(os.path.join(original_path, str(params.id_project), "{originalFilename}"))
+        for roi_annotation in roi_annotations:
+            included_annotations = AnnotationCollection()
+            included_annotations.image = params.id_image_instance
+            included_annotations.term = params.id_object_term
+            included_annotations.annotation = roi_annotation.id
+            included_annotations.fetch()
+            print("Number of annotations of term {} included in ROI {}: {}".format(
+                params.id_object_term, roi_annotation.id, len(included_annotations)))

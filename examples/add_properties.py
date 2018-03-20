@@ -23,10 +23,8 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-import os
-
 from cytomine import Cytomine
-from cytomine.models import StorageCollection, Project
+from cytomine.models import Property, Project, Annotation, ImageInstance
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -40,41 +38,34 @@ if __name__ == '__main__':
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_upload_host', dest='upload_host',
-                        default='demo-upload.cytomine.be', help="The Cytomine upload host")
+
+    parser.add_argument('--key', help="the property key")
+    parser.add_argument('--value', help="the property value")
+
     parser.add_argument('--cytomine_id_project', dest='id_project', required=False,
-                        help="The project from which we want the images (optional)")
-    parser.add_argument('--filepath', dest='filepath',
-                        help="The filepath (on your file system) of the file you want to upload")
+                        help="The project to which the property will be added (optional)")
+    parser.add_argument('--cytomine_id_image_instance', dest='id_image_instance', required=False,
+                        help="The image to which the property will be added (optional)")
+    parser.add_argument('--cytomine_id_annotation', dest='id_annotation', required=False,
+                        help="The annotation to which the property will be added (optional)")
     params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
                   verbose=logging.INFO) as cytomine:
 
-        # Check that the file exists on your file system
-        if not os.path.exists(params.filepath):
-            raise ValueError("The file you want to upload does not exist")
-
-        # Check that the given project exists
         if params.id_project:
-            project = Project().fetch(params.id_project)
-            if not project:
-                raise ValueError("Project not found")
+            prop = Property(Project().fetch(params.id_project), key=params.key, value=params.value).save()
+            print(prop)
 
-        # To upload the image, we need to know the ID of your Cytomine storage.
-        storages = StorageCollection().fetch()
-        my_storage = next(filter(lambda storage: storage.user == cytomine.current_user.id, storages))
-        if not my_storage:
-            raise ValueError("Storage not found")
+        if params.id_image_instance:
+            prop = Property(ImageInstance().fetch(params.id_image_instance), key=params.key, value=params.value).save()
+            print(prop)
 
-        # Optionally, you can provide some properties or metadata you want to attach to the image
-        properties = None # {'key1':'value1','key2':'value2'}
+        if params.id_annotation:
+            prop = Property(Annotation().fetch(params.id_annotation), key=params.key, value=params.value).save()
+            print(prop)
 
-        uploaded_file = cytomine.upload_image(upload_host=params.upload_host,
-                                              filename=params.filepath,
-                                              id_storage=my_storage.id,
-                                              id_project=params.id_project,
-                                              properties=properties)
-
-        print(uploaded_file)
-        print(uploaded_file.images)
+        """
+        You can add property to any Cytomine domain.
+        You can also attach a file (see AttachedFile) or add a description (see Description) to any Cytomine domain.
+        """

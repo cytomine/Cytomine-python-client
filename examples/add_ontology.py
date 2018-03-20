@@ -23,10 +23,8 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-import os
-
 from cytomine import Cytomine
-from cytomine.models.image import ImageInstanceCollection
+from cytomine.models.ontology import Ontology, Term, RelationTerm, TermCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -40,29 +38,31 @@ if __name__ == '__main__':
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_id_project', dest='id_project',
-                        help="The project from which we want the images")
-    parser.add_argument('--download_path', required=False,
-                        help="Where to store images")
-    params, other = parser.parse_known_args(sys.argv[1:])
 
-    if params.download_path:
-        original_path = os.path.join(params.download_path, "original")
-        dump_path = os.path.join(params.download_path, "dump")
+    params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
                   verbose=logging.INFO) as cytomine:
-        image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
-        print(image_instances)
+        """
+        We will create a new ontology with the following structure:
+        _MY_ONTOLOGY_NAME_
+        == TERM1
+        == CATEGORY1
+        ==== TERM2
+        ==== TERM3
+        """
 
-        for image in image_instances:
-            print("Image ID: {} | Width: {} | Height: {} | Resolution: {} | Magnification: {} | Filename: {}".format(
-                image.id, image.width, image.height, image.resolution, image.magnification, image.filename
-            ))
+        # First we create the required resources
+        ontology = Ontology("_MY_ONTOLOGY_NAME_").save()
+        term1 = Term("TERM1", ontology.id, "#00FF00").save()
+        cat1 = Term("CATEGORY1", ontology.id, "#000000").save()
+        term2 = Term("TERM2", ontology.id, "#FF0000").save()
+        term3 = Term("TERM3", ontology.id, "#0000FF").save()
 
-            if params.download_path:
-                # We will dump the images in a specified directory.
-                # Attributes of ImageInstance are parsed in the filename
-                image.dump(os.path.join(dump_path, str(params.id_project), "{id}_{width}px_{height}px.jpg"))
-                # To download the original files that have been uploaded to Cytomine
-                image.download(os.path.join(original_path, str(params.id_project), "{originalFilename}"))
+        # Then, we add relations between terms
+        RelationTerm(cat1.id, term2.id).save()
+        RelationTerm(cat1.id, term3.id).save()
+
+        # Get all the terms of our ontology
+        terms = TermCollection().fetch_with_filter("ontology", ontology.id)
+        print(terms)
