@@ -50,6 +50,15 @@ class Annotation(Model):
     def __str__(self):
         return "[{}] {}".format(self.callback_identifier, self.id)
 
+    def review(self, id_terms=None):
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        if not id_terms:
+            id_terms = []
+        data = {"id": self.id, "terms": id_terms}
+        return Cytomine.get_instance().post("{}/{}/review.json".format(self.callback_identifier, self.id), data)
+
     def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
              zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None):
         if self.id is None:
@@ -186,7 +195,7 @@ class AnnotationCollection(Collection):
         return uri
 
     def save(self):
-        return Cytomine.get_instance().post(self)
+        return Cytomine.get_instance().post_model(self)
 
     def to_json(self, **dump_parameters):
         return "[{}]".format(",".join([d.to_json() for d in self._data]))
@@ -230,6 +239,7 @@ class AlgoAnnotationTerm(Model):
     def __init__(self, id_annotation=None, id_term=None, id_expected_term=None, rate=1.0, **attributes):
         super(AlgoAnnotationTerm, self).__init__()
         self.annotation = id_annotation
+        self.annotationIdent = id_annotation
         self.term = id_term
         self.expectedTerm = id_expected_term
         self.user = None
