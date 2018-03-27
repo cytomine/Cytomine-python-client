@@ -26,10 +26,12 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 import logging
 import json
 from time import strftime, gmtime
+from future.builtins import bytes
 
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
+    # Python 2
     JSONDecodeError = ValueError
 
 import os
@@ -89,6 +91,20 @@ class Cytomine(object):
 
         for handler in logging_handlers:
             self._logger.addHandler(handler)
+
+        if verbose == logging.DEBUG:
+            try:
+                import http.client as http_client
+            except ImportError:
+                # Python 2
+                import httplib as http_client
+
+            http_client.HTTPConnection.debuglevel = 1
+            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log.setLevel(logging.DEBUG)
+            requests_log.propagate = True
+            for handler in logging_handlers:
+                requests_log.addHandler(handler)
 
         # Deprecated
         self._working_path = working_path
@@ -192,86 +208,104 @@ class Cytomine(object):
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
 
+    def _get(self, uri, query_parameters):
+        return self._session.get("{}{}".format(self._base_url(), uri),
+                                 auth=CytomineAuth(
+                                     self._public_key, self._private_key,
+                                     self._base_url(), self._base_path),
+                                 headers=self._headers(),
+                                 params=query_parameters)
+
     def get(self, uri, query_parameters=None):
-        response = self._session.get("{}{}".format(self._base_url(), uri),
-                                     auth=CytomineAuth(
-                                         self._public_key, self._private_key,
-                                         self._base_url(), self._base_path),
-                                     headers=self._headers(),
-                                     params=query_parameters)
-
+        response = self._get(uri, query_parameters)
         self._log_response(response, uri)
-
         if not response.status_code == requests.codes.ok:
             return False
 
         return response.json()
 
     def get_model(self, model, query_parameters=None):
-        response = self._session.get("{}{}".format(self._base_url(), model.uri()),
-                                     auth=CytomineAuth(
-                                         self._public_key, self._private_key,
-                                         self._base_url(), self._base_path),
-                                     headers=self._headers(),
-                                     params=query_parameters)
-
+        response = self._get(model.uri(), query_parameters)
         if response.status_code == requests.codes.ok:
             model = model.populate(response.json())
 
         self._log_response(response, model)
-
         if not response.status_code == requests.codes.ok:
             model = False
 
         return model
 
-    def put(self, model, query_parameters=None, uri=None):
-        if not uri:
-            uri = model.uri()
-        response = self._session.put("{}{}".format(self._base_url(), uri),
-                                     auth=CytomineAuth(
-                                         self._public_key, self._private_key,
-                                         self._base_url(), self._base_path),
-                                     headers=self._headers(content_type='application/json'),
-                                     params=query_parameters,
-                                     data=model.to_json())
+    def _put(self, uri, data=None, query_parameters=None):
+        return self._session.put("{}{}".format(self._base_url(), uri),
+                                 auth=CytomineAuth(
+                                     self._public_key, self._private_key,
+                                     self._base_url(), self._base_path),
+                                 headers=self._headers(content_type='application/json'),
+                                 params=query_parameters,
+                                 data=data)
 
+    def put(self, uri, data=None, query_paramters=None):
+        response = self._put(uri, data=data, query_parameters=query_paramters)
+        self._log_response(response, uri)
+        if not response.status_code == requests.codes.ok:
+            return False
+
+        return response.json()
+
+    def put_model(self, model, query_parameters=None):
+        response = self._put(model.uri(), model.to_json(), query_parameters)
         if response.status_code == requests.codes.ok:
             model = model.populate(response.json()[model.callback_identifier.lower()])
 
         self._log_response(response, model)
-
         if not response.status_code == requests.codes.ok:
             model = False
 
         return model
 
-    def delete(self, model, query_parameters=None, uri=None):
-        if not uri:
-            uri = model.uri()
-        response = self._session.delete("{}{}".format(self._base_url(), uri),
-                                        auth=CytomineAuth(
-                                            self._public_key, self._private_key,
-                                            self._base_url(), self._base_path),
-                                        headers=self._headers(content_type='application/json'),
-                                        params=query_parameters)
+    def _delete(self, uri, query_parameters=None):
+        return self._session.delete("{}{}".format(self._base_url(), uri),
+                                    auth=CytomineAuth(
+                                        self._public_key, self._private_key,
+                                        self._base_url(), self._base_path),
+                                    headers=self._headers(content_type='application/json'),
+                                    params=query_parameters)
 
+    def delete(self, uri, query_parameters=None):
+        response = self._delete(uri, query_parameters)
+        self._log_response(response, uri)
+        if response.status_code == requests.codes.ok:
+            return True
+
+        return False
+
+    def delete_model(self, model, query_parameters=None):
+        response = self._delete(model.uri(), query_parameters)
         self._log_response(response, model)
         if response.status_code == requests.codes.ok:
             return True
 
         return False
 
-    def post(self, model, query_parameters=None, uri=None):
-        if not uri:
-            uri = model.uri()
-        response = self._session.post("{}{}".format(self._base_url(), uri),
-                                      auth=CytomineAuth(
-                                          self._public_key, self._private_key,
-                                          self._base_url(), self._base_path),
-                                      headers=self._headers(content_type='application/json'),
-                                      params=query_parameters,
-                                      data=model.to_json())
+    def _post(self, uri, data=None, query_parameters=None):
+        return self._session.post("{}{}".format(self._base_url(), uri),
+                                  auth=CytomineAuth(
+                                      self._public_key, self._private_key,
+                                      self._base_url(), self._base_path),
+                                  headers=self._headers(content_type='application/json'),
+                                  params=query_parameters,
+                                  data=data)
+
+    def post(self, uri, data=None, query_parameters=None):
+        response = self._post(uri, data=data, query_parameters=query_parameters)
+        self._log_response(response, uri)
+        if not response.status_code == requests.codes.ok:
+            return False
+
+        return response.json()
+
+    def post_model(self, model, query_parameters=None):
+        response = self._post(model.uri(), model.to_json(), query_parameters)
 
         if response.status_code == requests.codes.ok:
             try:
@@ -289,7 +323,12 @@ class Cytomine(object):
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
             uri = model.uri()
-        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
+
+        # urllib3 still uses RFC2231, not compliant with our server
+        # https://github.com/shazow/urllib3/issues/303
+        # https://github.com/shazow/urllib3/pull/856
+        filename_ascii = bytes(filename, 'utf-8').decode('ascii', 'ignore')
+        m = MultipartEncoder(fields={"files[]": (filename_ascii, open(filename, 'rb'))})
         response = self._session.post("{}{}".format(self._base_url(), uri),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
@@ -356,7 +395,11 @@ class Cytomine(object):
             query_parameters["keys"] = ','.join(list(properties.keys()))
             query_parameters["values"] = ','.join(list(properties.values()))
 
-        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
+        # urllib3 still uses RFC2231, not compliant with our server
+        # https://github.com/shazow/urllib3/issues/303
+        # https://github.com/shazow/urllib3/pull/856
+        filename_ascii = bytes(filename, 'utf-8').decode('ascii', 'ignore')
+        m = MultipartEncoder(fields={"files[]": (filename_ascii, open(filename, 'rb'))})
         response = self._session.post("{}/upload".format(upload_host),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,

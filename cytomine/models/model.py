@@ -51,7 +51,7 @@ class Model(object):
 
     def save(self):
         self.id = None
-        return Cytomine.get_instance().post(self)
+        return Cytomine.get_instance().post_model(self)
 
     def delete(self, id=None):
         if self.id is None and id is None:
@@ -59,7 +59,7 @@ class Model(object):
         if id is not None:
             self.id = id
 
-        return Cytomine.get_instance().delete(self)
+        return Cytomine.get_instance().delete_model(self)
 
     def update(self, id=None, **attributes):
         if self.id is None and id is None:
@@ -69,7 +69,7 @@ class Model(object):
 
         if attributes:
             self.populate(attributes)
-        return Cytomine.get_instance().put(self)
+        return Cytomine.get_instance().put_model(self)
 
     def is_new(self):
         return self.id is None
