@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from cytomine import Cytomine
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -53,6 +55,18 @@ class Project(Model):
         self.users = None
         self.mode = None
         self.populate(attributes)
+
+    def add_user(self, id_user, admin=False):
+        if admin:
+            return Cytomine.get_instance().post("project/{}/user/{}/admin.json".format(self.id, id_user))
+        else:
+            return Cytomine.get_instance().post("project/{}/user/{}.json".format(self.id, id_user))
+
+    def delete_user(self, id_user, admin=False):
+        if admin:
+            return Cytomine.get_instance().delete("project/{}/user/{}/admin.json".format(self.id, id_user))
+        else:
+            return Cytomine.get_instance().delete("project/{}/user/{}.json".format(self.id, id_user))
 
 
 class ProjectCollection(Collection):
