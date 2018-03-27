@@ -150,9 +150,9 @@ class Collection(MutableSequence):
     def __add__(self, other):
         if type(self) is not type(other):
             raise TypeError("Only two same Collection objects can be added together.")
-        collection = Collection(self._model)
-        collection += self.data()
-        collection += other.data()
+        collection = self.__class__(self._model)
+        collection += self
+        collection += other
         return collection
 
     def data(self):
