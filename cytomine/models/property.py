@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -129,9 +131,13 @@ class AttachedFile(DomainModel):
                                                    query_parameters={"domainClassName": self.domainClassName,
                                                                      "domainIdent": self.domainIdent})
 
-    def download(self, destination, override=False):
+    def download(self, destination="{filename}", override=False):
         if self.is_new():
             raise ValueError("Cannot download file if not existing ID.")
+
+        pattern = re.compile("{(.*?)}")
+        destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), destination)
+
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      destination, override)
 
@@ -151,3 +157,9 @@ class Description(DomainModel):
 
     def uri(self):
         return "domain/{}/{}/{}.json".format(self._object.class_, self._object.id, self.callback_identifier)
+
+    def fetch(self, id=None):
+        if id is not None:
+            self.id = id
+
+        return Cytomine.get_instance().get_model(self, self.query_parameters)

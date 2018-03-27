@@ -77,4 +77,3 @@ if __name__ == '__main__':
                                               properties=properties)
 
         print(uploaded_file)
-        print(uploaded_file.images)

@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -180,6 +182,13 @@ class JobTemplate(Model):
         self.populate(attributes)
 
 
+class JobTemplateCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(JobTemplateCollection, self).__init__(JobTemplate, filters, max, offset)
+        self._allowed_filters = ["project"]
+        self.set_parameters(parameters)
+
+
 class JobData(Model):
     def __init__(self, id_job=None, key=None, filename=None, **attributes):
         super(JobData, self).__init__()
@@ -197,8 +206,19 @@ class JobData(Model):
         return Cytomine.get_instance().upload_file(self, filename,
                                                    uri="{}/{}/upload".format(self.callback_identifier, self.id))
 
-    def download(self, destination, override=False):
+    def download(self, destination="{filename}", override=False):
         if self.is_new():
             raise ValueError("Cannot download file if not existing ID.")
+
+        pattern = re.compile("{(.*?)}")
+        destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), destination)
+
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      destination, override)
+
+
+class JobDataCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(JobDataCollection, self).__init__(JobData, filters, max, offset)
+        self._allowed_filters = ["job"]
+        self.set_parameters(parameters)
