@@ -33,6 +33,11 @@ class CytomineUser:
         self.username = None
         self.algo = False
 
+    def keys(self):
+        # Only works if you are superadmin.
+        if hasattr(self, "id") and self.id:
+            return Cytomine.get_instance().get("user/{}/keys.json".format(self.id))
+
 
 class User(Model, CytomineUser):
     def __init__(self, username=None, firstname=None, lastname=None, email=None, password=None, **attributes):
@@ -76,11 +81,18 @@ class UserCollection(Collection):
         super(UserCollection, self).__init__(User, filters, max, offset)
         self._allowed_filters = [None, "project", "ontology"]
 
+        self.admin = None # Only works with project filter
         self.online = None
         self.showJob = None
         self.publicKey = None
 
         self.set_parameters(parameters)
+
+    def uri(self):
+        uri = super(UserCollection, self).uri()
+        if "project" in self.filters and self.admin:
+            uri = uri.replace("user", "admin")
+        return uri
 
 
 class UserJob(Model, CytomineUser):
@@ -98,7 +110,7 @@ class UserJob(Model, CytomineUser):
 
     @property
     def callback_identifier(self):
-        return "userjob"
+        return "userJob"
 
 
 class UserJobCollection(Collection):
