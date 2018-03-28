@@ -58,6 +58,24 @@ class AbstractImage(Model):
         return self._image_servers
 
     def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
+        """
+        Download the original image.
+
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        parent : bool, optional
+            True to download image parent if the abstract image is a part of a multidimensional file.
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise.
+        """
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
@@ -74,12 +92,6 @@ class AbstractImage(Model):
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
-
-    # def get_property_url(self, extract=False):
-    #     if extract:
-    #         return "abstractimage/%d/property.json?extract=true" % self.id
-    #     else:
-    #         return "abstractimage/%d/property.json" % self.id
 
 
 class AbstractImageCollection(Collection):
@@ -122,6 +134,24 @@ class ImageInstance(Model):
         return self._image_servers
 
     def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
+        """
+        Download the original image.
+
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        parent : bool, optional
+            True to download image parent if the image is a part of a multidimensional file.
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise.
+        """
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
@@ -136,7 +166,37 @@ class ImageInstance(Model):
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      dest_pattern, override, parameters)
 
-    def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None):
+    def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
+             colormap=None, inverse=None):
+        """
+        Download the image with optional image modifications.
+
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        max_size : int, tuple, optional
+            Maximum size (width or height) of returned image. None to get original size.
+        bits : int (8,16,32) or str ("max"), optional
+            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+        contrast : float, optional
+            Optional contrast applied on returned image.
+        gamma : float, optional
+            Optional gamma applied on returned image.
+        colormap : int, optional
+            Cytomine identifier of a colormap to apply on returned image.
+        inverse : bool, optional
+            True to inverse color mapping, False otherwise.
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            is filled with downloaded file path.
+        """
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
@@ -152,11 +212,16 @@ class ImageInstance(Model):
         if not os.path.exists(destination):
             os.makedirs(destination)
 
-        if isinstance(max_size, tuple):
+        if isinstance(max_size, tuple) or max_size is None:
             max_size = max(self.width, self.height)
 
         parameters = {
             "maxSize": max_size,
+            "contrast": contrast,
+            "gamma": gamma,
+            "colormap": colormap,
+            "inverse": inverse,
+            "bits": bits
         }
 
         file_path = os.path.join(destination, "{}.{}".format(filename, extension))
@@ -170,6 +235,44 @@ class ImageInstance(Model):
 
     def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
                bits=8, annotations=None, terms=None, users=None, reviewed=None):
+        """
+        Extract a window (rectangle) from an image and download it.
+
+        Parameters
+        ----------
+        x : int
+            The X position of window top-left corner. 0 is image left.
+        y : int
+            The Y position of window top-left corner. 0 is image top.
+        w : int
+            The window width
+        h : int
+            The window height
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        mask : bool, optional
+            True if a binary mask based on given annotations must be returned, False otherwise.
+        alpha : bool, optional
+            True if image background (outside annotations) must be transparent, False otherwise.
+        bits : int (8/16/32), optional
+            Optional output bit depth of returned images
+        annotations : list of int, optional
+            If mask=True or alpha=True, annotation identifiers that must be taken into account for masking
+        terms : list of int, optional
+            If mask=True or alpha=True, term identifiers that must be taken into account for masking
+        users : list of int, optional
+            If mask=True or alpha=True, user identifiers that must be taken into account for masking
+        reviewed : bool, optional
+            If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise.
+        """
         self.x = x
         self.y = y
         self.w = w

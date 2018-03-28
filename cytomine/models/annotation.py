@@ -28,7 +28,7 @@ import re
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
-from cytomine.models.model import Model
+from cytomine.models.model import Model, DomainModel
 
 
 class Annotation(Model):
@@ -61,6 +61,44 @@ class Annotation(Model):
 
     def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
              zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None):
+        """
+        Download the annotation crop, with optional image modifications.
+
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        mask : bool, optional
+            True if a binary mask based on given annotations must be returned, False otherwise.
+        alpha : bool, optional
+            True if image background (outside annotations) must be transparent, False otherwise.
+        zoom : int, optional
+            Optional image zoom number
+        bits : int (8,16,32) or str ("max"), optional
+            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+        max_size : int, tuple, optional
+            Maximum size (width or height) of returned image. None to get original size.
+        increase_area : float, optional
+            Increase the crop size. For example, an annotation whose bounding box size is (w,h) will have
+            a crop dimension of (w*increase_area, h*increase_area).
+        contrast : float, optional
+            Optional contrast applied on returned image.
+        gamma : float, optional
+            Optional gamma applied on returned image.
+        colormap : int, optional
+            Cytomine identifier of a colormap to apply on returned image.
+        inverse : bool, optional
+            True to inverse color mapping, False otherwise.
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            is filled with downloaded file path.
+        """
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
@@ -272,16 +310,18 @@ class AlgoAnnotationTerm(Model):
         return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.annotation, self.term)
 
 
-# class ReviewedAnnotationCollection(Collection):
-#     def __init__(self, params=None):
-#         super(ReviewedAnnotationCollection, self).__init__(Annotation, params)
-#
-#     def to_url(self):
-#         if hasattr(self, "project"):
-#             return "project/" + str(self.project) + "/reviewedannotation.json"
-#         elif hasattr(self, "user") and hasattr(self, "imageinstance"):
-#             return "user/" + str(self.user) + "/imageinstance/" + str(self.imageinstance) + "/reviewedannotation.json"
-#         elif hasattr(self, "imageinstance"):
-#             return "imageinstance/" + str(self.imageinstance) + "/reviewedannotation.json"
-#         else:
-#             return "reviewedannotation.json"
+class AnnotationFilter(Model):
+    def __init__(self, name=None, users=None, terms=None, **attributes):
+        super(AnnotationFilter, self).__init__()
+        self.name = name
+        self.users = users
+        self.terms = terms
+        self.populate(attributes)
+
+
+class AnnotationFilterCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(AnnotationFilterCollection, self).__init__(AnnotationFilter, filters, max, offset)
+        self._allowed_filters = [None]
+        self.project = None
+        self.set_parameters(parameters)
