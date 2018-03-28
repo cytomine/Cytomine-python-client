@@ -107,6 +107,7 @@ class Annotation(Model):
 
         destination = os.path.dirname(dest_pattern)
         filename, extension = os.path.splitext(os.path.basename(dest_pattern))
+        extension = extension[1:]
 
         if extension not in ("jpg", "png", "tif", "tiff"):
             extension = "jpg"
