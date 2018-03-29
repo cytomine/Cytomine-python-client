@@ -350,7 +350,7 @@ class Cytomine(object):
         if not url.startswith("http"):
             url = "{}{}".format(self._base_url(), url)
 
-        if override:
+        if override or not os.path.exists(destination):
             response = self._session.get(url,
                                          auth=CytomineAuth(
                                              self._public_key, self._private_key,
