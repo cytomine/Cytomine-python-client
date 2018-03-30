@@ -19,6 +19,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+import os
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -40,6 +43,39 @@ class ImageGroup(Model):
     def characteristics(self):
         uri = "imagegroup/{}/characteristics.json".format(self.id)
         return Cytomine.get_instance().get(uri)
+
+    def download(self, dest_pattern="{name}", override=True, parent=False):
+        """
+        Download the original image.
+
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        parent : bool, optional
+            True to download image parent if the image is a part of a multidimensional file.
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise.
+        """
+        if self.id is None:
+            raise ValueError("Cannot download file with no ID.")
+
+        pattern = re.compile("{(.*?)}")
+        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        parameters = {"parent": parent}
+
+        destination = os.path.dirname(dest_pattern)
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
+        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
+                                                     dest_pattern, override, parameters)
 
 
 class ImageGroupCollection(Collection):

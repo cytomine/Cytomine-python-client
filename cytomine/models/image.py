@@ -153,7 +153,7 @@ class ImageInstance(Model):
             True if everything happens correctly, False otherwise.
         """
         if self.id is None:
-            raise ValueError("Cannot dump an annotation with no ID.")
+            raise ValueError("Cannot download image with no ID.")
 
         pattern = re.compile("{(.*?)}")
         dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)

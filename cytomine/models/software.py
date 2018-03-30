@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 
 import re
 
+import os
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -210,6 +212,7 @@ class JobData(Model):
         if self.is_new():
             raise ValueError("Cannot download file if not existing ID.")
 
+        self.filename = os.path.basename(self.filename)
         pattern = re.compile("{(.*?)}")
         destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), destination)
 
