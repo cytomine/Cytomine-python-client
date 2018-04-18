@@ -43,7 +43,7 @@ import Queue
 
 import socket
 
-from .utils import ImageFetcher
+from utils import ImageFetcher
 from models import *
 
 #API
@@ -534,6 +534,37 @@ class Cytomine(object):
             positions = self.fetch(positions,query=query)
         return positions
 
+    # annotation Actions
+    def get_annotationactions(self, id_image=None, id_user=None,
+                             showDetails=None, afterthan=None,
+                             beforethan=None, maxperpage=None):
+        actions = AnnotationActionCollection()
+        actions.imageinstance = id_image
+        query = ""
+        if id_user:
+            query += "user=" + str(id_user)
+        if showDetails:
+            query += "&showDetails=true"
+        if afterthan:
+            query += "&afterThan=" + str(afterthan)
+        if beforethan:
+            query += "&beforeThan=" + str(beforethan)
+        # use paginator for large collections
+        if maxperpage:
+            actions_tmp = AnnotationActionCollection()
+            actions_tmp.init_paginator(maxperpage, 0)
+            while True:
+                actions_tmp.imageinstance = id_image
+                actions_tmp = self.fetch(actions_tmp, query=query)
+                if not actions:
+                    actions = actions_tmp
+                else:
+                    actions.data().extend(actions_tmp.data())
+                if not (actions_tmp.next_page()):
+                    break
+        else:
+            actions = self.fetch(actions, query=query)
+        return actions
     
     # annotations
     def get_annotations(self, id_project = None, id_user = None, id_image = None, id_term = None, showGIS = None, showWKT = None, showMeta = None, bbox = None, id_bbox= None, reviewed_only = False):
@@ -700,6 +731,46 @@ class Cytomine(object):
         abstract_image_properties.abstract_image_id = abstract_image_id
         return self.fetch(abstract_image_properties)
 
+    # attached file
+    def get_attached_file(self, id_attached_file):
+        attached_file = AttachedFile()
+        attached_file.id = id_attached_file
+        return self.fetch(attached_file)
+
+    def get_and_download_attached_file(self, id_attached_file, filename, override=False):
+        af = self.get_attached_file(id_attached_file)
+        self.fetch_url_into_file(self.__protocol + self.__host + af.url, filename, override=override)
+        return af
+
+    def get_attached_files(self, domain_class=None, domain_id=None):
+        attached_files = AttachedFileCollection()
+        attached_files.domainClassName = domain_class
+        attached_files.domainIdent = domain_id
+        return self.fetch(attached_files)
+
+    def add_and_upload_attached_file(self, filename, domain_class, domain_id):
+        from poster.encode import multipart_encode
+        from poster.streaminghttp import register_openers
+
+        url = "attachedfile.json?domainClassName={}&domainIdent={}".format(domain_class, domain_id)
+
+        # Build the request
+        register_openers()
+        file_header = {"files[]": open(filename, "rb")}
+        datagen, headers = multipart_encode(file_header.items())
+        # get the content_type
+        for header in headers.items():
+            if header[0] == "Content-Type":
+                content_type = header[1]
+
+        self.__authorize("POST", url=url, content_type=content_type)
+        fullHeaders = dict(headers.items() + self.__headers.items())
+        fullURL = self.__protocol + self.__host + self.__base_path + url
+        # poster incompatible with httplib2 so we use urllib2
+        request = urllib2.Request(fullURL, datagen, fullHeaders)
+        response = urllib2.urlopen(request, timeout=self.__timeout).read()
+        return AttachedFile(json.dumps(json.loads(response)))
+
     # uploadedfile
     def get_uploaded_file(self, id_uploaded_file):
         uploaded_file = UploadedFile()
@@ -717,6 +788,11 @@ class Cytomine(object):
         software = Software()
         software.id = id_software
         return self.fetch(software)
+
+    def delete_software(self, id_software):
+        software = Software()
+        software.id = id_software
+        return self.delete(software)
 
     def add_software(self, name, service_name, result_name):
         software = Software()
@@ -741,6 +817,12 @@ class Cytomine(object):
         software_project.project = project
         software_project.software = software
         return self.save(software_project)
+
+    def delete_software_project(self, id_project, id_software):
+        sp = SoftwareProject()
+        sp.project = id_project
+        sp.software = id_software
+        return self.delete(sp)
 
         #software_parameters
 
@@ -929,11 +1011,10 @@ class Cytomine(object):
             t.setDaemon(True)
             t.start()
 
-        for annot in annotations.data():                            
-            
-            if self.__verbose and not(len(annot.term)):
-                print "Skip %s/%s : annotation (%s) without term " % (i, nbAnnotations, annot.id)
-                continue
+        for annot in annotations.data():
+
+            if len(annot.term) == 0:
+                annot.term = [""]
 
             for term in annot.term:
                 if term in excluded_terms: 
@@ -998,7 +1079,8 @@ class Cytomine(object):
         return self.fetch(term)
 
     # Check / for destPath
-    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None, max_size=None):
+    def dump_project_images(self, id_project=None, dest_path="imageinstances/", override=False, image_instances=None,
+                            max_size=None):
         images = []
         if not (os.path.exists(self.__working_path)):
             print "Working path (%s) does not exist" % self.__working_path

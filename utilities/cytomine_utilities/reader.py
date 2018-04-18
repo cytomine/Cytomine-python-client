@@ -25,7 +25,6 @@ __version__         = '0.1'
 
 
 from StringIO import StringIO
-import cv
 import random
 try:
     import Image

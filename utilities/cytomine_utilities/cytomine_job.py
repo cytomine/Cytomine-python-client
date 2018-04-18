@@ -143,7 +143,7 @@ class CytomineJob(object):
         self.__job = self.__cytomine.update_job_status(job, status=job.RUNNING)
 
         # add software parameters
-        if self.__parameters is not None:
+        if not current_user.algo and self.__parameters is not None:
             software = self.__cytomine.get_software(self.__software_id)
             self.__cytomine.add_job_parameters(self.__job.id, software, self.__parameters)
 
