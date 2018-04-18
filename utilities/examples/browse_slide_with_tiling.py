@@ -26,7 +26,7 @@ __copyright__       = "Copyright 2010-2015 University of Liège, Belgium, http:/
 
 import os, sys, time
 import optparse
-import cv
+
 import pickle
 
 from cytomine import Cytomine
@@ -80,7 +80,6 @@ def main(argv):
     whole_slide = WholeSlide(conn.get_image_instance(cytomine_id_image, True))
     async = False #True is experimental
     reader = CytomineReader(conn, whole_slide, window_position = Bounds(0,0, window_size, window_size), zoom = cytomine_zoom_level, overlap = overlap)
-    cv_image = cv.CreateImageHeader((reader.window_position.width, reader.window_position.height), cv.IPL_DEPTH_8U, 3)
 
     
     #sliding window test:

@@ -53,3 +53,28 @@ class UploadedFile(Model):
 
     def __str__( self ):
         return "Uploadedfile : " + str(self.id)
+
+
+class AttachedFile(Model):
+    def __init__(self, params=None):
+        super(AttachedFile, self).__init__(params)
+        self._callback_identifier = "attachedfile"
+
+    def to_url(self):
+        if hasattr(self, "id"):
+            return "attachedfile/%d.json" % self.id
+        else:
+            return "attachedfile.json"
+
+    def __str__(self):
+        return "AttachedFile : " + str(self.id) + " " + str(self.filename)
+
+
+class AttachedFileCollection(Collection):
+    def __init__(self, params=None):
+        super(AttachedFileCollection, self).__init__(AttachedFile, params)
+
+    def to_url(self):
+        if hasattr(self, "domainClassName") and hasattr(self, "domainIdent"):
+            return "domain/{}/{}/attachedfile.json".format(self.domainClassName, self.domainIdent)
+        return "attachedfile.json"
