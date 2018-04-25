@@ -39,37 +39,58 @@ class Collection(MutableSequence):
         self._filters = filters if filters is not None else {}
 
         self._total = 0  # total number of resources
-        self._total_pages = 0  # total number of pages
+        self._total_pages = None  # total number of pages
 
         self.max = max
         self.offset = offset
 
-    def fetch(self, max=None, offset=None):
-        if max:
-            self.max = max
-
-        if offset:
-            self.offset = offset
-
+    def _fetch(self, append_mode=False):
         if len(self._filters) == 0 and None not in self._allowed_filters:
             raise ValueError("This collection cannot be fetched without a filter.")
 
-        return Cytomine.get_instance().get_model(self, self.parameters)
+        return Cytomine.get_instance().get_collection(self, self.parameters, append_mode)
 
-    def fetch_with_filter(self, key, value, max=None, offset=None):
+    def fetch(self, max=None):
+        """
+        Fetch all collection by pages of `max` items.
+        Parameters
+        ----------
+        max : int, None (optional)
+            The number of item per page. If None, retrieve all collection.
+
+        Returns
+        -------
+        self    Collection, the fetched collection
+        """
+        if max:
+            self.max = max
+            n_pages = 0
+            while not self._total_pages or n_pages < self._total_pages:
+                self.fetch_next_page(True)
+                n_pages += 1
+
+            return self
+        else:
+            return self._fetch()
+
+    def fetch_with_filter(self, key, value, max=None):
         self._filters[key] = value
-        return self.fetch(max, offset)
+        return self.fetch(max)
 
-    def fetch_next_page(self):
+    def fetch_next_page(self, append_mode=False):
         self.offset = min(self._total, self.offset + self.max)
-        return self.fetch()
+        return self._fetch(append_mode)
 
     def fetch_previous_page(self):
         self.offset = max(0, self.offset - self.max)
-        return self.fetch()
+        return self._fetch()
 
-    def populate(self, attributes):
-        self._data = [self._model().populate(instance) for instance in attributes["collection"]]
+    def populate(self, attributes, append_mode=False):
+        data = [self._model().populate(instance) for instance in attributes["collection"]]
+        if append_mode:
+            self._data += data
+        else:
+            self._data = data
         self._total = attributes["size"]
         self._total_pages = attributes["totalPages"]
         return self

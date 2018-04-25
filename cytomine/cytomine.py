@@ -235,6 +235,17 @@ class Cytomine(object):
 
         return model
 
+    def get_collection(self, collection, query_parameters=None, append_mode=False):
+        response = self._get(collection.uri(), query_parameters)
+        if response.status_code == requests.codes.ok:
+            collection = collection.populate(response.json(), append_mode)
+
+        self._log_response(response, collection)
+        if not response.status_code == requests.codes.ok:
+            collection = False
+
+        return collection
+
     def _put(self, uri, data=None, query_parameters=None):
         return self._session.put("{}{}".format(self._base_url(), uri),
                                  auth=CytomineAuth(
