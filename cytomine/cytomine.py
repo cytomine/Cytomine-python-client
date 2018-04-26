@@ -91,6 +91,7 @@ class Cytomine(object):
         self._verbose = verbose
         self._logger.setLevel(verbose)
 
+        logging_handlers = logging_handlers if logging_handlers is not None else [StdoutHandler()]
         for handler in logging_handlers:
             self._logger.addHandler(handler)
 
@@ -105,7 +106,6 @@ class Cytomine(object):
             requests_log = logging.getLogger("requests.packages.urllib3")
             requests_log.setLevel(logging.DEBUG)
             requests_log.propagate = True
-            logging_handlers = logging_handlers if logging_handlers is not None else [StdoutHandler()]
             for handler in logging_handlers:
                 requests_log.addHandler(handler)
 
@@ -181,9 +181,9 @@ class Cytomine(object):
         argparse: ArgumentParser
             The argument parser (same object as parameter)
         """
-        argparse.add_argument("--cytomine_host", dest="host", help="The Cytomine host (without protocol).")
-        argparse.add_argument("--cytomine_public_key", dest="public_key", help="The Cytomine public key.")
-        argparse.add_argument("--cytomine_private_key", dest="private_key", help="The Cytomine private key.")
+        argparse.add_argument("--cytomine_host", dest="host", help="The Cytomine host (without protocol).", required=True)
+        argparse.add_argument("--cytomine_public_key", dest="public_key", help="The Cytomine public key.", required=True)
+        argparse.add_argument("--cytomine_private_key", dest="private_key", help="The Cytomine private key.", required=True)
         argparse.add_argument("--cytomine_verbose", dest="verbose", type=int, default=logging.INFO,
                               help="The verbosity level of the client.")
         return argparse
