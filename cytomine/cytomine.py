@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from argparse import ArgumentParser
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -137,6 +139,54 @@ class Cytomine(object):
             A connected Cytomine client.
         """
         return cls(host, public_key, private_key, verbose, use_cache)
+
+    @classmethod
+    def connect_from_cli(cls, argv, use_cache=True):
+        """
+        Connect with data taken from a command line interface.
+
+        Parameters
+        ----------
+        argv: list
+            Command line parameters (executable name excluded)
+        use_cache : bool
+            True to use HTTP cache, False otherwise.
+
+        Returns
+        -------
+        client : Cytomine
+            A connected Cytomine client.
+
+        Notes
+        -----
+        If some parameters are invalid, the function stops the execution and displays an help.
+        """
+        argparse = cls._add_cytomine_cli_args(ArgumentParser())
+        params, _ = argparse.parse_known_args(args=argv)
+        return cls.connect(params.host, params.public_key, params.private_key, params.verbose, use_cache=use_cache)
+
+    @staticmethod
+    def _add_cytomine_cli_args(argparse):
+        """
+        Add cytomine CLI args to the ArgumentParser object: cytomine_host, cytomine_public_key, cytomine_private_key and
+        cytomine_verbose.
+
+        Parameters
+        ----------
+        argparse: ArgumentParser
+            The argument parser
+
+        Return
+        ------
+        argparse: ArgumentParser
+            The argument parser (same object as parameter)
+        """
+        argparse.add_argument("--cytomine_host", dest="host", help="The Cytomine host (without protocol).")
+        argparse.add_argument("--cytomine_public_key", dest="public_key", help="The Cytomine public key.")
+        argparse.add_argument("--cytomine_private_key", dest="private_key", help="The Cytomine private key.")
+        argparse.add_argument("--cytomine_verbose", dest="verbose", type=int, default=logging.INFO,
+                              help="The verbosity level of the client.")
+        return argparse
 
     def _start(self):
         self._session = requests.session()
