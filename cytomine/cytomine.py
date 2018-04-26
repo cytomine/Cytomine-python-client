@@ -50,7 +50,7 @@ class Cytomine(object):
     __instance = None
 
     def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol="http",
-                 logging_handlers=[StdoutHandler()], working_path="/tmp", **kwargs):
+                 logging_handlers=None, working_path="/tmp", **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
 
@@ -103,6 +103,7 @@ class Cytomine(object):
             requests_log = logging.getLogger("requests.packages.urllib3")
             requests_log.setLevel(logging.DEBUG)
             requests_log.propagate = True
+            logging_handlers = logging_handlers if logging_handlers is not None else [StdoutHandler()]
             for handler in logging_handlers:
                 requests_log.addHandler(handler)
 
