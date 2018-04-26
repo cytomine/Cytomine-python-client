@@ -49,6 +49,10 @@ class TestOntology:
         ontologies = OntologyCollection().fetch()
         assert (isinstance(ontologies, OntologyCollection))
 
+        ontologies = OntologyCollection()
+        ontologies.append(Ontology(random_string()))
+        assert (ontologies.save())
+
 
 class TestTerm:
     def test_term(self, connect, dataset):
@@ -73,6 +77,10 @@ class TestTerm:
     def test_terms(self, connect, dataset):
         terms = TermCollection().fetch()
         assert (isinstance(terms, TermCollection))
+
+        terms = TermCollection()
+        terms.append(Term(random_string(), dataset["ontology"].id, "#AAAAAA"))
+        assert (terms.save())
 
     def test_terms_by_project(self, connect, dataset):
         terms = TermCollection().fetch_with_filter("project", dataset["project"].id)

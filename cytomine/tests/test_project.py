@@ -85,3 +85,7 @@ class TestDiscipline:
     def test_disciplines(self, connect, dataset):
         disciplines = DisciplineCollection().fetch()
         assert (isinstance(disciplines, DisciplineCollection))
+
+        disciplines = DisciplineCollection()
+        disciplines.append(Discipline(random_string()))
+        assert (disciplines.save())

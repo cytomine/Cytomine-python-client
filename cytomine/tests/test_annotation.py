@@ -60,6 +60,12 @@ class TestAnnotation:
         annotations.fetch()
         assert (isinstance(annotations, AnnotationCollection))
 
+        location = "POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))"
+        annotations = AnnotationCollection()
+        annotations.append(Annotation(location, dataset["image_instance"].id,
+                                      [dataset["term1"].id], dataset["project"].id))
+        assert (annotations.save())
+
     def test_annotations_by_project(self, connect, dataset):
         annotations = AnnotationCollection()
         annotations.project = dataset["project"].id

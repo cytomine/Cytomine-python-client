@@ -87,8 +87,8 @@ class PropertyCollection(DomainCollection):
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
-    def uri(self):
-        uri = super(PropertyCollection, self).uri()
+    def uri(self, without_filters=False):
+        uri = super(PropertyCollection, self).uri(without_filters)
         if self._domainClassName == "annotation":
             uri = uri.replace("domain/", "")
         return uri

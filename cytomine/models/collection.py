@@ -85,6 +85,12 @@ class Collection(MutableSequence):
         self.offset = max(0, self.offset - self.max)
         return self._fetch()
 
+    def save(self):
+        return Cytomine.get_instance().post_collection(self)
+
+    def to_json(self, **dump_parameters):
+        return "[{}]".format(",".join([d.to_json(**dump_parameters) for d in self._data]))
+
     def populate(self, attributes, append_mode=False):
         data = [self._model().populate(instance) for instance in attributes["collection"]]
         if append_mode:
@@ -126,14 +132,16 @@ class Collection(MutableSequence):
     def callback_identifier(self):
         return self._model.__name__.lower()
 
-    def uri(self):
-        if len(self.filters) > 1:
-            raise ValueError("More than 1 filter not allowed by default.")
+    def uri(self, without_filters=False):
+        uri = ""
+        if not without_filters:
+            if len(self.filters) > 1:
+                raise ValueError("More than 1 filter not allowed by default.")
 
-        uri = "/".join(["{}/{}".format(key, value) for key, value in six.iteritems(self.filters)
-                        if key in self._allowed_filters])
-        if len(uri) > 0:
-            uri += "/"
+            uri = "/".join(["{}/{}".format(key, value) for key, value in six.iteritems(self.filters)
+                            if key in self._allowed_filters])
+            if len(uri) > 0:
+                uri += "/"
 
         return "{}{}.json".format(uri, self.callback_identifier)
 
@@ -191,12 +199,16 @@ class DomainCollection(Collection):
         self._domainIdent = None
         self._obj = object
 
-    def uri(self):
+    def uri(self, without_filters=False):
         return "domain/{}/{}/{}".format(self._domainClassName, self._domainIdent,
-                                        super(DomainCollection, self).uri())
+                                        super(DomainCollection, self).uri(without_filters))
 
-    def populate(self, attributes):
-        self._data = [self._model(self._object).populate(instance) for instance in attributes["collection"]]
+    def populate(self, attributes, append_mode=False):
+        data = [self._model(self._object).populate(instance) for instance in attributes["collection"]]
+        if append_mode:
+            self._data += data
+        else:
+            self._data = data
         return self
 
     @property

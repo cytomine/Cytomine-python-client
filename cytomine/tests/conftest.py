@@ -75,6 +75,7 @@ def dataset(request):
     data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
     data["annotation"] = Annotation("POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", data["image_instance"].id, [data["term1"].id]).save()
     data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
+    data["image_group2"] = ImageGroup(random_string(), data["project"].id).save()
     # data["image_sequence"] = ImageSequence(data["image_group"].id, data["image_instance"].id, 0, 0, 0, 0).save()
     data["job"] = Job(data["project"].id, data["software"].id).save()
 

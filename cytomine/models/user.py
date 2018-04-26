@@ -88,8 +88,8 @@ class UserCollection(Collection):
 
         self.set_parameters(parameters)
 
-    def uri(self):
-        uri = super(UserCollection, self).uri()
+    def uri(self, without_filters=False):
+        uri = super(UserCollection, self).uri(without_filters)
         if "project" in self.filters and self.admin:
             uri = uri.replace("user", "admin")
         return uri
@@ -122,6 +122,9 @@ class UserJobCollection(Collection):
         self.tree = None
 
         self.set_parameters(parameters)
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save a userjob collection by client.")
 
 
 class Group(Model):

@@ -104,6 +104,9 @@ class SoftwareParameterCollection(Collection):
 
     @property
     def callback_identifier(self):
+        # HACK to save on collection.
+        if len(self._data) > 0:
+            return "softwareparameter"
         return "parameter"
 
 
@@ -154,6 +157,9 @@ class JobCollection(Collection):
 
         self.set_parameters(parameters)
 
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save a job collection by client.")
+
 
 class JobParameter(Model):
     def __init__(self, id_job=None, id_software_parameter=None, value=None, **attributes):
@@ -172,6 +178,9 @@ class JobParameterCollection(Collection):
 
     @property
     def callback_identifier(self):
+        # HACK to save on collection
+        if len(self._data) > 0:
+            return "jobparameter"
         return "parameter"
 
 

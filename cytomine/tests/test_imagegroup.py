@@ -50,6 +50,11 @@ class TestImageGroup:
         assert (isinstance(characteristics, dict))
         assert ("channel" in characteristics)
 
+    def test_imagegroups(self, connect, dataset):
+        imagegroups = ImageGroupCollection()
+        imagegroups.append(ImageGroup(random_string(), dataset["project"].id))
+        assert (imagegroups.save())
+
     def test_imagegroups_by_project(self, connect, dataset):
         imagegroups = ImageGroupCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(imagegroups, ImageGroupCollection))
@@ -107,6 +112,11 @@ class TestImageSequence:
         # TODO: Cytomine-core delete image instance and abstract image in cascade !!
         # image_sequence.delete()
         # assert (not ImageSequence().fetch(image_sequence.id))
+
+    def test_image_sequences(self, connect, dataset):
+        image_sequences = ImageSequenceCollection()
+        image_sequences.append(ImageSequence(dataset["image_group2"].id, dataset["image_instance"].id, 0, 0, 0, 20))
+        assert (image_sequences.save())
 
     def test_image_sequences_by_imagegroup(self, connect, dataset):
         image_sequences = ImageSequenceCollection().fetch_with_filter("imagegroup", dataset["image_group"].id)

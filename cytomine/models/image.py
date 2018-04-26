@@ -336,3 +336,6 @@ class ImageInstanceCollection(Collection):
         super(ImageInstanceCollection, self).__init__(ImageInstance, filters, max, offset)
         self._allowed_filters = ["project"]  # "user"
         self.set_parameters(parameters)
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save an imageinstance collection by client.")

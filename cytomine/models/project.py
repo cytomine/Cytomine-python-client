@@ -75,6 +75,9 @@ class ProjectCollection(Collection):
         self._allowed_filters = [None, "user", "software", "ontology"]
         self.set_parameters(parameters)
 
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save a project collection by client.")
+
 
 class Discipline(Model):
     def __init__(self, name=None, **attributes):

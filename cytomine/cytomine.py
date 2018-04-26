@@ -331,6 +331,11 @@ class Cytomine(object):
 
         return model
 
+    def post_collection(self, collection, query_parameters=None):
+        response = self._post(collection.uri(without_filters=True), collection.to_json(), query_parameters)
+        self._log_response(response, response.json()["message"])
+        return response.status_code == requests.codes.ok
+
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
             uri = model.uri()

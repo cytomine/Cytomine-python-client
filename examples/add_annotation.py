@@ -41,6 +41,8 @@ if __name__ == '__main__':
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
 
+    parser.add_argument('--cytomine_id_project', dest='id_project',
+                        help="The project from which we want the images")
     parser.add_argument('--cytomine_id_image_instance', dest='id_image_instance',
                         help="The image to which the annotation will be added")
     parser.add_argument('--cytomine_id_term', dest='id_term', required=False,
@@ -64,6 +66,18 @@ if __name__ == '__main__':
 
         # We can also add a property (key-value pair) to an annotation
         Property(annotation_rectangle, key="my_property", value=10).save()
+
+        # Print the list of annotations in the given image:
+        annotations = AnnotationCollection()
+        annotations.image = params.id_image_instance
+        annotations.fetch()
+        print(annotations)
+
+        # We can also add multiple annotation in one request:
+        annotations = AnnotationCollection()
+        annotations.append(Annotation(location=point.wkt, id_image=params.id_image_instance, id_project=params.id_project))
+        annotations.append(Annotation(location=rectangle.wkt, id_image=params.id_image_instance, id_project=params.id_project))
+        annotations.save()
 
         # Print the list of annotations in the given image:
         annotations = AnnotationCollection()

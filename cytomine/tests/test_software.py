@@ -49,6 +49,10 @@ class TestSoftware:
         softwares = SoftwareCollection().fetch()
         assert (isinstance(softwares, SoftwareCollection))
 
+        softwares = SoftwareCollection()
+        softwares.append(Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation"))
+        assert (softwares.save())
+
     def test_softwares_by_project(self, connect, dataset):
         softwares = SoftwareCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(softwares, SoftwareCollection))
@@ -96,7 +100,12 @@ class TestSoftwareParameter:
         sp.delete()
         assert (not SoftwareParameter().fetch(sp.id))
 
-    def test_software_parameters_by_project(self, connect, dataset):
+    def test_software_parameters(self, connect, dataset):
+        sps = SoftwareParameterCollection()
+        sps.append(SoftwareParameter(random_string(), "Number", dataset["software"].id, 0, False, 100, False))
+        assert (sps.save())
+
+    def test_software_parameters_by_software(self, connect, dataset):
         sps = SoftwareParameterCollection().fetch_with_filter("software", dataset["software"].id)
         assert (isinstance(sps, SoftwareParameterCollection))
 
@@ -148,6 +157,10 @@ class TestJobParameter:
     def test_job_parameters(self, connect, dataset):
         job_parameters = JobParameterCollection().fetch_with_filter("job", dataset["job"].id)
         assert (isinstance(job_parameters, JobParameterCollection))
+
+        job_parameters = JobParameterCollection()
+        job_parameters.append(JobParameter(dataset["job"].id, dataset["software_parameter"].id, 10))
+        assert (job_parameters.save())
 
 
 class TestJobTemplate:

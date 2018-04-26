@@ -49,6 +49,10 @@ class TestUser:
         users = UserCollection().fetch()
         assert(isinstance(users, UserCollection))
 
+        users = UserCollection()
+        users.append(User(random_string(), random_string(), random_string(), "mail@cytomine.be", random_string()))
+        assert (users.save())
+
     def test_users_by_project(self, connect, dataset):
         users = UserCollection().fetch_with_filter("project", dataset["project"].id)
         assert(isinstance(users, UserCollection))
@@ -108,6 +112,10 @@ class TestGroup:
     def test_groups(self, connect, dataset):
         groups = GroupCollection().fetch()
         assert(isinstance(groups, GroupCollection))
+
+        groups = GroupCollection()
+        groups.append(Group(random_string(), 200))
+        assert (groups.save())
 
     def test_groups_with_user(self, connect, dataset):
         groups = GroupCollection(withUser=True).fetch()

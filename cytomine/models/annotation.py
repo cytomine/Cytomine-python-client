@@ -224,20 +224,14 @@ class AnnotationCollection(Collection):
 
         self.set_parameters(parameters)
 
-    def uri(self):
+    def uri(self, without_filters=False):
         if self.included:
             self.add_filter("imageinstance", self.image)
-        uri = super(AnnotationCollection, self).uri()
+        uri = super(AnnotationCollection, self).uri(without_filters)
         if self.included:
             return uri.replace(".json", "/included.json")
 
         return uri
-
-    def save(self):
-        return Cytomine.get_instance().post_model(self)
-
-    def to_json(self, **dump_parameters):
-        return "[{}]".format(",".join([d.to_json() for d in self._data]))
 
 
 class AnnotationTerm(Model):
@@ -326,3 +320,6 @@ class AnnotationFilterCollection(Collection):
         self._allowed_filters = [None]
         self.project = None
         self.set_parameters(parameters)
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save an annotation filter collection by client.")
