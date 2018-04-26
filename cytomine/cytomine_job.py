@@ -122,8 +122,8 @@ class CytomineJob(Cytomine):
         The identifier of the software on the Cytomine server
     project_id : int
         The identifier of the project to process on the Cytomine server
-    parameters: dict
-        A dictionary mapping job parameters with their values (the dictionary must not contain any other key than
+    parameters: Namespace
+        A namespace mapping job parameters with their values (must not contain any other key than
         the parameters names)
     """
     def __init__(self, host, public_key, private_key, software_id, project_id, parameters=None, **kwargs):
@@ -155,7 +155,7 @@ class CytomineJob(Cytomine):
         # Parse and set job parameters
         params_collection = SoftwareParameterCollection(filters={"software": cytomine_job.software.id}).fetch()
         soft_params, _ = _software_params_to_argparse(params_collection).parse_known_args(argv)
-        cytomine_job.parameters = vars(soft_params)
+        cytomine_job.parameters = soft_params
 
         return cytomine_job
 
@@ -257,10 +257,11 @@ class CytomineJob(Cytomine):
 
         # add software parameters
         if self._parameters is not None:
+            parameters = vars(self._parameters)
             for software_param in self._software.parameters:
                 name = software_param["name"]
-                if name in self._parameters:
-                    value = self._parameters[name]
+                if name in parameters:
+                    value = parameters[name]
                 else:
                     value = software_param["defaultParamValue"]
 
