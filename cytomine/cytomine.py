@@ -48,6 +48,40 @@ from cytomine.utilities.version import deprecated
 from cytomine.utilities.logging import StdoutHandler
 
 
+def _cytomine_parameter_name_synonyms(name, prefix="--"):
+    """For a given parameter name, returns all the possible usual synonym (and the parameter itself). Optionally, the
+    function can prepend a string to the found names.
+
+    If a parameters has no known synonyms, the function returns only the prefixed $name.
+
+    Parameters
+    ----------
+    name: str
+        Parameter based on which synonyms must searched for
+    prefix: str
+        The prefix
+
+    Returns
+    -------
+    names: str
+        List of prefixed parameter names containing at least $name (preprended with $prefix).
+    """
+    synonyms = [
+        ["host", "cytomine_host"],
+        ["public_key", "publicKey", "cytomine_public_key"],
+        ["private_key", "privateKey", "cytomine_private_key"],
+        ["base_path", "basePath", "cytomine_base_path"],
+        ["id_software", "cytomine_software_id", "cytomine_id_software", "idSoftware", "software_id"],
+        ["id_project", "cytomine_project_id", "cytomine_id_project", "idProject", "project_id"]
+    ]
+    synonyms_dict = {params[i]: params[:i] + params[(i + 1):] for params in synonyms for i in range(len(params))}
+
+    if name not in synonyms_dict:
+        return [prefix + name]
+
+    return [prefix + n for n in ([name] + synonyms_dict[name])]
+
+
 class Cytomine(object):
     __instance = None
 
@@ -181,11 +215,11 @@ class Cytomine(object):
         argparse: ArgumentParser
             The argument parser (same object as parameter)
         """
-        argparse.add_argument("--host", "--cytomine_host",
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("host"),
                               dest="host", help="The Cytomine host (without protocol).", required=True)
-        argparse.add_argument("--publicKey", "--cytomine_public_key",
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("public_key"),
                               dest="public_key", help="The Cytomine public key.", required=True)
-        argparse.add_argument("--privateKey", "--cytomine_private_key",
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("private_key"),
                               dest="private_key", help="The Cytomine private key.", required=True)
         argparse.add_argument("--verbose", "--cytomine_verbose",
                               dest="verbose", type=int, default=logging.INFO, help="The verbosity level of the client.")

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 from argparse import ArgumentParser
 
-from cytomine.cytomine import Cytomine
+from cytomine.cytomine import Cytomine, _cytomine_parameter_name_synonyms
 from cytomine.models.project import Project
 from cytomine.models.software import Software, Job, JobParameter, SoftwareParameterCollection
 from cytomine.models.user import User
@@ -89,15 +89,6 @@ def _software_params_to_argparse(parameters):
     argparse: ArgumentParser
         An initialized argument parser
     """
-    # define special parameters, maps a possible parameters name with its synonym
-    special_param_names = {
-        "host": "cytomine_host",
-        "publicKey": "cytomine_public_key",
-        "privateKey": "cytomine_private_key",
-        "cytomine_host": "host",
-        "cytomine_public_key": "publicKey",
-        "cytomine_private_key": "privateKey"
-    }
     # Check software parameters
     argparse = ArgumentParser()
     boolean_defaults = {}
@@ -111,10 +102,7 @@ def _software_params_to_argparse(parameters):
             python_type = _convert_type(parameter.type)
             arg_desc["type"] = python_type
             arg_desc["default"] = None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue)
-        names = [parameter.name]
-        if parameter.name in special_param_names:
-            names.append(special_param_names[parameter.name])
-        argparse.add_argument(*["--{}".format(name) for name in names], **arg_desc)
+        argparse.add_argument(*_cytomine_parameter_name_synonyms(parameter.name), **arg_desc)
     argparse.set_defaults(**boolean_defaults)
     return argparse
 
@@ -159,9 +147,9 @@ class CytomineJob(Cytomine):
     def from_cli(cls, argv, **kwargs):
         # Parse CytomineJob constructor parameters
         argparse = cls._add_cytomine_cli_args(ArgumentParser())
-        argparse.add_argument("--cytomine_id_software",
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("software_id"),
                               dest="software_id", type=int, help="The Cytomine software id.", required=True)
-        argparse.add_argument("--cytomine_id_project",
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("project_id"),
                               dest="project_id", type=int, help="The Cytomine project id.", required=True)
         base_params, _ = argparse.parse_known_args(args=argv)
 
