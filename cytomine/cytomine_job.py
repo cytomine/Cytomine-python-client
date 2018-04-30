@@ -168,7 +168,6 @@ class CytomineJob(Cytomine):
             filters={"software": cytomine_job.software.id},
             withSetByServer=True
         ).fetch()
-        parameters = cls._add_cytomine_cli_args(_software_params_to_argparse(params_collection))
         soft_params, _ = _software_params_to_argparse(params_collection).parse_known_args(argv)
         cytomine_job.parameters = soft_params
 
