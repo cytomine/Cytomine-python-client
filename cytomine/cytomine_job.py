@@ -31,12 +31,21 @@ __contributors = ["Mormont Romain <romainmormont@gmail.com", "Rubens Ulysse <uru
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 
+def _inferred_number_type(v):
+    """Return the inferred type for the given string. The string must contain either an interger or a float.
+    """
+    try:
+        return int(v)
+    except ValueError:
+        return float(v)
+
+
 def _convert_type(_type):
     # Not trying too hard for the finding types (list considered as string and number as floats)
     # Just want a first validation (when possible) with argparse.
     # Advanced checking is advised in actual job implementation.
     return {
-        "Number": float,
+        "Number": _inferred_number_type,
         "String": str,
         "Boolean": bool,
         "Domain": int,
@@ -80,6 +89,15 @@ def _software_params_to_argparse(parameters):
     argparse: ArgumentParser
         An initialized argument parser
     """
+    # define special parameters, maps a possible parameters name with its synonym
+    special_param_names = {
+        "host": "cytomine_host",
+        "publicKey": "cytomine_public_key",
+        "privateKey": "cytomine_private_key",
+        "cytomine_host": "host",
+        "cytomine_public_key": "publicKey",
+        "cytomine_private_key": "privateKey"
+    }
     # Check software parameters
     argparse = ArgumentParser()
     boolean_defaults = {}
@@ -93,7 +111,10 @@ def _software_params_to_argparse(parameters):
             python_type = _convert_type(parameter.type)
             arg_desc["type"] = python_type
             arg_desc["default"] = None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue)
-        argparse.add_argument("--{}".format(parameter.name), **arg_desc)
+        names = [parameter.name]
+        if parameter.name in special_param_names:
+            names.append(special_param_names[parameter.name])
+        argparse.add_argument(*["--{}".format(name) for name in names], **arg_desc)
     argparse.set_defaults(**boolean_defaults)
     return argparse
 
@@ -138,8 +159,10 @@ class CytomineJob(Cytomine):
     def from_cli(cls, argv, **kwargs):
         # Parse CytomineJob constructor parameters
         argparse = cls._add_cytomine_cli_args(ArgumentParser())
-        argparse.add_argument("--cytomine_software_id", dest="software_id", type=int, help="The Cytomine software id.", required=True)
-        argparse.add_argument("--cytomine_project_id", dest="project_id", type=int, help="The Cytomine project id.", required=True)
+        argparse.add_argument("--cytomine_id_software",
+                              dest="software_id", type=int, help="The Cytomine software id.", required=True)
+        argparse.add_argument("--cytomine_id_project",
+                              dest="project_id", type=int, help="The Cytomine project id.", required=True)
         base_params, _ = argparse.parse_known_args(args=argv)
 
         cytomine_job = CytomineJob(
@@ -153,7 +176,11 @@ class CytomineJob(Cytomine):
         )
 
         # Parse and set job parameters
-        params_collection = SoftwareParameterCollection(filters={"software": cytomine_job.software.id}).fetch()
+        params_collection = SoftwareParameterCollection(
+            filters={"software": cytomine_job.software.id},
+            withSetByServer=True
+        ).fetch()
+        parameters = cls._add_cytomine_cli_args(_software_params_to_argparse(params_collection))
         soft_params, _ = _software_params_to_argparse(params_collection).parse_known_args(argv)
         cytomine_job.parameters = soft_params
 

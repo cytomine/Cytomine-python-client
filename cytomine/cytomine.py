@@ -181,11 +181,14 @@ class Cytomine(object):
         argparse: ArgumentParser
             The argument parser (same object as parameter)
         """
-        argparse.add_argument("--cytomine_host", dest="host", help="The Cytomine host (without protocol).", required=True)
-        argparse.add_argument("--cytomine_public_key", dest="public_key", help="The Cytomine public key.", required=True)
-        argparse.add_argument("--cytomine_private_key", dest="private_key", help="The Cytomine private key.", required=True)
-        argparse.add_argument("--cytomine_verbose", dest="verbose", type=int, default=logging.INFO,
-                              help="The verbosity level of the client.")
+        argparse.add_argument("--host", "--cytomine_host",
+                              dest="host", help="The Cytomine host (without protocol).", required=True)
+        argparse.add_argument("--publicKey", "--cytomine_public_key",
+                              dest="public_key", help="The Cytomine public key.", required=True)
+        argparse.add_argument("--privateKey", "--cytomine_private_key",
+                              dest="private_key", help="The Cytomine private key.", required=True)
+        argparse.add_argument("--verbose", "--cytomine_verbose",
+                              dest="verbose", type=int, default=logging.INFO, help="The verbosity level of the client.")
         return argparse
 
     def _start(self):
