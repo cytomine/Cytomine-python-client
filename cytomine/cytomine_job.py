@@ -168,9 +168,7 @@ class CytomineJob(Cytomine):
             filters={"software": cytomine_job.software.id},
             withSetByServer=True
         ).fetch()
-        soft_params, _ = _software_params_to_argparse(params_collection).parse_known_args(argv)
-        cytomine_job.parameters = soft_params
-
+        cytomine_job.parameters, _ = _software_params_to_argparse(params_collection).parse_known_args(argv)
         return cytomine_job
 
     @property
