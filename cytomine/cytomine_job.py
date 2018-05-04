@@ -301,3 +301,102 @@ class CytomineJob(Cytomine):
             self.done()
         self.close()
         return False
+
+    def logger(self, start=0, end=100, update_period=None):
+        """Return a logger for the current job."""
+        return CytomineJobLogger(self, progress_start=start, progress_end=end, update_period=update_period)
+
+    def monitor(self, iterable, start=0, end=100, update_period=None, prefix=""):
+        """Return a monitor for the current job"""
+        return self.logger(start=start, end=end, update_period=update_period).monitor(iterable, prefix=prefix)
+
+
+class CytomineJobLogger(object):
+    def __init__(self, cytomine_job: CytomineJob, progress_start=0, progress_end=100, update_period=None):
+        """A logger serves as intermediary between the job implementation and the job status update requests.
+
+        Parameters
+        ----------
+        cytomine_job: CytomineJob
+            The job
+        progress_start: float (range: [0.0, 100.0[)
+            Progress at which the logger should start
+        progress_end: float (range: ]0.0, 100.0])
+            Progress at which the logger should stop
+        update_period: int, float
+            The number of iteration to wait before actually updating the status. For for updating at each iteration
+        """
+        self._cytomine_job = cytomine_job
+        self._start = progress_start
+        self._end = progress_end
+        self._update_period = update_period
+
+    def update(self, statusComment, current, total, status=Job.RUNNING):
+        """
+        Parameters
+        ----------
+        statusComment: str
+            Job status update message
+        current: int (range: [0, total[)
+            Current iteration
+        total: int
+            Total number of iteration
+        status: int
+            Status of the job to send with the update
+        """
+        period = self._get_period(total)
+        if period is not None and current % period != 0:
+            return
+        relative_progress = self._relative_progress(current / float(total))
+        self._cytomine_job.job.update(progress=relative_progress, statusComment=statusComment, status=status)
+
+    def _get_period(self, n_iter):
+        """Return integer period given a maximum number of iteration """
+        if self._update_period is None:
+            return None
+        if isinstance(self._update_period, float):
+            return max(int(self._update_period * n_iter), 1)
+        return self._update_period
+
+    def _relative_progress(self, ratio):
+        return int(self._start + (self._end - self._start) * ratio)
+
+    def logger(self, progress_start, progress_end, update_period=None):
+        """Return a logger that updates progress in a subrange of the current logger's range."""
+        return CytomineJobLogger(
+            self._cytomine_job,
+            progress_start=self._relative_progress(progress_start / 100.),
+            progress_end=self._relative_progress(progress_end / 100.),
+            update_period=update_period
+        )
+
+    def monitor(self, iterable, prefix=""):
+        """Return a monitor for the given iterable using this logger"""
+        return CytomineJobProgressMonitor(self, iterable, comment_prefix=prefix)
+
+
+class CytomineJobProgressMonitor(object):
+    def __init__(self, cytomine_logger, iterable, comment_prefix=None):
+        """
+        cytomine_logger: CytomineJobLogger
+            A logger
+        iterable: iterable
+            The iterable to iterate on
+        comment_prefix: str
+            A prefix for the status comment
+        """
+        self._cytomine_logger = cytomine_logger
+        self._iterable = list(iterable)
+        self._comment_prefix = comment_prefix
+
+    def __iter__(self):
+        for i, v in enumerate(self._iterable):
+            self._cytomine_logger.update(
+                "{} ({}/{}).".format(self._comment_prefix, i + 1, len(self)),
+                current=i, total=len(self)
+            )
+            yield v
+
+    def __len__(self):
+        return len(list(self._iterable))
+

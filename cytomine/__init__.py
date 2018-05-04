@@ -19,4 +19,4 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 from .cytomine import Cytomine
-from .cytomine_job import CytomineJob
+from .cytomine_job import CytomineJob, CytomineJobLogger, CytomineJobProgressMonitor
