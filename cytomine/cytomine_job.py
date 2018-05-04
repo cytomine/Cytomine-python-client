@@ -309,34 +309,35 @@ class CytomineJob(Cytomine):
         self.close(value)
         return False
 
-    def logger(self, start=0, end=100, update_period=None):
+    def logger(self, start=0, end=100, period=None):
         """Return a logger for the current job."""
-        return CytomineJobLogger(self, progress_start=start, progress_end=end, update_period=update_period)
+        return CytomineJobLogger(self, start=start, end=end, period=period)
 
-    def monitor(self, iterable, start=0, end=100, update_period=None, prefix=""):
+    def monitor(self, iterable, start=0, end=100, period=None, prefix=""):
         """Return a monitor for the current job"""
-        return self.logger(start=start, end=end, update_period=update_period).monitor(iterable, prefix=prefix)
+        return self.logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
 
 
 class CytomineJobLogger(object):
-    def __init__(self, cytomine_job: CytomineJob, progress_start=0, progress_end=100, update_period=None):
+    def __init__(self, cytomine_job: CytomineJob, start=0, end=100, period=None):
         """A logger serves as intermediary between the job implementation and the job status update requests.
 
         Parameters
         ----------
         cytomine_job: CytomineJob
             The job
-        progress_start: float (range: [0.0, 100.0[)
+        start: float (range: [0.0, 100.0[)
             Progress at which the logger should start
-        progress_end: float (range: ]0.0, 100.0])
+        end: float (range: ]0.0, 100.0])
             Progress at which the logger should stop
-        update_period: int, float
-            The number of iteration to wait before actually updating the status. For for updating at each iteration
+        period: int, float
+            The number of iteration to wait before actually updating the status. Also supports
+            frequencies (float values).
         """
         self._cytomine_job = cytomine_job
-        self._start = progress_start
-        self._end = progress_end
-        self._update_period = update_period
+        self._start = start
+        self._end = end
+        self._update_period = period
 
     def update(self, statusComment, current, total, status=Job.RUNNING):
         """
@@ -372,9 +373,9 @@ class CytomineJobLogger(object):
         """Return a logger that updates progress in a subrange of the current logger's range."""
         return CytomineJobLogger(
             self._cytomine_job,
-            progress_start=self._relative_progress(progress_start / 100.),
-            progress_end=self._relative_progress(progress_end / 100.),
-            update_period=update_period
+            start=self._relative_progress(progress_start / 100.),
+            end=self._relative_progress(progress_end / 100.),
+            period=update_period
         )
 
     def monitor(self, iterable, prefix=""):
