@@ -476,8 +476,8 @@ class Cytomine(object):
         else:
             return True
 
-    def upload_image(self, upload_host, filename, id_storage, id_project=None, properties=None,
-                     sync=False, protocol=None):
+    def upload_image(self, upload_host, filename, id_storage, id_project=None, 
+                     properties=None, sync=False, protocol=None):
         from .models.storage import UploadedFile
 
         if not protocol:
@@ -513,7 +513,7 @@ class Cytomine(object):
                                       data=m)
 
         if response.status_code == requests.codes.ok:
-            uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
+            uf = UploadedFile().populate(response.json()[0]["uploadFile"]["attr"])
             uf.images = response.json()[0]["images"]
             self._logger.info("Image uploaded successfully to {}".format(upload_host))
             return uf
