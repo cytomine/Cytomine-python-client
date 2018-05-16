@@ -279,16 +279,20 @@ class CytomineJob(Cytomine):
 
                 JobParameter(self._job.id, software_param["id"], value).save()
 
-    def close(self):
+    def close(self, value):
         """
         Notify the Cytomine server of the job's end
         Incurs a dataflows
         """
-        status = Job.FAILED  # status code for FAILED
-        if self.is_done():
+        if value is None:
             status = Job.TERMINATED
+            status_comment = "Job successfully terminated"
+        else:
+            status = Job.FAILED
+            status_comment = "{} (error: {})".format(self._job.statusComment, str(value))
 
         self._job.status = status
+        self._job.statusComment = status_comment 
         self._job.update()
 
     def __enter__(self):
@@ -296,8 +300,5 @@ class CytomineJob(Cytomine):
         return self
 
     def __exit__(self, type, value, traceback):
-        if value is None:
-            # No exception, job is done
-            self.done()
-        self.close()
+        self.close(value)
         return False
