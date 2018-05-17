@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from argparse import ArgumentParser
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
+__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>", "Burtin Elodie <elodie.burtin@cytomine.coop"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import logging
@@ -85,7 +85,7 @@ def _cytomine_parameter_name_synonyms(name, prefix="--"):
 class Cytomine(object):
     __instance = None
 
-    def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol="http",
+    def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol=None,
                  logging_handlers=None, working_path="/tmp", **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
@@ -109,12 +109,11 @@ class Cytomine(object):
         kwargs : dict
             Deprecated arguments.
         """
-        self._host = host.replace("http://", "").replace("https://", "")
+        self._host, self._protocol = self._parse_url(host, protocol)
         self._public_key = public_key
         self._private_key = private_key
 
         self._use_cache = use_cache
-        self._protocol = protocol.replace("://", "")
         self._base_path = "/api/"
 
         self._logger = logging.getLogger()
@@ -224,6 +223,22 @@ class Cytomine(object):
         argparse.add_argument("--verbose", "--cytomine_verbose",
                               dest="verbose", type=int, default=logging.INFO, help="The verbosity level of the client.")
         return argparse
+    
+    @staticmethod    
+    def _parse_url(host, provided_protocol):
+        protocol = "http" # default protocol
+        
+        if host.startswith("http://"):
+            protocol = "http"
+        elif host.startswith("https://"):
+            protocol = "https"
+        elif provided_protocol is not None:
+            provided_protocol = provided_protocol.replace("://", "")
+            if provided_protocol in ("http", "https"):
+                protocol = provided_protocol
+        
+        host = host.replace("http://", "").replace("https://", "")
+        return host, protocol
 
     def _start(self):
         self._session = requests.session()
@@ -479,11 +494,10 @@ class Cytomine(object):
     def upload_image(self, upload_host, filename, id_storage, id_project=None, 
                      properties=None, sync=False, protocol=None):
         from .models.storage import UploadedFile
-
+        
         if not protocol:
             protocol = self._protocol
-
-        upload_host.replace("http://", "").replace("https://", "").replace("/", "")
+        upload_host, protocol = self._parse_url(upload_host, protocol)
         upload_host = "{}://{}".format(protocol, upload_host)
 
         query_parameters = {
