@@ -534,6 +534,43 @@ class Cytomine(object):
         else:
             self._logger.error("Error during image upload.")
             return False
+        
+    def upload_crop(self, ims_host, filename, id_annot, id_storage, 
+                id_project=None, sync=False, protocol=None):
+        from .models.storage import UploadedFile
+        
+        if not protocol:
+                protocol = self._protocol
+        ims_host, protocol = self._parse_url(ims_host, protocol)
+        ims_host = "{}://{}".format(protocol, ims_host)
+    
+        query_parameters = {
+            "annotation" : id_annot,
+            "storage": id_storage,
+            "cytomine": "{}://{}".format(self._protocol, self._host),
+            "name": filename,
+            "sync": sync
+        }
+    
+        if id_project:
+            query_parameters["project"] = id_project
+    
+        response = self._session.post("{}/uploadCrop".format(ims_host),
+                                      auth=CytomineAuth(
+                                          self._public_key, 
+                                          self._private_key,
+                                          ims_host, ""),
+                                      headers=self._headers(),
+                                      params=query_parameters)
+    
+        if response.status_code == requests.codes.ok:
+            uf = UploadedFile().populate(response.json()["uploadFile"]["attr"])
+            uf.images = response.json()["images"]
+            self._logger.info("Image uploaded successfully to {}".format(ims_host))
+            return uf
+        else:
+            self._logger.error("Error during image upload.")
+            return False
 
     """
     Following methods are deprecated methods, only temporary here for backwards compatibility.
