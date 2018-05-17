@@ -289,7 +289,7 @@ class CytomineJob(Cytomine):
             status_comment = "Job successfully terminated"
         else:
             status = Job.FAILED
-            status_comment = "{} (error: {})".format(self._job.statusComment, str(value))
+            status_comment = str(value)[:255]
 
         self._job.status = status
         self._job.statusComment = status_comment 
