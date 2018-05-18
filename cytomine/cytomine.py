@@ -93,7 +93,7 @@ class Cytomine(object):
         Parameters
         ----------
         host : str
-            The Cytomine host (without protocol).
+            The Cytomine host (with or without protocol).
         public_key : str
             The Cytomine public key.
         private_key : str
@@ -102,8 +102,8 @@ class Cytomine(object):
             The verbosity level of the client.
         use_cache : bool
             True to use HTTP cache, False otherwise.
-        protocol : str ("http", "https")
-            The protocol.
+        protocol : str ("http", "https", "http://", "https://")
+            The default protocol - used only if the host value does not specify one
         working_path : str
             Deprecated. Only for backwards compatibility.
         kwargs : dict
@@ -225,7 +225,33 @@ class Cytomine(object):
         return argparse
     
     @staticmethod    
-    def _parse_url(host, provided_protocol):
+    def _parse_url(host, provided_protocol=None):
+        """
+        Process the provided host and protocol to return them in a standardized
+        way that can be subsequently used by Cytomine methods.
+        If the protocol is not specified, HTTP is the default.
+        Only HTTP and HTTPS schemes are supported.
+
+        Parameters
+        ----------
+        host: str
+            The host, with or without the protocol
+        provided_protocol: str ("http", "http://", "https", "https://")
+            The default protocol - used only if the host value does not specify one
+
+        Return
+        ------
+        (host, protocol): tuple
+            The host and protocol in a standardized way (host without protocol,
+            and protocol in ("http", "https"))
+            
+        Examples
+        --------
+        >>> Cytomine._parse_url("localhost-core")
+        ("localhost-core", "http")
+        >>> Cytomine._parse_url("https://demo.cytomine.coop", "http")
+        ("demo.cytomine.coop", "https")
+        """
         protocol = "http" # default protocol
         
         if host.startswith("http://"):
@@ -537,6 +563,33 @@ class Cytomine(object):
         
     def upload_crop(self, ims_host, filename, id_annot, id_storage, 
                 id_project=None, sync=False, protocol=None):
+        """
+        Upload the crop associated with an annotation as a new image.
+
+        Parameters
+        ----------
+        ims_host: str
+            Cytomine IMS host, with or without the protocol
+        filename: str
+            Filename to give to the newly created image
+        id_annot: int
+            Identifier of the annotation to crop
+        id_storage: int
+            Identifier of the storage to use to upload the new image
+        id_project: int, optional
+            Identifier of a project in which the new image should be added
+        sync: bool, optional
+            True:   the server will answer once the uploaded file is 
+                    deployed (response will include the created image)
+            False (default): the server will answer as soon as it receives the file
+        protocol: str ("http", "http://", "https", "https://")
+            The default protocol - used only if the host value does not specify one
+
+        Return
+        ------
+        uf: UploadedFile
+            The uploaded file
+        """
         from .models.storage import UploadedFile
         
         if not protocol:
