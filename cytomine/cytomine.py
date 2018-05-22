@@ -196,7 +196,10 @@ class Cytomine(object):
         """
         argparse = cls._add_cytomine_cli_args(ArgumentParser())
         params, _ = argparse.parse_known_args(args=argv)
-        return cls.connect(params.host, params.public_key, params.private_key, params.verbose, use_cache=use_cache)
+        log_level = params.verbose
+        if params.log_level is not None:
+            log_level = logging.getLevelName(params.log_level)
+        return cls.connect(params.host, params.public_key, params.private_key, log_level, use_cache=use_cache)
 
     @staticmethod
     def _add_cytomine_cli_args(argparse):
@@ -221,7 +224,11 @@ class Cytomine(object):
         argparse.add_argument(*_cytomine_parameter_name_synonyms("private_key"),
                               dest="private_key", help="The Cytomine private key.", required=True)
         argparse.add_argument("--verbose", "--cytomine_verbose",
-                              dest="verbose", type=int, default=logging.INFO, help="The verbosity level of the client.")
+                              dest="verbose", type=int, default=logging.INFO,
+                              help="The verbosity level of the client (as an integer value).")
+        argparse.add_argument("-l", "--log_level", "--cytomine_log_level",
+                              dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                              help="The logging level of the client (as a string value)")
         return argparse
     
     @staticmethod    

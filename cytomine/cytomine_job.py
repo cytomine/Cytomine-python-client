@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from argparse import ArgumentParser
+import logging
 
 from cytomine.cytomine import Cytomine, _cytomine_parameter_name_synonyms
 from cytomine.models.project import Project
@@ -153,6 +154,10 @@ class CytomineJob(Cytomine):
                               dest="project_id", type=int, help="The Cytomine project id.", required=True)
         base_params, _ = argparse.parse_known_args(args=argv)
 
+        log_level = base_params.verbose
+        if base_params.log_level is not None:
+            log_level = logging.getLevelName(base_params.log_level)
+
         cytomine_job = CytomineJob(
             host=base_params.host,
             public_key=base_params.public_key,
@@ -160,6 +165,7 @@ class CytomineJob(Cytomine):
             software_id=base_params.software_id,
             project_id=base_params.project_id,
             parameters=None,
+            verbose=log_level,
             **kwargs
         )
 
