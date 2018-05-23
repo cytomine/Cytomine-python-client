@@ -260,6 +260,7 @@ class CytomineJob(Cytomine):
         Incurs dataflows
         """
 
+        run_by_ui = False
         if not self.current_user.algo:
             # If user connects as a human (CLI execution)
             self._job = Job(self._project.id, self._software.id).save()
@@ -268,13 +269,14 @@ class CytomineJob(Cytomine):
         else:
             # If the user executes the job through the Cytomine interface
             self._job = Job().fetch(self.current_user.job)
+            run_by_ui = True
 
         # set job state to RUNNING
         self._job.status = Job.RUNNING
         self._job.update()
 
         # add software parameters
-        if self._parameters is not None:
+        if not run_by_ui and self._parameters is not None:
             parameters = vars(self._parameters)
             for software_param in self._software.parameters:
                 name = software_param["name"]
