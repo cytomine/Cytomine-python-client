@@ -629,7 +629,7 @@ class Cytomine(object):
             self._logger.info("Image uploaded successfully to {}".format(ims_host))
             return uf
         else:
-            self._logger.error("Error during image upload.")
+            self._logger.error("Error during image upload. Response: %s", response)
             return False
 
     """
