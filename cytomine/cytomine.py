@@ -238,6 +238,9 @@ class Cytomine(object):
                 protocol = provided_protocol
         
         host = host.replace("http://", "").replace("https://", "")
+        if host.endswith("/"):
+            host = host[:-1]
+
         return host, protocol
 
     def _start(self):
