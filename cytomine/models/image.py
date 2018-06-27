@@ -42,7 +42,7 @@ class AbstractImage(Model):
         self.height = None
         self.resolution = None
         self.magnification = None
-        self.bitdepth = None
+        self.bitDepth = None
         self.colorspace = None
 
         self.thumb = None
@@ -116,7 +116,7 @@ class ImageInstance(Model):
         self.height = None
         self.resolution = None
         self.magnification = None
-        self.bitdepth = None
+        self.bitDepth = None
         self.colorspace = None
         self.preview = None
         self.thumb = None
