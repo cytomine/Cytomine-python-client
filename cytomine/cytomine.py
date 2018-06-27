@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from argparse import ArgumentParser
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -46,11 +48,45 @@ from cytomine.utilities.version import deprecated
 from cytomine.utilities.logging import StdoutHandler
 
 
+def _cytomine_parameter_name_synonyms(name, prefix="--"):
+    """For a given parameter name, returns all the possible usual synonym (and the parameter itself). Optionally, the
+    function can prepend a string to the found names.
+
+    If a parameters has no known synonyms, the function returns only the prefixed $name.
+
+    Parameters
+    ----------
+    name: str
+        Parameter based on which synonyms must searched for
+    prefix: str
+        The prefix
+
+    Returns
+    -------
+    names: str
+        List of prefixed parameter names containing at least $name (preprended with $prefix).
+    """
+    synonyms = [
+        ["host", "cytomine_host"],
+        ["public_key", "publicKey", "cytomine_public_key"],
+        ["private_key", "privateKey", "cytomine_private_key"],
+        ["base_path", "basePath", "cytomine_base_path"],
+        ["id_software", "cytomine_software_id", "cytomine_id_software", "idSoftware", "software_id"],
+        ["id_project", "cytomine_project_id", "cytomine_id_project", "idProject", "project_id"]
+    ]
+    synonyms_dict = {params[i]: params[:i] + params[(i + 1):] for params in synonyms for i in range(len(params))}
+
+    if name not in synonyms_dict:
+        return [prefix + name]
+
+    return [prefix + n for n in ([name] + synonyms_dict[name])]
+
+
 class Cytomine(object):
     __instance = None
 
     def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol="http",
-                 logging_handlers=[StdoutHandler()], working_path="/tmp", **kwargs):
+                 logging_handlers=None, working_path="/tmp", **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
 
@@ -89,6 +125,7 @@ class Cytomine(object):
         self._verbose = verbose
         self._logger.setLevel(verbose)
 
+        logging_handlers = logging_handlers if logging_handlers is not None else [StdoutHandler()]
         for handler in logging_handlers:
             self._logger.addHandler(handler)
 
@@ -136,6 +173,57 @@ class Cytomine(object):
             A connected Cytomine client.
         """
         return cls(host, public_key, private_key, verbose, use_cache)
+
+    @classmethod
+    def connect_from_cli(cls, argv, use_cache=True):
+        """
+        Connect with data taken from a command line interface.
+
+        Parameters
+        ----------
+        argv: list
+            Command line parameters (executable name excluded)
+        use_cache : bool
+            True to use HTTP cache, False otherwise.
+
+        Returns
+        -------
+        client : Cytomine
+            A connected Cytomine client.
+
+        Notes
+        -----
+        If some parameters are invalid, the function stops the execution and displays an help.
+        """
+        argparse = cls._add_cytomine_cli_args(ArgumentParser())
+        params, _ = argparse.parse_known_args(args=argv)
+        return cls.connect(params.host, params.public_key, params.private_key, params.verbose, use_cache=use_cache)
+
+    @staticmethod
+    def _add_cytomine_cli_args(argparse):
+        """
+        Add cytomine CLI args to the ArgumentParser object: cytomine_host, cytomine_public_key, cytomine_private_key and
+        cytomine_verbose.
+
+        Parameters
+        ----------
+        argparse: ArgumentParser
+            The argument parser
+
+        Return
+        ------
+        argparse: ArgumentParser
+            The argument parser (same object as parameter)
+        """
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("host"),
+                              dest="host", help="The Cytomine host (without protocol).", required=True)
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("public_key"),
+                              dest="public_key", help="The Cytomine public key.", required=True)
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("private_key"),
+                              dest="private_key", help="The Cytomine private key.", required=True)
+        argparse.add_argument("--verbose", "--cytomine_verbose",
+                              dest="verbose", type=int, default=logging.INFO, help="The verbosity level of the client.")
+        return argparse
 
     def _start(self):
         self._session = requests.session()

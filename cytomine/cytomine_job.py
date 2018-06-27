@@ -19,14 +19,92 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from cytomine.cytomine import Cytomine
+from argparse import ArgumentParser
+
+from cytomine.cytomine import Cytomine, _cytomine_parameter_name_synonyms
 from cytomine.models.project import Project
-from cytomine.models.software import Software, Job, JobParameter
+from cytomine.models.software import Software, Job, JobParameter, SoftwareParameterCollection
 from cytomine.models.user import User
 
 __author__ = "Begon Jean-Michel <jm.begon@gmail.com>"
 __contributors = ["Mormont Romain <romainmormont@gmail.com", "Rubens Ulysse <urubens@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
+
+
+def _inferred_number_type(v):
+    """Return the inferred type for the given string. The string must contain either an interger or a float.
+    """
+    try:
+        return int(v)
+    except ValueError:
+        return float(v)
+
+
+def _convert_type(_type):
+    # Not trying too hard for the finding types (list considered as string and number as floats)
+    # Just want a first validation (when possible) with argparse.
+    # Advanced checking is advised in actual job implementation.
+    return {
+        "Number": _inferred_number_type,
+        "String": str,
+        "Boolean": bool,
+        "Domain": int,
+        "List": str,
+        "ListDomain": str,
+        "Date": str
+    }[_type]
+
+
+def _to_bool(v):
+    """
+    Convert the value to boolean. Treat the following strings
+    as False: {"0", "0.0", "False", "false", "FALSE"}
+
+    Parameters
+    ----------
+    v: object
+        A object to convert to a boolean value.
+
+    Returns
+    -------
+    b: bool
+        The boolean value
+    """
+    if isinstance(v, str):
+        return v in {"0", "0.0", "False", "false", "FALSE"}
+    else:
+        return bool(v)
+
+
+def _software_params_to_argparse(parameters):
+    """
+    Converts a SoftwareParameterCollection into an ArgumentParser object.
+
+    Parameters
+    ----------
+    parameters: SoftwareParameterCollection
+        The software parameters
+    Returns
+    -------
+    argparse: ArgumentParser
+        An initialized argument parser
+    """
+    # Check software parameters
+    argparse = ArgumentParser()
+    boolean_defaults = {}
+    for parameter in parameters:
+        arg_desc = {"dest": parameter.name, "required": parameter.required, "help": ""}  # TODO add help
+        if parameter.type == "Boolean":
+            default = _to_bool(parameter.defaultParamValue)
+            arg_desc["action"] = "store_true" if not default else "store_false"
+            boolean_defaults[parameter.name] = default
+        else:
+            python_type = _convert_type(parameter.type)
+            arg_desc["type"] = python_type
+            arg_desc["default"] = None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue)
+        argparse.add_argument(*_cytomine_parameter_name_synonyms(parameter.name), **arg_desc)
+    argparse.set_defaults(**boolean_defaults)
+    return argparse
 
 
 class CytomineJob(Cytomine):
@@ -53,8 +131,8 @@ class CytomineJob(Cytomine):
         The identifier of the software on the Cytomine server
     project_id : int
         The identifier of the project to process on the Cytomine server
-    parameters: dict
-        A dictionary mapping job parameters with their values (the dictionary must not contain any other key than
+    parameters: Namespace
+        A namespace mapping job parameters with their values (must not contain any other key than
         the parameters names)
     """
     def __init__(self, host, public_key, private_key, software_id, project_id, parameters=None, **kwargs):
@@ -64,6 +142,34 @@ class CytomineJob(Cytomine):
         self._software = Software().fetch(software_id)
         self._job_done = False
         self._parameters = parameters
+
+    @classmethod
+    def from_cli(cls, argv, **kwargs):
+        # Parse CytomineJob constructor parameters
+        argparse = cls._add_cytomine_cli_args(ArgumentParser())
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("software_id"),
+                              dest="software_id", type=int, help="The Cytomine software id.", required=True)
+        argparse.add_argument(*_cytomine_parameter_name_synonyms("project_id"),
+                              dest="project_id", type=int, help="The Cytomine project id.", required=True)
+        base_params, _ = argparse.parse_known_args(args=argv)
+
+        cytomine_job = CytomineJob(
+            host=base_params.host,
+            public_key=base_params.public_key,
+            private_key=base_params.private_key,
+            software_id=base_params.software_id,
+            project_id=base_params.project_id,
+            parameters=None,
+            **kwargs
+        )
+
+        # Parse and set job parameters
+        params_collection = SoftwareParameterCollection(
+            filters={"software": cytomine_job.software.id},
+            withSetByServer=True
+        ).fetch()
+        cytomine_job.parameters, _ = _software_params_to_argparse(params_collection).parse_known_args(argv)
+        return cytomine_job
 
     @property
     def job(self):
@@ -99,6 +205,28 @@ class CytomineJob(Cytomine):
             The id of the software
         """
         return self._software
+
+    @property
+    def parameters(self):
+        """
+        Return
+        ------
+        parameters : dict
+            The id of the software
+        """
+        return self._parameters
+
+    @parameters.setter
+    def parameters(self, parameters):
+        """
+        Protected method.
+
+        Parameters
+        ----------
+        parameters: dict
+            Dictionnary mapping parameters name with their values.
+        """
+        self._parameters = parameters
 
     def done(self, status=True):
         """
@@ -141,10 +269,11 @@ class CytomineJob(Cytomine):
 
         # add software parameters
         if self._parameters is not None:
+            parameters = vars(self._parameters)
             for software_param in self._software.parameters:
                 name = software_param["name"]
-                if name in self._parameters:
-                    value = self._parameters[name]
+                if name in parameters:
+                    value = parameters[name]
                 else:
                     value = software_param["defaultParamValue"]
 
@@ -172,3 +301,103 @@ class CytomineJob(Cytomine):
             self.done()
         self.close()
         return False
+
+    def logger(self, start=0, end=100, period=None):
+        """Return a logger for the current job."""
+        return CytomineJobLogger(self, start=start, end=end, period=period)
+
+    def monitor(self, iterable, start=0, end=100, period=None, prefix=""):
+        """Return a monitor for the current job"""
+        return self.logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
+
+
+class CytomineJobLogger(object):
+    def __init__(self, cytomine_job: CytomineJob, start=0, end=100, period=None):
+        """A logger serves as intermediary between the job implementation and the job status update requests.
+
+        Parameters
+        ----------
+        cytomine_job: CytomineJob
+            The job
+        start: float (range: [0.0, 100.0[)
+            Progress at which the logger should start
+        end: float (range: ]0.0, 100.0])
+            Progress at which the logger should stop
+        period: int, float
+            The number of iteration to wait before actually updating the status. Also supports
+            frequencies (float values).
+        """
+        self._cytomine_job = cytomine_job
+        self._start = start
+        self._end = end
+        self._update_period = period
+
+    def update(self, statusComment, current, total, status=Job.RUNNING):
+        """
+        Parameters
+        ----------
+        statusComment: str
+            Job status update message
+        current: int (range: [0, total[)
+            Current iteration
+        total: int
+            Total number of iteration
+        status: int
+            Status of the job to send with the update
+        """
+        period = self._get_period(total)
+        if period is not None and current % period != 0:
+            return
+        relative_progress = self._relative_progress(current / float(total))
+        self._cytomine_job.job.update(progress=relative_progress, statusComment=statusComment, status=status)
+
+    def _get_period(self, n_iter):
+        """Return integer period given a maximum number of iteration """
+        if self._update_period is None:
+            return None
+        if isinstance(self._update_period, float):
+            return max(int(self._update_period * n_iter), 1)
+        return self._update_period
+
+    def _relative_progress(self, ratio):
+        return int(self._start + (self._end - self._start) * ratio)
+
+    def logger(self, progress_start, progress_end, update_period=None):
+        """Return a logger that updates progress in a subrange of the current logger's range."""
+        return CytomineJobLogger(
+            self._cytomine_job,
+            start=self._relative_progress(progress_start / 100.),
+            end=self._relative_progress(progress_end / 100.),
+            period=update_period
+        )
+
+    def monitor(self, iterable, prefix=""):
+        """Return a monitor for the given iterable using this logger"""
+        return CytomineJobProgressMonitor(self, iterable, comment_prefix=prefix)
+
+
+class CytomineJobProgressMonitor(object):
+    def __init__(self, cytomine_logger, iterable, comment_prefix=None):
+        """
+        cytomine_logger: CytomineJobLogger
+            A logger
+        iterable: iterable
+            The iterable to iterate on
+        comment_prefix: str
+            A prefix for the status comment
+        """
+        self._cytomine_logger = cytomine_logger
+        self._iterable = list(iterable)
+        self._comment_prefix = comment_prefix
+
+    def __iter__(self):
+        for i, v in enumerate(self._iterable):
+            self._cytomine_logger.update(
+                "{} ({}/{}).".format(self._comment_prefix, i + 1, len(self)),
+                current=i, total=len(self)
+            )
+            yield v
+
+    def __len__(self):
+        return len(list(self._iterable))
+
