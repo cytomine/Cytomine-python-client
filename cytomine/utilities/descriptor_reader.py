@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 import json
 
-from cytomine import Cytomine
+
 from cytomine.models import Software, SoftwareParameter, SoftwareCollection, SoftwareParameterCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
@@ -64,7 +64,8 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
             software = Software(name=descriptor["name"]).save()
         else:
             software = existing_software[0]
-            existing_software_parameters = SoftwareParameterCollection().fetch_with_filter("software", software.id)
+
+        existing_software_parameters = SoftwareParameterCollection().fetch_with_filter("software", software.id)
 
         for parameter_descriptor in descriptor["inputs"]:
             if "id" not in parameter_descriptor.keys():
@@ -112,5 +113,6 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
 
 
 if __name__ == '__main__':
+    from cytomine import Cytomine
     Cytomine.connect("localhost-core", "JKL", "GHI")
     read_descriptor("descriptor.json")

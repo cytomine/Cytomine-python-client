@@ -29,7 +29,8 @@ from .property import Property, PropertyCollection, AttachedFile, AttachedFileCo
 from .social import AnnotationAction, AnnotationActionCollection, Position, PositionCollection
 from .software import Software, SoftwareCollection, SoftwareParameter, SoftwareParameterCollection, \
     SoftwareProject, SoftwareProjectCollection, Job, JobCollection, JobParameter, \
-    JobParameterCollection, JobTemplate, JobData
+    JobParameterCollection, JobTemplate, JobData, SoftwareUserRepository, SoftwareUserRepositoryCollection, \
+    ProcessingServer, ProcessingServerCollection, SoftwareParameterConstraint, SoftwareParameterConstraintCollection
 from .storage import Storage, StorageCollection, UploadedFile, UploadedFileCollection
 from .user import User, CurrentUser, UserJob, UserCollection, UserJobCollection, \
     Group, GroupCollection, UserGroup, UserGroupCollection, Role, RoleCollection, UserRole, UserRoleCollection
