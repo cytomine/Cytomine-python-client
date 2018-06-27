@@ -33,13 +33,17 @@ from cytomine.models.model import Model
 
 
 class Software(Model):
-    def __init__(self, name=None, service_name=None, result_name=None, execute_command=None, **attributes):
+    def __init__(self, name=None, result_name=None, **attributes):
         super(Software, self).__init__()
         self.name = name
-        self.serviceName = service_name
         self.resultName = result_name
-        self.executeCommand = execute_command
-        self.description = None
+        self.softwareUserRepository = None
+        self.defaultProcessingServer = None
+        self.executeCommand = None
+        self.pullingCommand = None
+        self.deprecated = None
+        self.softwareVersion = None
+        self.executable = None
         self.parameters = None
         self.numberOfJob = None
         self.numberOfNotLaunch = None
@@ -65,6 +69,7 @@ class SoftwareProject(Model):
         self.software = id_software
         self.project = id_project
         self.name = None
+        self.softwareVersion = None
         self.populate(attributes)
 
     def update(self, *args, **kwargs):
@@ -81,7 +86,8 @@ class SoftwareProjectCollection(Collection):
 class SoftwareParameter(Model):
     def __init__(self, name=None, type=None, id_software=None, default_value=None,
                  required=None, index=None, set_by_server=None, uri=None, uri_sort_attribut=None,
-                 uri_print_attribut=None, **attributes):
+                 uri_print_attribut=None, server_parameter=None, human_name=None, value_key=None,
+                 command_line_flag=None, **attributes):
         super(SoftwareParameter, self).__init__()
         self.name = name
         self.type = type
@@ -93,6 +99,10 @@ class SoftwareParameter(Model):
         self.uriSortAttribut = uri_sort_attribut
         self.uriPrintAttribut = uri_print_attribut
         self.setByServer = set_by_server
+        self.serverParameter = server_parameter
+        self.humanName = human_name
+        self.valueKey = value_key
+        self.commandLineFlag = command_line_flag
         self.populate(attributes)
 
 
@@ -108,6 +118,25 @@ class SoftwareParameterCollection(Collection):
         if len(self._data) > 0:
             return "softwareparameter"
         return "parameter"
+
+
+class SoftwareParameterConstraint(Model):
+    def __init__(self, parameter_constraint_id=None, software_parameter_id=None, value=None, **attributes):
+        super(SoftwareParameterConstraint, self).__init__()
+        self.parameterConstraint = parameter_constraint_id
+        self.softwareParameter = software_parameter_id
+        self.value = value
+        self.populate(attributes)
+
+    def callback_identifier(self):
+        return "software_parameter_constraint"
+
+
+class SoftwareParameterConstraintCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(SoftwareParameterConstraintCollection, self).__init__(SoftwareParameterConstraint, filters, max, offset)
+        self._allowed_filters = ["softwareparameter"]
+        self.set_parameters(parameters)
 
 
 class Job(Model):
@@ -233,4 +262,50 @@ class JobDataCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(JobDataCollection, self).__init__(JobData, filters, max, offset)
         self._allowed_filters = ["job"]
+        self.set_parameters(parameters)
+
+
+class SoftwareUserRepository(Model):
+    def __init__(self, provider=None, username=None, docker_username=None, prefix=None, **attributes):
+        super(SoftwareUserRepository, self).__init__()
+        self.provider = provider
+        self.username = username
+        self.dockerUsername = docker_username
+        self.prefix = prefix
+        self.populate(attributes)
+
+    def callback_identifier(self):
+        return "software_user_repository"
+
+
+class SoftwareUserRepositoryCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(SoftwareUserRepositoryCollection, self).__init__(SoftwareUserRepository, filters, max, offset)
+        self._allowed_filters = [None]
+        self.set_parameters(parameters)
+
+
+class ProcessingServer(Model):
+    def __init__(self, name=None, host=None, username=None, port=None, type=None, processing_method_name=None,
+                 persistent_directory=None, working_directory=None, index=None, **attributes):
+        super(ProcessingServer, self).__init__()
+        self.name = name
+        self.host = host
+        self.username = username
+        self.port = port
+        self.type = type
+        self.processingMethodName = processing_method_name
+        self.persistentDirectory = persistent_directory
+        self.workingDirectory = working_directory
+        self.index = index
+        self.populate(attributes)
+
+    def callback_identifier(self):
+        return "processing_server"
+
+
+class ProcessingServerCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(ProcessingServerCollection, self).__init__(ProcessingServer, filters, max, offset)
+        self._allowed_filters = [None]
         self.set_parameters(parameters)
