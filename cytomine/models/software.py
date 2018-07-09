@@ -274,6 +274,7 @@ class SoftwareUserRepository(Model):
         self.prefix = prefix
         self.populate(attributes)
 
+    @property
     def callback_identifier(self):
         return "software_user_repository"
 
@@ -300,6 +301,7 @@ class ProcessingServer(Model):
         self.index = index
         self.populate(attributes)
 
+    @property
     def callback_identifier(self):
         return "processing_server"
 
