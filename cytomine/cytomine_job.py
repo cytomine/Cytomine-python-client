@@ -319,7 +319,7 @@ class CytomineJob(Cytomine):
 
 
 class CytomineJobLogger(object):
-    def __init__(self, cytomine_job: CytomineJob, start=0, end=100, period=None):
+    def __init__(self, cytomine_job, start=0, end=100, period=None):
         """A logger serves as intermediary between the job implementation and the job status update requests.
 
         Parameters
