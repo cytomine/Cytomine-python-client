@@ -338,16 +338,21 @@ class Cytomine(object):
 
     def _log_response(self, response, message):
         try:
+            msg = "[{}] {} | {} {}".format(response.request.method, message, response.status_code, response.reason)
             if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
-                self._logger.info("[{}] {} | {} {}".format(response.request.method, message,
-                                                           response.status_code, response.reason))
+                self.log(msg)
             else:
-                self._logger.error("[{}] {} | {} {} ({})".format(response.request.method, message,
-                                                                 response.status_code, response.reason,
-                                                                 response.json()["errors"]))
+                self.log("{} ({})".format(msg, response.json()["errors"]), level=logging.ERROR)
             self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
+
+    def log(self, msg, level=logging.INFO):
+        self._logger.log(level, msg)
+
+    @property
+    def logger(self):
+        return self._logger
 
     def _get(self, uri, query_parameters, with_base_path=True):
         return self._session.get("{}{}".format(self._base_url(with_base_path), uri),
