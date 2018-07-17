@@ -302,7 +302,7 @@ class CytomineJob(Cytomine):
         self.close()
         return False
 
-    def logger(self, start=0, end=100, period=None):
+    def job_logger(self, start=0, end=100, period=None):
         """Return a logger for the current job."""
         return CytomineJobLogger(self, start=start, end=end, period=period)
 
