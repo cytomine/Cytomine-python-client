@@ -315,7 +315,7 @@ class CytomineJob(Cytomine):
 
     def monitor(self, iterable, start=0, end=100, period=None, prefix=""):
         """Return a monitor for the current job"""
-        return self.logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
+        return self.job_logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
 
 
 class CytomineJobLogger(object):
