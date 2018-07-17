@@ -139,6 +139,18 @@ class SoftwareParameterConstraintCollection(Collection):
         self.set_parameters(parameters)
 
 
+_HUMAN_READABLE_JOB_STATUS = {
+    0: "NOT_LAUNCH",
+    1: "INQUEUE",
+    2: "RUNNING",
+    3: "SUCCESS/TERMINATED",
+    4: "FAILED",
+    5: "INDETERMINATE",
+    6: "WAIT",
+    7: "PREVIEW_DONE"
+}
+
+
 class Job(Model):
     NOT_LAUNCH = 0
     INQUEUE = 1
@@ -183,6 +195,17 @@ class Job(Model):
     def set_terminated(self):
         self.status = Job.TERMINATED
         self.update()
+
+    def update(self, id=None, **attributes):
+        Cytomine.get_instance().log(
+            "Job (id:{job_id}) status update: \"{statusComment}\" (status: {status}, progress: {progress}%)".format(
+                job_id=self.id,
+                statusComment=attributes.get("statusComment", self.statusComment),
+                status=_HUMAN_READABLE_JOB_STATUS[attributes.get("status", self.status)],
+                progress=attributes.get("progess", self.progress)
+            )
+        )
+        return super(Job, self).update(id=id, **attributes)
 
 
 class JobCollection(Collection):
