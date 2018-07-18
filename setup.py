@@ -18,7 +18,7 @@ from setuptools import setup
 
 setup(
     name='Cytomine Python Client',
-    version='1.1',
+    version='1.1.1',
     description='Python client to interact with Cytomine.',
     packages=['cytomine', 'cytomine.models', 'cytomine.utilities'],
     url='http://www.cytomine.be',
