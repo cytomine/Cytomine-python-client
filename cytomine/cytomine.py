@@ -26,7 +26,6 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import logging
-import json
 from time import strftime, gmtime
 from future.builtins import bytes
 
@@ -316,8 +315,11 @@ class Cytomine(object):
         self._private_key = private_key
         self.set_current_user()
 
-    def _base_url(self):
-        return "{}://{}{}".format(self._protocol, self._host, self._base_path)
+    def _base_url(self, with_base_path=True):
+        url = "{}://{}".format(self._protocol, self._host)
+        if with_base_path:
+            url += self._base_path
+        return url
 
     @staticmethod
     def _headers(accept="application/json, */*", content_type=None):
@@ -347,8 +349,8 @@ class Cytomine(object):
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
 
-    def _get(self, uri, query_parameters):
-        return self._session.get("{}{}".format(self._base_url(), uri),
+    def _get(self, uri, query_parameters, with_base_path=True):
+        return self._session.get("{}{}".format(self._base_url(with_base_path), uri),
                                  auth=CytomineAuth(
                                      self._public_key, self._private_key,
                                      self._base_url(), self._base_path),
@@ -474,6 +476,25 @@ class Cytomine(object):
         response = self._post(collection.uri(without_filters=True), collection.to_json(), query_parameters)
         self._log_response(response, response.json()["message"])
         return response.status_code == requests.codes.ok
+
+    def open_admin_session(self):
+        response = self._get("/session/admin/open.json", None, with_base_path=False)
+        self._log_response(response, "")
+        if response.status_code == requests.codes.ok:
+            self.set_current_user() # refetch user to update *ByNow properties
+            # self._current_user.poulate(response.json()) # response not consistent with the properties returned by user/current.json
+            return True
+        else:
+            return False
+
+    def close_admin_session(self):
+        response = self._get("/session/admin/close.json", None, with_base_path=False)
+        self._log_response(response, "")
+        if response.status_code == requests.codes.ok:
+            self.set_current_user() # refetch user to update *ByNow properties
+            return True
+        else:
+            return False
 
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
