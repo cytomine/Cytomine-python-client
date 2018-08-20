@@ -69,7 +69,7 @@ def dataset(request):
     data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
     data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
-    data["abstract_image"] = AbstractImage(random_string(), "tiff").save()
+    data["abstract_image"] = AbstractImage(random_string(), "image/tiff").save()
 
     data["project"] = Project(random_string(), data["ontology"].id).save()
     data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
