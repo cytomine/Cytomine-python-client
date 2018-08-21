@@ -478,8 +478,9 @@ class Cytomine(object):
         return response.status_code == requests.codes.ok
 
     def open_admin_session(self):
-        response = self._get("/session/admin/open.json", None, with_base_path=False)
-        self._log_response(response, "")
+        uri = "/session/admin/open.json"
+        response = self._get(uri, None, with_base_path=False)
+        self._log_response(response, uri)
         if response.status_code == requests.codes.ok:
             self.set_current_user() # refetch user to update *ByNow properties
             # self._current_user.poulate(response.json()) # response not consistent with the properties returned by user/current.json
@@ -488,8 +489,9 @@ class Cytomine(object):
             return False
 
     def close_admin_session(self):
-        response = self._get("/session/admin/close.json", None, with_base_path=False)
-        self._log_response(response, "")
+        uri = "/session/admin/close.json"
+        response = self._get(uri, None, with_base_path=False)
+        self._log_response(response, uri)
         if response.status_code == requests.codes.ok:
             self.set_current_user() # refetch user to update *ByNow properties
             return True
@@ -550,8 +552,6 @@ class Cytomine(object):
 
     def upload_image(self, upload_host, filename, id_storage, id_project=None, 
                      properties=None, sync=False, protocol=None):
-        from .models.storage import UploadedFile
-        
         if not protocol:
             protocol = self._protocol
         upload_host, protocol = self._parse_url(upload_host, protocol)
@@ -584,8 +584,7 @@ class Cytomine(object):
                                       data=m)
 
         if response.status_code == requests.codes.ok:
-            uf = UploadedFile().populate(response.json()[0]["uploadFile"]["attr"])
-            uf.images = response.json()[0]["images"]
+            uf = self._process_upload_response(response.json()[0])
             self._logger.info("Image uploaded successfully to {}".format(upload_host))
             return uf
         else:
@@ -619,9 +618,9 @@ class Cytomine(object):
         Return
         ------
         uf: UploadedFile
-            The uploaded file
+            The uploaded file. Its images attribute is populated with the collection of created abstract images.
         """
-        from .models.storage import UploadedFile
+
         
         if not protocol:
                 protocol = self._protocol
@@ -648,13 +647,27 @@ class Cytomine(object):
                                       params=query_parameters)
     
         if response.status_code == requests.codes.ok:
-            uf = UploadedFile().populate(response.json()["uploadFile"]["attr"])
-            uf.images = response.json()["images"]
-            self._logger.info("Image uploaded successfully to {}".format(ims_host))
+            uf = self._process_upload_response(response.json())
+            self._logger.info("Image crop uploaded successfully to {}".format(ims_host))
             return uf
         else:
-            self._logger.error("Error during image upload. Response: %s", response)
+            self._logger.error("Error during crop upload. Response: %s", response)
             return False
+
+    def _process_upload_response(self, response_data):
+        from .models.storage import UploadedFile
+        from .models.image import AbstractImage, AbstractImageCollection
+
+        self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
+
+        uf = UploadedFile().populate(response_data["uploadFile"])
+
+        uf.images = AbstractImageCollection()
+        if response_data["images"]:
+            for image in response_data["images"]:
+                uf.images.append(AbstractImage().populate(image["attr"]))
+
+        return uf
 
     """
     Following methods are deprecated methods, only temporary here for backwards compatibility.
