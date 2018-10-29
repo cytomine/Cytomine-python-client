@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pytest
+
 from cytomine.models.social import *
 from cytomine.tests.conftest import random_string
 
@@ -36,6 +38,7 @@ class TestPosition:
 
 
 class TestAnnotationAction:
+    @pytest.mark.skip(reason="Not yet implemented in core (see https://github.com/Cytomine-ULiege/Cytomine-core/commit/ef3ab08d02a9daa43192fcaa7f7f045ca51e999a)")
     def test_annotationactions(self, connect, dataset):
         annot_actions = AnnotationActionCollection().fetch_with_filter("imageinstance", dataset["image_instance"].id)
         assert (isinstance(annot_actions, AnnotationActionCollection))

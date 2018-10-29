@@ -165,6 +165,16 @@ class Job(Model):
         self.userJob = None
         self.jobParameters = None
         self.populate(attributes)
+        
+    def execute(self):
+        if self.is_new():
+            raise ValueError("Cannot execute job if no ID was provided.")
+        response = Cytomine.get_instance().post(uri="{}/{}/execute.json"
+                                        .format(self.callback_identifier, self.id),
+                                        data=self.to_json(),
+                                        query_parameters={id: self.id})
+        self.populate(response)
+        return self
 
     def set_running(self):
         self.status = Job.RUNNING

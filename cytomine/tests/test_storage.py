@@ -67,9 +67,7 @@ class TestUploadedFile:
         assert(uf.path == path)
 
         uf.delete()
-        uf = UploadedFile().fetch(uf.id)
-        assert(uf.deleted is not None)
-        # assert(not UploadedFile().fetch(uf.id))
+        assert(not UploadedFile().fetch(uf.id))
 
     def test_uploaded_files(self, connect, dataset):
         uploaded_files = UploadedFileCollection().fetch()

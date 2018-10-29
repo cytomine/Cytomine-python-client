@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from argparse import ArgumentParser
+import logging
 
 from cytomine.cytomine import Cytomine, _cytomine_parameter_name_synonyms
 from cytomine.models.project import Project
@@ -153,6 +154,10 @@ class CytomineJob(Cytomine):
                               dest="project_id", type=int, help="The Cytomine project id.", required=True)
         base_params, _ = argparse.parse_known_args(args=argv)
 
+        log_level = base_params.verbose
+        if base_params.log_level is not None:
+            log_level = logging.getLevelName(base_params.log_level)
+
         cytomine_job = CytomineJob(
             host=base_params.host,
             public_key=base_params.public_key,
@@ -160,6 +165,7 @@ class CytomineJob(Cytomine):
             software_id=base_params.software_id,
             project_id=base_params.project_id,
             parameters=None,
+            verbose=log_level,
             **kwargs
         )
 
@@ -254,6 +260,7 @@ class CytomineJob(Cytomine):
         Incurs dataflows
         """
 
+        run_by_ui = False
         if not self.current_user.algo:
             # If user connects as a human (CLI execution)
             self._job = Job(self._project.id, self._software.id).save()
@@ -262,13 +269,14 @@ class CytomineJob(Cytomine):
         else:
             # If the user executes the job through the Cytomine interface
             self._job = Job().fetch(self.current_user.job)
+            run_by_ui = True
 
         # set job state to RUNNING
         self._job.status = Job.RUNNING
         self._job.update()
 
         # add software parameters
-        if self._parameters is not None:
+        if not run_by_ui and self._parameters is not None:
             parameters = vars(self._parameters)
             for software_param in self._software.parameters:
                 name = software_param["name"]
@@ -279,16 +287,20 @@ class CytomineJob(Cytomine):
 
                 JobParameter(self._job.id, software_param["id"], value).save()
 
-    def close(self):
+    def close(self, value):
         """
         Notify the Cytomine server of the job's end
         Incurs a dataflows
         """
-        status = Job.FAILED  # status code for FAILED
-        if self.is_done():
+        if value is None:
             status = Job.TERMINATED
+            status_comment = "Job successfully terminated"
+        else:
+            status = Job.FAILED
+            status_comment = str(value)[:255]
 
         self._job.status = status
+        self._job.statusComment = status_comment 
         self._job.update()
 
     def __enter__(self):
@@ -296,10 +308,7 @@ class CytomineJob(Cytomine):
         return self
 
     def __exit__(self, type, value, traceback):
-        if value is None:
-            # No exception, job is done
-            self.done()
-        self.close()
+        self.close(value)
         return False
 
     def logger(self, start=0, end=100, period=None):

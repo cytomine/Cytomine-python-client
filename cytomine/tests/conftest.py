@@ -53,6 +53,7 @@ def connect(request):
                          request.config.getoption("--public_key"),
                          request.config.getoption("--private_key"),
                          logging.DEBUG)
+    c.open_admin_session()
     return c
 
 
@@ -69,10 +70,11 @@ def dataset(request):
     data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
     data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
-    data["abstract_image"] = AbstractImage(random_string(), "tiff").save()
+    data["abstract_image"] = AbstractImage(random_string(), "image/tiff").save()
+    data["abstract_image2"] = AbstractImage(random_string(), "image/tiff", width=50, height=50).save()
 
     data["project"] = Project(random_string(), data["ontology"].id).save()
-    data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
+    data["image_instance"] = ImageInstance(data["abstract_image2"].id, data["project"].id).save()
     data["annotation"] = Annotation("POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", data["image_instance"].id, [data["term1"].id]).save()
     data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
     data["image_group2"] = ImageGroup(random_string(), data["project"].id).save()
@@ -85,6 +87,7 @@ def dataset(request):
         Annotation().delete(data["annotation"].id)
         ImageGroup().delete(data["image_group"].id)
         AbstractImage().delete(data["abstract_image"].id)
+        AbstractImage().delete(data["abstract_image2"].id)
         Term().delete(data["term1"].id)
         Term().delete(data["term2"].id)
         Group().delete(data["group"].id)

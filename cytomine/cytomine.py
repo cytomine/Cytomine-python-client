@@ -22,11 +22,10 @@ from __future__ import unicode_literals
 from argparse import ArgumentParser
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
+__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>", "Burtin Elodie <elodie.burtin@cytomine.coop"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import logging
-import json
 from time import strftime, gmtime
 from future.builtins import bytes
 
@@ -85,7 +84,7 @@ def _cytomine_parameter_name_synonyms(name, prefix="--"):
 class Cytomine(object):
     __instance = None
 
-    def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol="http",
+    def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol=None,
                  logging_handlers=None, working_path="/tmp", **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
@@ -93,7 +92,7 @@ class Cytomine(object):
         Parameters
         ----------
         host : str
-            The Cytomine host (without protocol).
+            The Cytomine host (with or without protocol).
         public_key : str
             The Cytomine public key.
         private_key : str
@@ -102,19 +101,18 @@ class Cytomine(object):
             The verbosity level of the client.
         use_cache : bool
             True to use HTTP cache, False otherwise.
-        protocol : str ("http", "https")
-            The protocol.
+        protocol : str ("http", "https", "http://", "https://")
+            The default protocol - used only if the host value does not specify one
         working_path : str
             Deprecated. Only for backwards compatibility.
         kwargs : dict
             Deprecated arguments.
         """
-        self._host = host.replace("http://", "").replace("https://", "")
+        self._host, self._protocol = self._parse_url(host, protocol)
         self._public_key = public_key
         self._private_key = private_key
 
         self._use_cache = use_cache
-        self._protocol = protocol.replace("://", "")
         self._base_path = "/api/"
 
         self._logger = logging.getLogger()
@@ -197,7 +195,10 @@ class Cytomine(object):
         """
         argparse = cls._add_cytomine_cli_args(ArgumentParser())
         params, _ = argparse.parse_known_args(args=argv)
-        return cls.connect(params.host, params.public_key, params.private_key, params.verbose, use_cache=use_cache)
+        log_level = params.verbose
+        if params.log_level is not None:
+            log_level = logging.getLevelName(params.log_level)
+        return cls.connect(params.host, params.public_key, params.private_key, log_level, use_cache=use_cache)
 
     @staticmethod
     def _add_cytomine_cli_args(argparse):
@@ -222,8 +223,57 @@ class Cytomine(object):
         argparse.add_argument(*_cytomine_parameter_name_synonyms("private_key"),
                               dest="private_key", help="The Cytomine private key.", required=True)
         argparse.add_argument("--verbose", "--cytomine_verbose",
-                              dest="verbose", type=int, default=logging.INFO, help="The verbosity level of the client.")
+                              dest="verbose", type=int, default=logging.INFO,
+                              help="The verbosity level of the client (as an integer value).")
+        argparse.add_argument("-l", "--log_level", "--cytomine_log_level",
+                              dest="log_level", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                              help="The logging level of the client (as a string value)")
         return argparse
+    
+    @staticmethod    
+    def _parse_url(host, provided_protocol=None):
+        """
+        Process the provided host and protocol to return them in a standardized
+        way that can be subsequently used by Cytomine methods.
+        If the protocol is not specified, HTTP is the default.
+        Only HTTP and HTTPS schemes are supported.
+
+        Parameters
+        ----------
+        host: str
+            The host, with or without the protocol
+        provided_protocol: str ("http", "http://", "https", "https://")
+            The default protocol - used only if the host value does not specify one
+
+        Return
+        ------
+        (host, protocol): tuple
+            The host and protocol in a standardized way (host without protocol,
+            and protocol in ("http", "https"))
+            
+        Examples
+        --------
+        >>> Cytomine._parse_url("localhost-core")
+        ("localhost-core", "http")
+        >>> Cytomine._parse_url("https://demo.cytomine.coop", "http")
+        ("demo.cytomine.coop", "https")
+        """
+        protocol = "http" # default protocol
+        
+        if host.startswith("http://"):
+            protocol = "http"
+        elif host.startswith("https://"):
+            protocol = "https"
+        elif provided_protocol is not None:
+            provided_protocol = provided_protocol.replace("://", "")
+            if provided_protocol in ("http", "https"):
+                protocol = provided_protocol
+        
+        host = host.replace("http://", "").replace("https://", "")
+        if host.endswith("/"):
+            host = host[:-1]
+
+        return host, protocol
 
     def _start(self):
         self._session = requests.session()
@@ -265,8 +315,11 @@ class Cytomine(object):
         self._private_key = private_key
         self.set_current_user()
 
-    def _base_url(self):
-        return "{}://{}{}".format(self._protocol, self._host, self._base_path)
+    def _base_url(self, with_base_path=True):
+        url = "{}://{}".format(self._protocol, self._host)
+        if with_base_path:
+            url += self._base_path
+        return url
 
     @staticmethod
     def _headers(accept="application/json, */*", content_type=None):
@@ -296,8 +349,8 @@ class Cytomine(object):
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
 
-    def _get(self, uri, query_parameters):
-        return self._session.get("{}{}".format(self._base_url(), uri),
+    def _get(self, uri, query_parameters, with_base_path=True):
+        return self._session.get("{}{}".format(self._base_url(with_base_path), uri),
                                  auth=CytomineAuth(
                                      self._public_key, self._private_key,
                                      self._base_url(), self._base_path),
@@ -424,6 +477,27 @@ class Cytomine(object):
         self._log_response(response, response.json()["message"])
         return response.status_code == requests.codes.ok
 
+    def open_admin_session(self):
+        uri = "/session/admin/open.json"
+        response = self._get(uri, None, with_base_path=False)
+        self._log_response(response, uri)
+        if response.status_code == requests.codes.ok:
+            self.set_current_user() # refetch user to update *ByNow properties
+            # self._current_user.poulate(response.json()) # response not consistent with the properties returned by user/current.json
+            return True
+        else:
+            return False
+
+    def close_admin_session(self):
+        uri = "/session/admin/close.json"
+        response = self._get(uri, None, with_base_path=False)
+        self._log_response(response, uri)
+        if response.status_code == requests.codes.ok:
+            self.set_current_user() # refetch user to update *ByNow properties
+            return True
+        else:
+            return False
+
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
             uri = model.uri()
@@ -476,14 +550,11 @@ class Cytomine(object):
         else:
             return True
 
-    def upload_image(self, upload_host, filename, id_storage, id_project=None, properties=None,
-                     sync=False, protocol=None):
-        from .models.storage import UploadedFile
-
+    def upload_image(self, upload_host, filename, id_storage, id_project=None, 
+                     properties=None, sync=False, protocol=None):
         if not protocol:
             protocol = self._protocol
-
-        upload_host.replace("http://", "").replace("https://", "").replace("/", "")
+        upload_host, protocol = self._parse_url(upload_host, protocol)
         upload_host = "{}://{}".format(protocol, upload_host)
 
         query_parameters = {
@@ -513,13 +584,90 @@ class Cytomine(object):
                                       data=m)
 
         if response.status_code == requests.codes.ok:
-            uf = UploadedFile().populate(json.loads(response.json()[0]["uploadFile"]))
-            uf.images = response.json()[0]["images"]
+            uf = self._process_upload_response(response.json()[0])
             self._logger.info("Image uploaded successfully to {}".format(upload_host))
             return uf
         else:
             self._logger.error("Error during image upload.")
             return False
+        
+    def upload_crop(self, ims_host, filename, id_annot, id_storage, 
+                id_project=None, sync=False, protocol=None):
+        """
+        Upload the crop associated with an annotation as a new image.
+
+        Parameters
+        ----------
+        ims_host: str
+            Cytomine IMS host, with or without the protocol
+        filename: str
+            Filename to give to the newly created image
+        id_annot: int
+            Identifier of the annotation to crop
+        id_storage: int
+            Identifier of the storage to use to upload the new image
+        id_project: int, optional
+            Identifier of a project in which the new image should be added
+        sync: bool, optional
+            True:   the server will answer once the uploaded file is 
+                    deployed (response will include the created image)
+            False (default): the server will answer as soon as it receives the file
+        protocol: str ("http", "http://", "https", "https://")
+            The default protocol - used only if the host value does not specify one
+
+        Return
+        ------
+        uf: UploadedFile
+            The uploaded file. Its images attribute is populated with the collection of created abstract images.
+        """
+
+        
+        if not protocol:
+                protocol = self._protocol
+        ims_host, protocol = self._parse_url(ims_host, protocol)
+        ims_host = "{}://{}".format(protocol, ims_host)
+    
+        query_parameters = {
+            "annotation" : id_annot,
+            "storage": id_storage,
+            "cytomine": "{}://{}".format(self._protocol, self._host),
+            "name": filename,
+            "sync": sync
+        }
+    
+        if id_project:
+            query_parameters["project"] = id_project
+    
+        response = self._session.post("{}/uploadCrop".format(ims_host),
+                                      auth=CytomineAuth(
+                                          self._public_key, 
+                                          self._private_key,
+                                          ims_host, ""),
+                                      headers=self._headers(),
+                                      params=query_parameters)
+    
+        if response.status_code == requests.codes.ok:
+            uf = self._process_upload_response(response.json())
+            self._logger.info("Image crop uploaded successfully to {}".format(ims_host))
+            return uf
+        else:
+            self._logger.error("Error during crop upload. Response: %s", response)
+            return False
+
+    def _process_upload_response(self, response_data):
+        from .models.storage import UploadedFile
+        from .models.image import AbstractImage, AbstractImageCollection
+
+        self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
+
+        uf = UploadedFile().populate(response_data["uploadFile"])
+
+        uf.images = AbstractImageCollection()
+        if response_data["images"]:
+            for image in response_data["images"]:
+                uf.images.append(AbstractImage().populate(image["attr"]))
+
+        return uf
 
     """
     Following methods are deprecated methods, only temporary here for backwards compatibility.
