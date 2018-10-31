@@ -20,8 +20,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='Cytomine Python Client',
-    version='2.0.1',
+    name='Cytomine-Python-Client',
+    version='2.0.2',
     description='Python client to interact with Cytomine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
