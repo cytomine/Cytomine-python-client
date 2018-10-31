@@ -311,17 +311,17 @@ class CytomineJob(Cytomine):
         self.close(value)
         return False
 
-    def logger(self, start=0, end=100, period=None):
+    def job_logger(self, start=0, end=100, period=None):
         """Return a logger for the current job."""
         return CytomineJobLogger(self, start=start, end=end, period=period)
 
     def monitor(self, iterable, start=0, end=100, period=None, prefix=""):
         """Return a monitor for the current job"""
-        return self.logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
+        return self.job_logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
 
 
 class CytomineJobLogger(object):
-    def __init__(self, cytomine_job: CytomineJob, start=0, end=100, period=None):
+    def __init__(self, cytomine_job, start=0, end=100, period=None):
         """A logger serves as intermediary between the job implementation and the job status update requests.
 
         Parameters

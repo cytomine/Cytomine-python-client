@@ -30,6 +30,33 @@ import six
 from cytomine.cytomine import Cytomine
 
 
+class CollectionPartialUploadException(Exception):
+    """To be thrown when a collection is saved but only a part of it was successfully done so."""
+    def __init__(self, desc, created=None, failed=None):
+        """
+        Parameters
+        ----------
+        desc: str
+            Description of the exception
+        created: Collection
+            A Cytomine collection (same type as the one saved) containing the successfully saved objects (with their
+            created ids).
+        failed: Collection
+            A Cytomine collection (same type as the one saved) containing the objects that couldn't be saved.
+        """
+        super(CollectionPartialUploadException, self).__init__(desc)
+        self._created = created
+        self._failed = failed
+
+    @property
+    def created(self):
+        return self._created
+
+    @property
+    def failed(self):
+        return self._failed
+
+
 class Collection(MutableSequence):
     def __init__(self, model, filters=None, max=0, offset=0):
         self._model = model
@@ -85,7 +112,10 @@ class Collection(MutableSequence):
         self.offset = max(0, self.offset - self.max)
         return self._fetch()
 
-    def save(self):
+    def save(self, chunk=None):
+        """chunk: int
+             Maximum number of object to send at once in a single HTTP request. None for sending them all at once.
+        """
         return Cytomine.get_instance().post_collection(self)
 
     def to_json(self, **dump_parameters):

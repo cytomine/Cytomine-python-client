@@ -27,7 +27,7 @@ import os
 import re
 
 from cytomine.cytomine import Cytomine
-from cytomine.models.collection import Collection
+from cytomine.models.collection import Collection, CollectionPartialUploadException
 from cytomine.models.model import Model, DomainModel
 
 
@@ -232,6 +232,30 @@ class AnnotationCollection(Collection):
             return uri.replace(".json", "/included.json")
 
         return uri
+
+    def save(self, chunk=100):
+        if chunk is None:
+            super(AnnotationCollection, self).save()
+        elif isinstance(chunk, int):
+            if len(self) == 0:
+                return True
+            nb_chunks = (len(self) + chunk) // chunk
+            success = AnnotationCollection()
+            for i in range(nb_chunks):
+                chunk_collection = AnnotationCollection()
+                start = i * chunk
+                end = start + chunk
+                chunk_collection.extend(self[start:end])
+                if not Cytomine.get_instance().post_collection(chunk_collection):
+                    raise CollectionPartialUploadException(
+                        "Cannot upload annotation in chunk starting from index {} to {}".format(start, end),
+                        created=success,
+                        failed=self[start:]  # TODO some of the current chunk might have been uploaded !
+                    )
+                success.extend(chunk_collection)
+            return True
+        else:
+            raise ValueError("Invalid value '{}' for chunk parameter.".format(chunk))
 
 
 class AnnotationTerm(Model):
