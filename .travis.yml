@@ -19,12 +19,13 @@ after_success:
   - python setup.py sdist --formats=gztar,zip
   - git fetch --tags
   - export DEPLOY=false
-  - if [[ ! $(git tag -l v$(python -W ignore setup.py --version)) ]]; then
-      git config --local user.name "$(git log -1 --pretty=format:'%an')"
-      git config --local user.email "$(git log -1 --pretty=format:'%ae')"
-      git tag "v$(python -W ignore setup.py --version)"
-      export DEPLOY=true
-    fi
+  - >
+    if [[ ! $(git tag -l v$(python -W ignore setup.py --version)) ]]; then
+      git config --local user.name "$(git log -1 --pretty=format:'%an')";
+      git config --local user.email "$(git log -1 --pretty=format:'%ae')";
+      git tag "v$(python -W ignore setup.py --version)";
+      export DEPLOY=true;
+    fi;
 
 deploy:
   - provider: releases
