@@ -16,20 +16,34 @@
 
 from setuptools import setup
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='Cytomine Python Client',
     version='2.0.0',
     description='Python client to interact with Cytomine.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=['cytomine', 'cytomine.models', 'cytomine.utilities'],
-    url='http://www.cytomine.be',
-    install_requires=['requests',
-                      'requests-toolbelt',
-                      'cachecontrol',
+    url='http://www.cytomine.org',
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Operating System :: OS Independent'
+    ],
+    install_requires=['requests-toolbelt',
+                      'CacheControl',
                       'numpy',
-                      'shapely',
+                      'Shapely',
                       'six',
                       'future',
-                      'opencv-python'],
+                      'opencv-python',
+                      'requests'],
     setup_requires=['pytest-runner'],
     extra_requires={
         "test": ['pytest']
