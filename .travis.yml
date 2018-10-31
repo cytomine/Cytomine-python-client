@@ -1,0 +1,40 @@
+language: python
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+cache:
+  directories:
+  - "$HOME/.cache"
+
+install:
+  - pip install -r requirements.txt
+  - pip install wheel
+
+script:
+  - echo "Skip tests !" #pytest
+
+after_success:
+  - python setup.py bdist_wheel --universal
+  - python setup.py bdist_egg
+  - python setup.py sdist --formats=gztar,zip
+
+deploy:
+  - provider: releases
+    api_key:
+      secure: K8BvmLKQjCtrvsTnO3KD9FDhN5iOoK0xHoysTxTTgH1jNDWdSORNmfw8ZYvh359te/SQanYLrLdFRgyuuhLk0Ww9+uzDyl/U9SmjRqdn/2+DKy4paJOV/V4z0uGKL6f9IbwfmAbO/SXeLcTVb3S7X/wmTn/0KZ7BjvsI6DV0EKZE8ka7ySthczX0gvZgumMieAKn9KvxJJQyry5vo5R8l2kRX52qE+Oc0X5p2v9hSeQETGbAwF+WBzuivqsOIP5n9lU5fPVhGuY5VZfXWUedpzVHHJC5Dwjm0Hi/l7xKjMOUTuGun/FfsIgsm2C/e8HTmFLhbRCltg0gNnGjbHgQWhhYLAtGB/BgHOfBgoyFW++aZtIVayTl67NHgLmcn8dz0loepBTEyCSi7lmOGJZaCg3RDNm929K0ukV1uPNRWof75dvVRiE75L0vgHtscfXynG7mEAVOkGsTCOQow6DRrNv5JpB4dX6Zet43jLyOFHiKiTEdusHoXVXRzzaQYRFYwEaL4I/wmck4/Dk8sqcLkN1nUUAvAV/sQS10dexC8YEA6TXSBOJrrhhnXH2KwLTnxO+LuIUAc6S/DnUvssiaCF6+KLFMNeGc7MxWs7Nj2oBNxrqRp1p7lfDr+C5s3idrAUfRYH4Fi2XuDv/cHgLbngmUiLBbkvcqvI6XiHyhJHA=
+    file_glob: true
+    file: "dist/*.{zip,tar,gz}"
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: packagecloud
+    username: cytomine-uliege
+    repository: Cytomine-python-client
+    token: "${PACKAGECLOUD_TOKEN}"
+    dist: "python"
+    package_glob: "dist/*.{whl,egg,egg-info,tar,gz}"
+    skip_cleanup: true
+    on:
+      tags: true
