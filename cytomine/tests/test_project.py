@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pytest
+
 from cytomine.models.project import *
 from cytomine.tests.conftest import random_string
 
@@ -56,7 +58,8 @@ class TestProject:
     def test_projects_by_ontology(self, connect, dataset):
         projects = ProjectCollection().fetch_with_filter("ontology", dataset["ontology"].id)
         assert(isinstance(projects, ProjectCollection))
-        
+
+    @pytest.mark.skip()
     def test_projects_by_software(self, connect, dataset):
         projects = ProjectCollection().fetch_with_filter("software", dataset["software"].id)
         assert(isinstance(projects, ProjectCollection))

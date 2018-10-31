@@ -32,11 +32,11 @@ class TestAbstractImage:
         assert (isinstance(abstract_image, AbstractImage))
         assert (abstract_image.filename == filename)
 
+        abstract_image = AbstractImage().fetch(abstract_image.id)
+        assert (isinstance(abstract_image, AbstractImage))
+        assert (abstract_image.filename == filename)
+
         # TODO: problem of access rights in core prevent the successful execution of following tests
-        # abstract_image = AbstractImage().fetch(abstract_image.id)
-        # assert (isinstance(abstract_image, AbstractImage))
-        # assert (abstract_image.filename == filename)
-        #
         # filename = random_string()
         # abstract_image.filename = filename
         # abstract_image.update()

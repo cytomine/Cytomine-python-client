@@ -67,8 +67,8 @@ def dataset(request):
     data["term1"] = Term(random_string(), data["ontology"].id, "#000000").save()
     data["term2"] = Term(random_string(), data["ontology"].id, "#000000").save()
 
-    data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
-    data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
+    # data["software"] = Software(random_string(), "ValidateAnnotation").save()
+    # data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
     data["abstract_image"] = AbstractImage(random_string(), "image/tiff").save()
     data["abstract_image2"] = AbstractImage(random_string(), "image/tiff", width=50, height=50).save()
@@ -79,25 +79,26 @@ def dataset(request):
     data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
     data["image_group2"] = ImageGroup(random_string(), data["project"].id).save()
     # data["image_sequence"] = ImageSequence(data["image_group"].id, data["image_instance"].id, 0, 0, 0, 0).save()
-    data["job"] = Job(data["project"].id, data["software"].id).save()
+    # data["job"] = Job(data["project"].id, data["software"].id).save()
 
     def teardown():
         # ImageSequence().delete(data["image_sequence"].id)
         ImageInstance().delete(data["image_instance"].id)
         Annotation().delete(data["annotation"].id)
         ImageGroup().delete(data["image_group"].id)
+        ImageGroup().delete(data["image_group2"].id)
         AbstractImage().delete(data["abstract_image"].id)
         AbstractImage().delete(data["abstract_image2"].id)
         Term().delete(data["term1"].id)
         Term().delete(data["term2"].id)
         Group().delete(data["group"].id)
-        Job().delete(data["job"].id)
+        # Job().delete(data["job"].id)
         Project().delete(data["project"].id)
         Ontology().delete(data["ontology"].id)
         User().delete(data["user"].id)
-        SoftwareParameter().delete(data["software_parameter"].id)
-        Software().delete(data["software"].id)
+        # SoftwareParameter().delete(data["software_parameter"].id)
+        # Software().delete(data["software"].id)
 
-    # request.addfinalizer(teardown)
+    request.addfinalizer(teardown)
 
     return data
