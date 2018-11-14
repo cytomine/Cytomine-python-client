@@ -42,7 +42,7 @@ setup(
                       'Shapely',
                       'six',
                       'future',
-                      'opencv-python',
+                      'opencv-python-headless',
                       'Pillow',
                       'requests'],
     setup_requires=['pytest-runner'],
