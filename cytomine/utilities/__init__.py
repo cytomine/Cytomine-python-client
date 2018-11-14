@@ -20,5 +20,5 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 
 from .geometry import *
 from .logging import *
-# from .reader import *
+from .reader import *
 from .wholeslide import *

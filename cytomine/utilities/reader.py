@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
 
-#
-# * Copyright (c) 2009-2015. Authors: see NOTICE file.
+# * Copyright (c) 2009-2018. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -15,118 +13,67 @@ from __future__ import division
 # * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
-# */
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-__author__ = "Stévens Benjamin <b.stevens@ulg.ac.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@ulg.ac.be>", "Rollus Loïc <lrollus@ulg.ac.be"]
-__copyright__ = "Copyright 2010-2015 University of Liège, Belgium, http://www.cytomine.be/"
-__version__ = '0.1'
+__author__ = "Stevens Benjamin"
+__contributors__ = ["Rubens Ulysse <urubens@uliege.be>", "Marée Raphaël <raphael.maree@uliege.be>"]
+__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
-import random
 import math
-import numpy
+import numpy as np
 import threading
 import copy
+import requests
 
-import Queue
-from PIL import Image
-from StringIO import StringIO
+from io import BytesIO
 
+try:
+    import queue as queue
+except ImportError:
+    import Queue as queue
 
-class Reader(object):
-    def __init__(self):
-        return
-
-    def rgb2bgr(self, image):
-        # RGB -> BGR
-        sub = image.convert("RGB")
-        data = numpy.array(sub)
-        red, green, blue = data.T
-        data = numpy.array([blue, green, red])
-        data = data.transpose()
-        image = Image.fromarray(data)
-        return image
-
-    def read(self, async=False):
-        raise NotImplementedError("Should have implemented this")
-
-    def left(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def right(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def up(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def down(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def next(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def previous(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def inc_zoom(self):
-        raise NotImplementedError("Should have implemented this")
-
-    def dec_zoom(self):
-        raise NotImplementedError("Should have implemented this")
-
-
-class OpenSlideReader(Reader):
-    def __init__(self, position):
-        super(Reader, self).__init__()
-        self.position = position
-
-
-def _paste_image(cytomine, url):
-    resp, content = cytomine.fetch_url(url)
-    return resp, content
+try:
+    import Image
+except ImportError:
+    from PIL import Image
 
 
 class ThreadUrl(threading.Thread):
-    def __init__(self, queue, out_queue, cytomine, terminate_event, verbose=True):
+    def __init__(self, queue_, out_queue, terminate_event, verbose=True):
         threading.Thread.__init__(self)
         self.verbose = verbose
-        self.queue = queue
+        self.queue = queue_
         self.out_queue = out_queue
-        self.cytomine = copy.deepcopy(cytomine)
         self.terminate_event = terminate_event
 
     def run(self):
-        while (not self.terminate_event.is_set()):
-            # grabs host from queue
+        from cytomine import Cytomine
+        while not self.terminate_event.is_set():
             try:
                 url, box = self.queue.get_nowait()
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
-            # grabs urls of hosts and prints first 1024 bytes of page
-            resp, content = self.cytomine.fetch_url(url)
-
-            short_url = url[len(url) - 10:len(url)]
-            if (resp['status'] == "200") or (resp['status'] == "304") and (resp['content-type'] == "image/jpeg"):
+            response = requests.get(url)
+            if response.status_code in [200, 304] and response.headers['Content-Type'] == 'image/jpeg':
                 try:
-                    image_tile = Image.open(StringIO(content))
-                    self.out_queue.put((image_tile, box))
-                    if self.verbose: print("%s Fetched and pasted : %s " % (resp['status'], short_url))
-                except IOError:
-                    print("IOError for %s" % short_url)
-
+                    tile = Image.open(BytesIO(response.content))
+                    self.out_queue.put((tile, box))
+                    Cytomine.get_instance().logger.info("Reader fetched {}".format(url))
+                except IOError as e:
+                    Cytomine.get_instance().logger.error(e)
+                    print(e)
             else:
-                if self.verbose:
-                    print("Error while requesting %s " % short_url)
-                    print("Response %s " % resp)
+                Cytomine.get_instance().logger.error("Bad request: {}".format(url))
 
-            # signals to queue job is done
             self.queue.task_done()
 
 
 class Bounds(object):
-
     def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
@@ -134,56 +81,47 @@ class Bounds(object):
         self.height = height
 
     def __str__(self):
-        return "Bounds : %d, %d, %d, %d" % (self.x, self.y, self.width, self.height)
+        return "Bounds : {}, {}, {}, {}".format(self.x, self.y, self.width, self.height)
 
 
-class CytomineReader(Reader):
-
-    def __init__(self, cytomine, whole_slide, window_position=Bounds(0, 0, 1024, 1024), overlap=0, zoom=0):
-        print("Reader construct")
-        super(Reader, self).__init__()
+class CytomineReader(object):
+    def __init__(self, whole_slide, window_position=Bounds(0, 0, 1024, 1024), overlap=0, zoom=0, rgb2bgr=False):
+        self.whole_slide = whole_slide
         self.window_position = window_position
-        self.zoom = zoom
-        self.cytomine = cytomine
-        self.image = whole_slide
         self.overlap = overlap
+        self.zoom = zoom
+        self.rgb2bgr = rgb2bgr
+
         self.threads = []
         self.data = None
         self.queue = None
+        self.out_queue = None
         self.terminate_event = None
 
-    def findTileGroup(self, zoom, col, row):
-        num_tile = 0
-        for i in range(self.image.depth - zoom, self.image.depth):
-            num_tile += self.image.levels[i]['level_num_tiles']
-
-        num_tile += col + row * self.image.levels[zoom]['x_tiles']
-
-        tileGroup = num_tile / self.image.tile_size
-
-        return tileGroup
+    def find_tile_group(self, zoom, col, row):
+        num_tile = np.sum([self.whole_slide.levels[i]['level_num_tiles']
+                           for i in range(self.whole_slide.depth - zoom, self.whole_slide.depth)])
+        num_tile += col + row * self.whole_slide.levels[zoom]['x_tiles']
+        return int(num_tile / self.whole_slide.tile_size)
 
     def read(self, async=False):
-
-        # assert(self.window_position.x % self.image.tile_size == 0)
-        # assert(self.window_position.y % self.image.tile_size == 0)
-
         # prevent reading outside of image and change window position accordingly
-        if (self.window_position.x + self.window_position.width) > self.image.levels[self.zoom]['level_width']:
-            self.window_position.x = self.image.levels[self.zoom]['level_width'] - self.window_position.width
-        if (self.window_position.y + self.window_position.height) > self.image.levels[self.zoom]['level_height']:
-            self.window_position.y = self.image.levels[self.zoom]['level_height'] - self.window_position.height
+        if (self.window_position.x + self.window_position.width) > self.whole_slide.levels[self.zoom]['level_width']:
+            self.window_position.x = self.whole_slide.levels[self.zoom]['level_width'] - self.window_position.width
 
-        row0 = int(math.floor(self.window_position.y / self.image.tile_size))
-        col0 = int(math.floor(self.window_position.x / self.image.tile_size))
-        row1 = int(math.floor(min(self.image.levels[self.zoom]['level_height'],
-                                  (self.window_position.y + self.window_position.height) / self.image.tile_size)))
-        col1 = int(math.floor(min(self.image.levels[self.zoom]['level_width'],
-                                  (self.window_position.x + self.window_position.width) / self.image.tile_size)))
+        if (self.window_position.y + self.window_position.height) > self.whole_slide.levels[self.zoom]['level_height']:
+            self.window_position.y = self.whole_slide.levels[self.zoom]['level_height'] - self.window_position.height
+
+        row0 = int(math.floor(self.window_position.y / self.whole_slide.tile_size))
+        col0 = int(math.floor(self.window_position.x / self.whole_slide.tile_size))
+        row1 = int(math.floor(min(self.whole_slide.levels[self.zoom]['level_height'],
+                                  (self.window_position.y + self.window_position.height) / self.whole_slide.tile_size)))
+        col1 = int(math.floor(min(self.whole_slide.levels[self.zoom]['level_width'],
+                                  (self.window_position.x + self.window_position.width) / self.whole_slide.tile_size)))
         cols = col1 - col0 + 1
         rows = row1 - row0 + 1
-
-        self.data = Image.new('RGB', (self.window_position.width, self.window_position.height), 'white')
+        mode = 'RGB' if self.whole_slide.image.colorspace == 'RGB' else 'L'
+        self.data = Image.new(mode, (self.window_position.width, self.window_position.height), 'white')
 
         if self.queue:
             with self.queue.mutex:
@@ -191,18 +129,15 @@ class CytomineReader(Reader):
             with self.out_queue.mutex:
                 self.out_queue.queue.clear()
         else:
-            self.queue = Queue.Queue()
-            self.out_queue = Queue.Queue()
+            self.queue = queue.Queue()
+            self.out_queue = queue.Queue()
 
         if not self.terminate_event:
             self.terminate_event = threading.Event()
 
-        print(rows)
-        print(cols)
-
         # spawn a pool of threads, and pass them queue instance
         for i in range(8):
-            t = ThreadUrl(self.queue, self.out_queue, self.cytomine, self.terminate_event)
+            t = ThreadUrl(self.queue, self.out_queue, self.terminate_event)
             self.threads.append(t)
             t.setDaemon(True)
             t.start()
@@ -211,18 +146,14 @@ class CytomineReader(Reader):
             for c in range(cols):
                 row = row0 + r
                 col = col0 + c
+                url = "{}&tileGroup={}&z={}&x={}&y={}&mimeType={}".format(self.whole_slide.random_server_url(),
+                                                                          self.find_tile_group(self.zoom, col, row),
+                                                                          self.whole_slide.depth - self.zoom,
+                                                                          col, row, self.whole_slide.mime)
 
-                tile_group = self.findTileGroup(self.zoom, col, row)
-                base_url = self.image.server_urls[random.randint(0, len(self.image.server_urls) - 1)]
-                # url = "%sTileGroup%d/%d-%d-%d.jpg" % (base_url, tile_group, self.image.depth - self.zoom, col, row)
-                url = "%s&tileGroup=%d&z=%d&x=%d&y=%d&mimeType=%s" % (base_url, tile_group,
-                                                                      self.image.depth - self.zoom, col, row,
-                                                                      self.image.mime)
-                url = url.replace(" ", "%20")
-                x_paste = int((col * self.image.tile_size) - self.window_position.x)
-                y_paste = int((row * self.image.tile_size) - self.window_position.y)
+                x_paste = int((col * self.whole_slide.tile_size) - self.window_position.x)
+                y_paste = int((row * self.whole_slide.tile_size) - self.window_position.y)
                 self.queue.put((url, (x_paste, y_paste)))
-
         self.queue.join()
 
         # terminate pool of threads
@@ -235,22 +166,27 @@ class CytomineReader(Reader):
             image_tile, box = self.out_queue.get()
             self.data.paste(image_tile, box)
 
-        # print "done"
-
     def result(self):
-        return self.rgb2bgr(self.data)
+        if self.rgb2bgr:
+            return transform_rgb_to_bgr(self.data)
+        return self.data
 
     def read_window(self):
+        from cytomine import Cytomine
         window = copy.copy(self.window_position)
         window.width = window.width * pow(2, self.zoom)
         window.height = window.height * pow(2, self.zoom)
         window.x = window.x * pow(2, self.zoom)
         window.y = window.y * pow(2, self.zoom)
-        url = "%s%s%s%s?zoom=%d" % (self.cytomine._protocol, self.cytomine._host, self.cytomine._base_path,
-                                    self.image.getCropURL(window), self.zoom)
-        resp, content = self.cytomine.fetch_image(url)
-        image = Image.open(StringIO(content))
-        return self.rgb2bgr(image)
+
+        url = "imageinstance/{}/window-{}-{}-{}-{}.png".format(self.whole_slide.image.id, window.x, window.y,
+                                                               window.width, window.height)
+        response = Cytomine.get_instance()._get(url, {"zoom": self.zoom})
+        if response.status_code in [200, 304] and response.headers['Content-Type'] == 'image/jpeg':
+            image = Image.open(BytesIO(response.content))
+            return transform_rgb_to_bgr(image) if self.rgb2bgr else image
+        else:
+            return False
 
     def left(self):
         previous_x = self.window_position.x
@@ -258,18 +194,14 @@ class CytomineReader(Reader):
         return previous_x != self.window_position.x
 
     def right(self):
-        # print "overlap = %f" % self.overlap
-        # print "oldx = %d" % self.window_position.x
-
-        if self.window_position.x >= (self.image.levels[self.zoom]['level_width'] - self.window_position.width):
+        if self.window_position.x >= (self.whole_slide.levels[self.zoom]['level_width'] - self.window_position.width):
             return False
         else:
             new_x = self.window_position.x + (self.window_position.width - self.overlap)
-            if new_x > (self.image.levels[self.zoom]['level_width'] - self.window_position.width):
-                new_x = self.image.levels[self.zoom]['level_width'] - self.window_position.width
+            if new_x > (self.whole_slide.levels[self.zoom]['level_width'] - self.window_position.width):
+                new_x = self.whole_slide.levels[self.zoom]['level_width'] - self.window_position.width
 
             self.window_position.x = new_x
-            print("newx = %d" % self.window_position.x)
             return True
 
     def up(self):
@@ -278,12 +210,12 @@ class CytomineReader(Reader):
         return previous_y != self.window_position.y
 
     def down(self):
-        if self.window_position.y >= (self.image.levels[self.zoom]['level_height'] - self.window_position.height):
+        if self.window_position.y >= (self.whole_slide.levels[self.zoom]['level_height'] - self.window_position.height):
             return False
         else:
             new_y = self.window_position.y + (self.window_position.height - self.overlap)
-            if new_y > (self.image.levels[self.zoom]['level_height'] - self.window_position.height):
-                new_y = self.image.levels[self.zoom]['level_height'] - self.window_position.height
+            if new_y > (self.whole_slide.levels[self.zoom]['level_height'] - self.window_position.height):
+                new_y = self.whole_slide.levels[self.zoom]['level_height'] - self.window_position.height
 
             self.window_position.y = new_y
             return True
@@ -303,7 +235,7 @@ class CytomineReader(Reader):
                 continue
             return self.up()
 
-    def inc_zoom(self):
+    def increase_zoom(self):
         previous_zoom = self.zoom
         self.zoom = max(0, self.zoom - 1)
         if previous_zoom != self.zoom:
@@ -311,9 +243,9 @@ class CytomineReader(Reader):
             self.translate_to_zoom(zoom_factor)
         return previous_zoom != self.zoom
 
-    def dec_zoom(self):
+    def decrease_zoom(self):
         previous_zoom = self.zoom
-        self.zoom = min(self.image.depth, self.zoom + 1)
+        self.zoom = min(self.whole_slide.depth, self.zoom + 1)
         if previous_zoom != self.zoom:
             zoom_factor = pow(2, abs(previous_zoom - self.zoom))
             self.translate_to_zoom(zoom_factor)
@@ -326,5 +258,18 @@ class CytomineReader(Reader):
         y_middle = self.window_position.y + half_height
         new_x_middle = x_middle / zoom_factor
         new_y_middle = y_middle / zoom_factor
-        self.window_position.x = int(max(0, new_x_middle - half_width) / self.image.tile_size) * self.image.tile_size
-        self.window_position.y = int(max(0, new_y_middle - half_height) / self.image.tile_size) * self.image.tile_size
+        self.window_position.x = int(max(0, new_x_middle - half_width) / self.whole_slide.tile_size) * self.whole_slide.tile_size
+        self.window_position.y = int(max(0, new_y_middle - half_height) / self.whole_slide.tile_size) * self.whole_slide.tile_size
+
+    # Deprecated method names. Keep for backwards compatibility.
+    inc_zoom = increase_zoom
+    dec_zoom = decrease_zoom
+
+
+def transform_rgb_to_bgr(image):
+    sub = image.convert("RGB")
+    data = np.array(sub)
+    red, green, blue = data.T
+    data = np.array([blue, green, red])
+    data = data.transpose()
+    return Image.fromarray(data)

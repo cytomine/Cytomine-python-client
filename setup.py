@@ -43,6 +43,7 @@ setup(
                       'six',
                       'future',
                       'opencv-python',
+                      'Pillow',
                       'requests'],
     setup_requires=['pytest-runner'],
     extra_requires={
