@@ -87,9 +87,13 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
                          .replace("@id", parameter_descriptor["id"].lower()) if isinstance(v, str) else v
                      for k, v in parameter_descriptor.items()}
 
+            type = param["type"].lower().capitalize()
+            if type == 'Listdomain':
+                type = 'ListDomain'
+
             sp = SoftwareParameter(
                 name=param["id"],
-                type=param["type"].lower().capitalize(),
+                type=type,
                 id_software=software.id,
                 default_value=(param["default-value"] if "default-value" in param.keys() else ""),
                 required=(not param["optional"] if "optional" in param.keys() else False),
