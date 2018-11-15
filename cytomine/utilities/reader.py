@@ -104,7 +104,7 @@ class CytomineReader(object):
         num_tile += col + row * self.whole_slide.levels[zoom]['x_tiles']
         return int(num_tile / self.whole_slide.tile_size)
 
-    def read(self, async=False):
+    def read(self):
         # prevent reading outside of image and change window position accordingly
         if (self.window_position.x + self.window_position.width) > self.whole_slide.levels[self.zoom]['level_width']:
             self.window_position.x = self.whole_slide.levels[self.zoom]['level_width'] - self.window_position.width
