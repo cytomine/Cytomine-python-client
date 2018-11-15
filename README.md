@@ -30,6 +30,16 @@ To retrieve package using `pip`:
 
 See [package repository](https://packagecloud.io/cytomine-uliege/Cytomine-python-client) for details.
 
+### In a Docker container
+To ease developpement of new Cytomine software, the Cytomine-python-client package is available in Docker containers:
+* [cytomineuliege/software-python3-base](https://hub.docker.com/r/cytomineuliege/software-python3-base/) provides a Python 3.5 environment with client already installed.
+* [cytomineuliege/software-python2-base](https://hub.docker.com/r/cytomineuliege/software-python2-base/) provides a Python 2.7 environment with client already installed.
+
+These Docker images are tagged with the Python client version number. Two image variants are given for each client version:
+* `cytomineuliege/software-pythonX-base:<version>` is the defacto image. If you are unsure about what your needs are, you probably want to use this one.
+* `cytomineuliege/software-pythonX-base:<version>-slim` is an image that does not contain all the common package contained in the default tag and only contains the minimal packages needed to run Python. If you are working in an environment where only the python image will be deployed and you have space constraints, we recommend to use this one.
+
+See [official python Docker image](https://hub.docker.com/_/python/) for more details.
 
 ## Usage
 

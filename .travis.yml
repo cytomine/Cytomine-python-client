@@ -54,8 +54,9 @@ deploy:
       docker push cytomineuliege/software-python3-base:$VERSION &&
       docker push cytomineuliege/software-python3-base:$VERSION-slim &&
       docker push cytomineuliege/software-python2-base:$VERSION &&
-      docker push cytomineuliege/software-python2-base:$VERSION-slim
-    skipt_cleanup: true
+      docker push cytomineuliege/software-python2-base:$VERSION-slim &&
+      echo "Done."
+    skip_cleanup: true
     on:
       python: 3.5
       condition: $DEPLOY = true
