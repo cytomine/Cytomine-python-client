@@ -1,10 +1,22 @@
+sudo: required
+
+services:
+  - docker
+
 language: python
+
 python:
   - "2.7"
   - "3.5"
+
 cache:
   directories:
   - "$HOME/.cache"
+
+env:
+  global:
+    - DOCKER_USERNAME=cytomineulg
+    - secure: "cQ0f44LQN3VztRKT9pKDjuyyf3rMtrRZVzL09fiXwTimp+m3ft4DCKncEonMGdGmsSTrjEpVusrXdP8TIE9hDTyrkCQkUDgJQFM5eehfZtwsR91YJJzjxAy+0QDxlb1P4BqSl4XzgdhY8vY4IggxpGI1TcoNAqGwl6nVNGbCvWvj6WBFNYqJ1yQhSi4+U65Ahc2N2qgSj6jn94T5dUVIuSpTmMigMURp1g17TYVhen3v1SWkTvuT35V1TRTp958ScBmxRw8lNoNVjt4INHVJ5aKdbpty48lAKBMmCW/0uknbH19XQ5Sf6ACC9boU3njN7eT0Zn58ZNcHpyjgJXkEqM8yAmFvCV+3VeA5+KQH9i083POMWxf3qSB1WeY1eovMSrHOLDvkpNZApX9sgi3BRq4kClKFJUxNRhOhrL2g230gJUqBZH7Kvi1W2l33PEyapOrwZ1As3BvoxBYBlcCeNfXhtf9Q4QMWYB3L9eFFYdPPysZ1NRJla8vbGIg95t/Rj7ibwH7HLImbI0BhgYB8p6lnmWMypnKCdgRtL72p3lAHtOwWA8zMxs/96gd2ckS/yQpWWkUbssbRh5ipRke41KhQ6EW54/d4IN3SNTtYG9eFPVZ38J1Ntz1CX+IuBQvk6Q8KJtZnKrBknpDJYiR3kWpm2QgJCvgDhm4HAow+4C4="
 
 install:
   - pip install -r requirements.txt
@@ -25,9 +37,26 @@ after_success:
       git config --local user.email "$(git log -1 --pretty=format:'%ae')";
       git tag "v$(python -W ignore setup.py --version)";
       export DEPLOY=true;
+      echo "Deploy with version $VERSION";
+      cp dist/*.zip docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=3 -t cytomineuliege/software-python3-base:$VERSION docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=3-slim -t cytomineuliege/software-python3-base:$VERSION-slim docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=2 -t cytomineuliege/software-python2-base:$VERSION docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=2-slim -t cytomineuliege/software-python2-base:$VERSION-slim docker/;
     fi;
 
 deploy:
+  - provider: script
+    script: echo $VERSION && \
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && \
+      docker push cytomineuliege/software-python3-base:$VERSION && \
+      docker push cytomineuliege/software-python3-base:$VERSION-slim && \
+      docker push cytomineuliege/software-python2-base:$VERSION && \
+      docker push cytomineuliege/software-python2-base:$VERSION-slim
+    skipt_cleanup: true
+    on:
+      python: 3.5
+      condition: $DEPLOY = true
   - provider: releases
     api_key:
       secure: iwv5loqGr4smy+C1merhBDzflUKooaI/RhFFHjNha55spRPMLNUlR41dg6DWcJBOniQSQo0WUZVJH4VLxsOvJLc5w8+d3toYycHhWWM+v7frI78vYequBQrJ6e7X0MHmacxE4mqg6r0QrDrmnnDH3469zYupx4YNGXQztdc6raATgsni8tVXvB3jYYcRz6rhGwP+PzWnUPhvkakAsXsDFCA8DNkz71ewmZ0ho8CwQ9CPUBgqNJrIt5cJ+57kjIxj940T++V2lw+7lyo9UaCpqmvvogeie8PN05NWDqnq+HfORFWTODCRZVgFmxYaKLUkgNLmXP5Vp+/YLM8y4LB20fhW08VdCB7pD+CUGD6LhSOGAWp3c36hBx/nX8TjfgiS0L7TiBwF4cp+WHMIcToZovDubesrkxN2AwvaETUt8C/pQvALVSYuIf9t65y1Y0g6j0XWgZ4gYr/FTTvpNCkCgDVbllRagx8zHSk8UTa0ejGIOJh5Cv549MXRCpOvPSc36/oaqrKkwmvJG9fJu8HMnjyA/AbP5QwZYJyp6CcxvKnmsk96DG0QuunFb7QorUSbR3AFeGsADGgehY6Skoez6p3fnfNlJ3RsYOlUqL9h5v43ihwzPsndh3Qq0/R9tuyts8eAFkHpqsS8VBLu23iXYnmFaYzJ1FHEtqRg2KG/AKs=
