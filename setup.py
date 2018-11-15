@@ -15,6 +15,7 @@
 # * limitations under the License.
 
 from setuptools import setup
+from io import open
 
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
