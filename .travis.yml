@@ -48,11 +48,12 @@ after_success:
 
 deploy:
   - provider: script
-    script: echo $VERSION && \
-      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" && \
-      docker push cytomineuliege/software-python3-base:$VERSION && \
-      docker push cytomineuliege/software-python3-base:$VERSION-slim && \
-      docker push cytomineuliege/software-python2-base:$VERSION && \
+    script: >
+      echo $VERSION &&
+      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" &&
+      docker push cytomineuliege/software-python3-base:$VERSION &&
+      docker push cytomineuliege/software-python3-base:$VERSION-slim &&
+      docker push cytomineuliege/software-python2-base:$VERSION &&
       docker push cytomineuliege/software-python2-base:$VERSION-slim
     skipt_cleanup: true
     on:
