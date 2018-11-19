@@ -72,7 +72,7 @@ def _to_bool(v):
         The boolean value
     """
     if isinstance(v, str):
-        return bool(distutils.util.strtobool(v))
+        return v not in {"0", "0.0", "False", "false", "FALSE"}
     else:
         return bool(v)
 
