@@ -19,6 +19,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from shutil import copyfile
+
+from cytomine.utilities.pattern_matching import resolve_pattern
+
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
@@ -102,19 +106,6 @@ class Annotation(Model):
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
-        pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
-
-        destination = os.path.dirname(dest_pattern)
-        filename, extension = os.path.splitext(os.path.basename(dest_pattern))
-        extension = extension[1:]
-
-        if extension not in ("jpg", "png", "tif", "tiff"):
-            extension = "jpg"
-
-        if not os.path.exists(destination):
-            os.makedirs(destination)
-
         parameters = {
             "zoom": zoom,
             "maxSize": max_size,
@@ -126,6 +117,27 @@ class Annotation(Model):
             "bits": bits
         }
 
+        # generate download path(s)
+        files_to_download = list()
+        for file_path in resolve_pattern(dest_pattern, self):
+            destination = os.path.dirname(file_path)
+            filename, extension = os.path.splitext(os.path.basename(file_path))
+            extension = extension[1:]
+
+            if extension not in ("jpg", "png", "tif", "tiff"):
+                extension = "jpg"
+
+            if not os.path.exists(destination):
+                os.makedirs(destination)
+
+            files_to_download.append(os.path.join(destination, "{}.{}".format(filename, extension)))
+
+        if len(files_to_download) == 0:
+            raise ValueError("Couldn't generate a dump path.")
+
+        # download once
+        file_path = files_to_download[0]
+        _, extension = os.path.splitext(os.path.basename(file_path))
         if mask and alpha:
             image = "alphamask"
             if extension == "jpg":
@@ -135,13 +147,18 @@ class Annotation(Model):
         else:
             image = "crop"
 
-        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
-
         url = self.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
-        result = Cytomine.get_instance().download_file(url, file_path, override, parameters)
-        if result:
-            self.filename = file_path
-        return result
+        if Cytomine.get_instance().download_file(url, file_path, override, parameters):
+            return False
+
+        self.filenames = files_to_download
+        self.filename = file_path  # backward compatibility
+
+        # copy the file to the other paths (if any)
+        for dest_file_path in files_to_download[1:]:
+            copyfile(file_path, dest_file_path)
+
+        return True
 
     """
     Deprecated functions. Still here for backwards compatibility.
