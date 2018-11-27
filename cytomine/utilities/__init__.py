@@ -22,4 +22,5 @@ from .geometry import *
 from .logging import *
 from .reader import *
 from .wholeslide import *
-from .download_util import download_annotation_crops
+from .download_util import *
+from .pattern_matching import *

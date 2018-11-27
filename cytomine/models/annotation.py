@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from cytomine.utilities.download_util import generic_image_dump
+from cytomine.utilities import generic_download, is_false
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
@@ -30,6 +30,7 @@ import os
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection, CollectionPartialUploadException
 from cytomine.models.model import Model
+from cytomine.models.util import generic_image_dump
 
 
 class Annotation(Model):
@@ -115,7 +116,7 @@ class Annotation(Model):
         }
 
         def dump_url_fn(model, file_path, mask=False, alpha=False, **kwargs):
-            extension = os.path.splitext(os.path.basename(file_path))[1]
+            extension = os.path.basename(file_path).split(".")[-1]
             if mask and alpha:
                 image = "alphamask"
                 if extension == "jpg":
@@ -249,6 +250,50 @@ class AnnotationCollection(Collection):
             return True
         else:
             raise ValueError("Invalid value '{}' for chunk parameter.".format(chunk))
+
+    def download_annotation_crops(self, n_workers=0, **dump_params):
+        """Download the crops of the given annotations
+        Parameters
+        ----------
+        n_workers: int
+            Number of workers to use (default: uses all the available processors)
+        dump_params: dict
+            Parameters for dumping the annotations
+
+        Returns
+        -------
+        annotations: AnnotationCollection
+            List of annotations (containing a `filenames` attribute)
+        """
+
+        def dump_crop(an):
+            if is_false(an.dump(**dump_params)):
+                return False
+            else:
+                return an
+
+        results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
+
+        # check errors
+        count_fail = 0
+        failed = list()
+        for in_annot, out_annot in results:
+            if is_false(out_annot):
+                count_fail += 1
+                failed.append(in_annot.id)
+
+        logger = Cytomine.get_instance().logger
+        if count_fail > 0:
+            n_annots = len(self)
+            ratio = 100 * count_fail / float(n_annots)
+            logger.info(
+                "Failed to download crops for {}/{} annotations ({:3.2f} %).".format(count_fail, n_annots, ratio))
+            logger.debug("Annotation with crop download failure: {}".format(failed))
+
+        from cytomine.models import AnnotationCollection  # to avoid circular import
+        collection = AnnotationCollection()
+        collection.extend([an for _, an in results if not isinstance(an, bool) or an])
+        return collection
 
 
 class AnnotationTerm(Model):

@@ -1,49 +1,69 @@
-import re
-from copy import copy
+import os
+from shutil import copyfile
+
+from cytomine.utilities import makedirs
+from cytomine.utilities.pattern_matching import resolve_pattern
 
 
-def is_iterable(obj):
-    """Portable way to check that an object is iterable"""
-    try:
-        iter(obj)
-        return True
-    except TypeError:
-        return False
+class DumpError(Exception):
+    """A class for image dump errors"""
+    pass
 
 
-def resolve_pattern(pattern, attr_source):
-    """Resolve a string pattern using values from an attribute source. If one attribute is an iterable (and not a
-    string) the pattern will be resolved once for each value in the iterable.
-
+def generic_image_dump(dest_pattern, model, url_fn, override=True, **parameters):
+    """A generic function for 'dumping' a model as an image (crop, windows,...).
     Parameters
     ----------
-    pattern: str
-        A string pattern such as '{placeholder1}/___aa__{placeholder2).stg'.
-    attr_source: object
-        An object with attributes matching the names of the placeholders in the patterns.
+    dest_pattern: str
+        The destination pattern for the image.
+    model: Model
+        A Cytomine model
+    url_fn: callable
+        A function for generating the url of the image. The function call would be like the following:
+            url_fn(model, file_path, **parameters)
+        where model is the cytomine model, file_path is the destination filepath and paramters are the dump
+        parameters.
+    override: bool
+        True for overriding the file. False
+    parameters: dict
 
     Returns
     -------
-    resolved: iterable
-        The list of resolved patterns
+    downloaded: iterable
+        The list of downloaded files
+
+    Raises
+    ------
+    DumpError:
+        When the download fails.
     """
-    matches = re.findall("{([^\}]+)}", pattern)
-    attr_dict = {match: getattr(attr_source, match, "_") for match in matches}
+    # generate download path(s)
+    files_to_download = list()
+    for file_path in resolve_pattern(dest_pattern, model):
+        destination = os.path.dirname(file_path)
+        filename, extension = os.path.splitext(os.path.basename(file_path))
+        extension = extension[1:]
 
-    # remaining attributes to fill in the pattern
-    remaining = set(attr_dict.keys())
-    patterns = [pattern]
-    for attr, values in attr_dict.items():
-        remaining.remove(attr)
-        resolved = list()
-        if isinstance(values, str) or not is_iterable(values):
-            values = [values]
-        format_params = {a: "{" + a + "}" for a in remaining}
-        for v in values:
-            for p in patterns:
-                format_params = copy(format_params)
-                format_params[attr] = v
-                resolved.append(p.format(**format_params))
-        patterns = resolved
+        if extension not in ("jpg", "png", "tif", "tiff"):
+            extension = "jpg"
 
-    return patterns
+        makedirs(destination, exist_ok=True)
+        files_to_download.append(os.path.join(destination, "{}.{}".format(filename, extension)))
+
+    if len(files_to_download) == 0:
+        raise ValueError("Couldn't generate a dump path.")
+
+    # download once
+    file_path = files_to_download[0]
+    url = url_fn(model, file_path, **parameters)
+
+    from cytomine import Cytomine
+    if not Cytomine.get_instance().download_file(url, file_path, override, parameters):
+        raise DumpError("Could not dump the image.")
+
+    # copy the file to the other paths (if any)
+    for dest_file_path in files_to_download[1:]:
+        if override or not os.path.isfile(dest_file_path):
+            copyfile(file_path, dest_file_path)
+
+    return files_to_download
