@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from shutil import copyfile
 
+from cytomine.utilities.parallel_download import makedirs
 from cytomine.utilities.pattern_matching import resolve_pattern
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
@@ -28,11 +29,10 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import os
-import re
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection, CollectionPartialUploadException
-from cytomine.models.model import Model, DomainModel
+from cytomine.models.model import Model
 
 
 class Annotation(Model):
@@ -127,8 +127,7 @@ class Annotation(Model):
             if extension not in ("jpg", "png", "tif", "tiff"):
                 extension = "jpg"
 
-            if not os.path.exists(destination):
-                os.makedirs(destination)
+            makedirs(destination, exist_ok=True)
 
             files_to_download.append(os.path.join(destination, "{}.{}".format(filename, extension)))
 
@@ -138,6 +137,7 @@ class Annotation(Model):
         # download once
         file_path = files_to_download[0]
         _, extension = os.path.splitext(os.path.basename(file_path))
+        extension = extension[1:]
         if mask and alpha:
             image = "alphamask"
             if extension == "jpg":
@@ -148,7 +148,7 @@ class Annotation(Model):
             image = "crop"
 
         url = self.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
-        if Cytomine.get_instance().download_file(url, file_path, override, parameters):
+        if not Cytomine.get_instance().download_file(url, file_path, override, parameters):
             return False
 
         self.filenames = files_to_download
