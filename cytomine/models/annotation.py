@@ -19,10 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from shutil import copyfile
-
-from cytomine.utilities.parallel_download import makedirs
-from cytomine.utilities.pattern_matching import resolve_pattern
+from cytomine.utilities.download_util import generic_image_dump
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
@@ -117,46 +114,25 @@ class Annotation(Model):
             "bits": bits
         }
 
-        # generate download path(s)
-        files_to_download = list()
-        for file_path in resolve_pattern(dest_pattern, self):
-            destination = os.path.dirname(file_path)
-            filename, extension = os.path.splitext(os.path.basename(file_path))
-            extension = extension[1:]
+        def dump_url_fn(model, file_path, mask=False, alpha=False, **kwargs):
+            extension = os.path.splitext(os.path.basename(file_path))[1]
+            if mask and alpha:
+                image = "alphamask"
+                if extension == "jpg":
+                    extension = "png"
+            elif mask:
+                image = "mask"
+            else:
+                image = "crop"
+            return model.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
 
-            if extension not in ("jpg", "png", "tif", "tiff"):
-                extension = "jpg"
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
-            makedirs(destination, exist_ok=True)
-
-            files_to_download.append(os.path.join(destination, "{}.{}".format(filename, extension)))
-
-        if len(files_to_download) == 0:
-            raise ValueError("Couldn't generate a dump path.")
-
-        # download once
-        file_path = files_to_download[0]
-        _, extension = os.path.splitext(os.path.basename(file_path))
-        extension = extension[1:]
-        if mask and alpha:
-            image = "alphamask"
-            if extension == "jpg":
-                extension = "png"
-        elif mask:
-            image = "mask"
-        else:
-            image = "crop"
-
-        url = self.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
-        if not Cytomine.get_instance().download_file(url, file_path, override, parameters):
+        if len(files) == 0:
             return False
 
-        self.filenames = files_to_download
-        self.filename = file_path  # backward compatibility
-
-        # copy the file to the other paths (if any)
-        for dest_file_path in files_to_download[1:]:
-            copyfile(file_path, dest_file_path)
+        self.filenames = files
+        self.filename = files[0]
 
         return True
 
