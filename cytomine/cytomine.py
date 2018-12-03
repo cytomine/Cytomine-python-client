@@ -19,6 +19,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import base64
+import hashlib
+import hmac
+import sys
 from argparse import ArgumentParser
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
@@ -38,13 +42,12 @@ except ImportError:
 import os
 import requests
 import shutil
+import warnings
+import functools
 from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 from requests_toolbelt.utils import dump
-
-from cytomine.utilities.http import CytomineAuth
-from cytomine.utilities.version import deprecated
-from cytomine.utilities.logging import StdoutHandler
+from logging import StreamHandler, Formatter
 
 
 def _cytomine_parameter_name_synonyms(name, prefix="--"):
@@ -79,6 +82,49 @@ def _cytomine_parameter_name_synonyms(name, prefix="--"):
         return [prefix + name]
 
     return [prefix + n for n in ([name] + synonyms_dict[name])]
+
+
+class CytomineAuth(requests.auth.AuthBase):
+    def __init__(self, public_key, private_key, base_url, base_path, sign_with_base_path=True):
+        self.public_key = public_key
+        self.private_key = private_key
+        self.base_url = base_url
+        self.base_path = base_path if sign_with_base_path else ""
+
+    def __call__(self, r):
+        content_type = r.headers.get("content-type", "")
+        token = "{}\n\n{}\n{}\n{}{}".format(r.method, content_type, r.headers['date'],
+                                            self.base_path, r.url.replace(self.base_url, ""))
+
+        signature = base64.b64encode(hmac.new(bytes(self.private_key, 'utf-8'),
+                                              token.encode('utf-8'), hashlib.sha1).digest())
+
+        authorization = "CYTOMINE {}:{}".format(self.public_key, signature.decode('utf-8'))
+        r.headers['authorization'] = authorization
+        return r
+
+
+def deprecated(func):
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emmitted
+    when the function is used."""
+
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+        warnings.warn("Call to deprecated function {}.".format(func.__name__), category=DeprecationWarning,
+                      stacklevel=2)
+        warnings.simplefilter('default', DeprecationWarning)  # reset filter
+        return func(*args, **kwargs)
+
+    return new_func
+
+
+class StdoutHandler(StreamHandler):
+    def __init__(self):
+        super(StreamHandler, self).__init__()
+        self.stream = sys.stdout
+        self.setFormatter(Formatter("[%(asctime)s][%(levelname)s] %(message)s"))
 
 
 class Cytomine(object):

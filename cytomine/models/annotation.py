@@ -28,7 +28,7 @@ import re
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
-from cytomine.models.model import Model, DomainModel
+from cytomine.models.model import Model
 
 
 class Annotation(Model):
