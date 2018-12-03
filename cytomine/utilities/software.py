@@ -72,6 +72,7 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         terms=filter_terms,
         images=filter_images,
         users=filter_users,
+        reviewed=args.cytomine_reviewed,
         **annot_params
     )
 
