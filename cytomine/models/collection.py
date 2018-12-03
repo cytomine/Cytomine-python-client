@@ -189,7 +189,7 @@ class Collection(MutableSequence):
         item: object|None
             The object retrieved from the list, or None if not found.
         """
-        return next([i for i in self if hasattr(i, attr) and getattr(i, attr) == value], None)
+        return next(iter([i for i in self if hasattr(i, attr) and getattr(i, attr) == value]), None)
 
     def __str__(self):
         return "[{} collection] {} objects".format(self.callback_identifier, len(self))
