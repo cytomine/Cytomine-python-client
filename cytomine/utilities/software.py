@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-from cytomine import Cytomine
 from cytomine.models._utilities import makedirs
 from cytomine.utilities.annotations import get_annotations
 
