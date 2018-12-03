@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from cytomine.utilities import generic_download, is_false
+from ._utilities import generic_download, is_false
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
@@ -30,7 +30,7 @@ import os
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection, CollectionPartialUploadException
 from cytomine.models.model import Model
-from cytomine.models.util import generic_image_dump
+from ._utilities.dump import generic_image_dump
 
 
 class Annotation(Model):

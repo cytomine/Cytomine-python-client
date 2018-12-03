@@ -1,8 +1,8 @@
 import os
 from shutil import copyfile
 
-from cytomine.utilities import makedirs
-from cytomine.utilities.pattern_matching import resolve_pattern
+from .download import makedirs
+from .pattern_matching import resolve_pattern
 
 
 class DumpError(Exception):

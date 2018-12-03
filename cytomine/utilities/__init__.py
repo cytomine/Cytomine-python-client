@@ -19,8 +19,5 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 from .geometry import *
-from .logging import *
 from .reader import *
 from .wholeslide import *
-from .download_util import *
-from .pattern_matching import *

@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from cytomine.utilities.pattern_matching import resolve_pattern
+from cytomine.models._utilities.pattern_matching import resolve_pattern
 
 
 class TestPatternMatching:
@@ -24,4 +24,4 @@ class TestPatternMatching:
     def test_no_placeholder(self):
         fake = self.get_fake_type()(lst=[1, 2, 3], atomstr="aa", atomfloat=1.5)
         resolved = resolve_pattern("no_placeholder", fake)
-        assert(len(resolved) == 0)
+        assert(len(resolved) == 1)
