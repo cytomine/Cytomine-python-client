@@ -25,7 +25,7 @@ def parse_domain_list(s):
     return list(map(int, s.split(',')))
 
 
-def setup_classify(args, logger, root_path=None, image_folder="images", set_folder=None, **annot_params):
+def setup_classify(args, logger, root_path=None, image_folder="images", set_folder=None, dest_pattern=None, **annot_params):
     """Download annotations for classification
     Parameters
     ----------
@@ -39,10 +39,27 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         Name of the image folder in the root
     set_folder: str|None
         Name of the set folder (e.g. 'train') to be included in the image folder.
-    :return:
+    dest_pattern: str|None
+        Destination pattern for annotation crops. By default (if dest_pattern is None):
+            - if "showTerm" is in 'annot_params': "{term}/{image}_{id}.png"
+            - otherwise: "{image}_{id}.png"
+    annot_params: dict
+        Additional parameters for fetching the annotations (e.g. showTerm, showWKT,...)
+
+    Returns
+    -------
+    base_path: str
+        The base_path where the dataset was downloaded.
+    downloaded: AnnotationCollection
+        The collection of downloaded annotations
     """
     if root_path is None:
         root_path = Path.home()
+    if dest_pattern is None:
+        if "showTerm" in annot_params:
+            dest_pattern = os.path.join("{term}", "{image}_{id}.png")
+        else:
+            dest_pattern = os.path.join("{image}_{id}.png")
 
     # setup folder structure for annotations
     logger.abs_update(progress=0, statusComment="Set up directories for download.")
@@ -78,7 +95,7 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     # download annotations
     logger.abs_update(progress=65, statusComment="Download crops of annotations.")
     downloaded = annotations.dump_crops(
-        dest_pattern=os.path.join(base_path, "{term}", "{image}_{id}.png"),
+        dest_pattern=os.path.join(base_path, dest_pattern),
         override=True, **{
             "alpha": args.cytomine_download_alpha,
             "zoom": args.cytomine_zoom_level
