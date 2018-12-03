@@ -93,6 +93,12 @@ class PropertyCollection(DomainCollection):
             uri = uri.replace("domain/", "")
         return uri
 
+    def as_dict(self):
+        """Transform the property collection into a python dictionary mapping keys
+            with their respective Property objects.
+        """
+        return {p.key: p for p in self}
+
     @property
     def _obj(self):
         return self._object
