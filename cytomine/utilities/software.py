@@ -29,7 +29,16 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     Parameters
     ----------
     args: Namespace
-        Command-line parameters
+        Command-line parameters. Used parameters are:
+            * args.cytomine_id_projects
+            * args.cytomine_id_terms
+            * args.cytomine_id_images
+            * args.cytomine_id_users
+            * args.cytomine_id_project
+            * args.cytomine_reviewed
+            * args.n_jobs
+            * (optional, default: 1) args.cytomine_zoom_level
+            * (optional, default: False) args.cytomine_download_alpha
     logger: CytomineJobLogger
         For logging
     root_path: str
@@ -64,10 +73,15 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     logger.abs_update(progress=0, statusComment="Set up directories for download.")
     base_path = os.path.join(root_path, image_folder)
 
+    # check default values
+    zoom_level = 1
+    download_alpha = False
     if hasattr(args, "cytomine_zoom_level"):
-        base_path = os.path.join(base_path, "zoom_level", str(args.cytomine_zoom_level))
+        zoom_level = args.cytomine_zoom_level
+        base_path = os.path.join(base_path, "zoom_level", str(zoom_level))
     if hasattr(args, "cytomine_download_alpha"):
-        base_path = os.path.join(base_path, "alpha", str(int(args.cytomine_download_alpha)))
+        download_alpha = args.cytomine_download_alpha
+        base_path = os.path.join(base_path, "alpha", str(int(download_alpha)))
     if set_folder is not None:
         base_path = os.path.join(base_path, set_folder)
 
@@ -96,10 +110,9 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     logger.abs_update(progress=65, statusComment="Download crops of annotations.")
     downloaded = annotations.dump_crops(
         dest_pattern=os.path.join(base_path, dest_pattern),
-        override=True, **{
-            "alpha": args.cytomine_download_alpha,
-            "zoom": args.cytomine_zoom_level
-        },
+        override=True,
+        alpha=download_alpha,
+        zoom=zoom_level,
         n_workers=args.n_jobs
     )
 
