@@ -110,7 +110,9 @@ class Annotation(Model):
             "gamma": gamma,
             "colormap": colormap,
             "inverse": inverse,
-            "bits": bits
+            "bits": bits,
+            "alpha": alpha,
+            "mask": mask
         }
 
         def dump_url_fn(model, file_path, mask=False, alpha=False, **kwargs):
