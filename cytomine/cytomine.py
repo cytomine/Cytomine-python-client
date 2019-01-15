@@ -493,8 +493,8 @@ class Cytomine(object):
 
         return False
 
-    def _post(self, uri, data=None, query_parameters=None):
-        return self._session.post("{}{}".format(self._base_url(), uri),
+    def _post(self, uri, data=None, query_parameters=None, with_base_path=True):
+        return self._session.post("{}{}".format(self._base_url(with_base_path), uri),
                                   auth=CytomineAuth(
                                       self._public_key, self._private_key,
                                       self._base_url(), self._base_path),
