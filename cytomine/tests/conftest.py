@@ -22,10 +22,9 @@ from __future__ import unicode_literals
 from cytomine.cytomine import Cytomine
 from cytomine.models.annotation import Annotation
 from cytomine.models.image import AbstractImage, ImageInstance
-from cytomine.models.imagegroup import ImageGroup, ImageSequence
+from cytomine.models.imagegroup import ImageGroup
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
-from cytomine.models.software import Software, Job, SoftwareParameter
 from cytomine.models.user import User, Group
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"

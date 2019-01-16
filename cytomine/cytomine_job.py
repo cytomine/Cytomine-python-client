@@ -341,6 +341,20 @@ class CytomineJobLogger(object):
         self._end = end
         self._update_period = period
 
+    def abs_update(self, statusComment="", status=Job.RUNNING, progress=None):
+        """Update the status with an absolute progress (i.e. integer percentage)
+
+        Parameters
+        ----------
+        statusComment: str
+            Status comment
+        status: int
+            Job status.
+        progress: int
+            An integer percentage of progress
+        """
+        self.update(statusComment=statusComment, status=status, current=int(progress), total=100)
+
     def update(self, statusComment, current, total, status=Job.RUNNING):
         """
         Parameters

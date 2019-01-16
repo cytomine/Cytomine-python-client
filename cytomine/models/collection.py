@@ -175,6 +175,22 @@ class Collection(MutableSequence):
 
         return "{}{}.json".format(uri, self.callback_identifier)
 
+    def find_by_attribute(self, attr, value):
+        """Retrieve the first item of which the item.attr matches 'value'
+        Parameters
+        ----------
+        attr: str
+            Name of the attribute
+        value: str
+            The value to find
+
+        Returns
+        -------
+        item: object|None
+            The object retrieved from the list, or None if not found.
+        """
+        return next(iter([i for i in self if hasattr(i, attr) and getattr(i, attr) == value]), None)
+
     def __str__(self):
         return "[{} collection] {} objects".format(self.callback_identifier, len(self))
 
