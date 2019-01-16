@@ -24,11 +24,11 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import os
-import re
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection, CollectionPartialUploadException
-from cytomine.models.model import Model, DomainModel
+from cytomine.models.model import Model
+from ._utilities import generic_image_dump, generic_download, is_false
 
 
 class Annotation(Model):
@@ -102,19 +102,6 @@ class Annotation(Model):
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
-        pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
-
-        destination = os.path.dirname(dest_pattern)
-        filename, extension = os.path.splitext(os.path.basename(dest_pattern))
-        extension = extension[1:]
-
-        if extension not in ("jpg", "png", "tif", "tiff"):
-            extension = "jpg"
-
-        if not os.path.exists(destination):
-            os.makedirs(destination)
-
         parameters = {
             "zoom": zoom,
             "maxSize": max_size,
@@ -123,25 +110,30 @@ class Annotation(Model):
             "gamma": gamma,
             "colormap": colormap,
             "inverse": inverse,
-            "bits": bits
+            "bits": bits,
         }
 
-        if mask and alpha:
-            image = "alphamask"
-            if extension == "jpg":
-                extension = "png"
-        elif mask:
-            image = "mask"
-        else:
-            image = "crop"
+        def dump_url_fn(model, file_path, **kwargs):
+            extension = os.path.basename(file_path).split(".")[-1]
+            if mask and alpha:
+                image = "alphamask"
+                if extension == "jpg":
+                    extension = "png"
+            elif mask:
+                image = "mask"
+            else:
+                image = "crop"
+            return model.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
 
-        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
-        url = self.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
-        result = Cytomine.get_instance().download_file(url, file_path, override, parameters)
-        if result:
-            self.filename = file_path
-        return result
+        if len(files) == 0:
+            return False
+
+        self.filenames = files
+        self.filename = files[0]
+
+        return True
 
     """
     Deprecated functions. Still here for backwards compatibility.
@@ -256,6 +248,54 @@ class AnnotationCollection(Collection):
             return True
         else:
             raise ValueError("Invalid value '{}' for chunk parameter.".format(chunk))
+
+    def dump_crops(self, dest_pattern, n_workers=0, override=True, **dump_params):
+        """Download the crops of the annotations
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        n_workers: int
+            Number of workers to use (default: uses all the available processors)
+        dump_params: dict
+            Parameters for dumping the annotations (see Annotation.dump)
+
+        Returns
+        -------
+        annotations: AnnotationCollection
+            Annotations that have been successfully downloaded (containing a `filenames` attribute)
+        """
+
+        def dump_crop(an):
+            if is_false(an.dump(dest_pattern=dest_pattern, override=override, **dump_params)):
+                return False
+            else:
+                return an
+
+        results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
+
+        # check errors
+        count_fail = 0
+        failed = list()
+        for in_annot, out_annot in results:
+            if is_false(out_annot):
+                count_fail += 1
+                failed.append(in_annot.id)
+
+        logger = Cytomine.get_instance().logger
+        if count_fail > 0:
+            n_annots = len(self)
+            ratio = 100 * count_fail / float(n_annots)
+            logger.info(
+                "Failed to download crops for {}/{} annotations ({:3.2f} %).".format(count_fail, n_annots, ratio))
+            logger.debug("Annotation with crop download failure: {}".format(failed))
+
+        collection = AnnotationCollection()
+        collection.extend([an for _, an in results if not isinstance(an, bool) or an])
+        return collection
 
 
 class AnnotationTerm(Model):
