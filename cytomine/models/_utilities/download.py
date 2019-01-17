@@ -1,6 +1,11 @@
 import errno
 import os
-from queue import Queue
+
+try:
+    import queue as queue
+except ImportError:
+    import Queue as queue
+
 from threading import Thread
 from multiprocessing import cpu_count
 
@@ -42,8 +47,8 @@ def generic_download(data, download_instance_fn, n_workers=0):
         n_workers = n_workers
 
     # instantiate multiprocessing objects
-    in_queue = Queue()
-    out_queue = Queue()
+    in_queue = queue.Queue()
+    out_queue = queue.Queue()
     threads = [Thread(target=worker, args=[in_queue, out_queue]) for _ in range(n_workers)]
 
     for t in threads:
