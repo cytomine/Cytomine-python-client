@@ -40,10 +40,12 @@ after_success:
       export DEPLOY=true;
       echo "Deploy with version $VERSION";
       cp dist/*.zip docker/;
-      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=3 -t cytomineuliege/software-python3-base:v$VERSION docker/;
-      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=3-slim -t cytomineuliege/software-python3-base:v$VERSION-slim docker/;
-      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=2 -t cytomineuliege/software-python2-base:v$VERSION docker/;
-      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=2-slim -t cytomineuliege/software-python2-base:v$VERSION-slim docker/;
+      export PY3_VERSION=3.6.8;
+      export PY2_VERSION=2.7.15;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=$PY3_VERSION -t cytomineuliege/software-python3-base:v$VERSION-py$PY3_VERSION -t cytomineuliege/software-python3-base:latest docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=$PY3_VERSION-slim -t cytomineuliege/software-python3-base:v$VERSION-py$PY3_VERSION-slim docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=$PY2_VERSION -t cytomineuliege/software-python2-base:v$VERSION-py$PY2_VERSION -t cytomineuliege/software-python2-base:latest docker/;
+      docker build --build-arg RELEASE_PATH="." --build-arg VERSION=$VERSION --build-arg PYTHON_VERSION=$PY2_VERSION-slim -t cytomineuliege/software-python2-base:v$VERSION-py$PY2_VERSION-slim docker/;
     fi;
 
 deploy:
@@ -51,10 +53,12 @@ deploy:
     script: >
       echo $VERSION &&
       docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" &&
-      docker push cytomineuliege/software-python3-base:v$VERSION &&
-      docker push cytomineuliege/software-python3-base:v$VERSION-slim &&
-      docker push cytomineuliege/software-python2-base:v$VERSION &&
-      docker push cytomineuliege/software-python2-base:v$VERSION-slim &&
+      docker push cytomineuliege/software-python3-base:v$VERSION-py$PY3_VERSION &&
+      docker push cytomineuliege/software-python3-base:v$VERSION-py$PY3_VERSION-slim &&
+      docker push cytomineuliege/software-python3-base:latest &&
+      docker push cytomineuliege/software-python2-base:v$VERSION-py$PY2_VERSION &&
+      docker push cytomineuliege/software-python2-base:v$VERSION-py$PY2_VERSION-slim &&
+      docker push cytomineuliege/software-python2-base:latest &&
       echo "Done."
     skip_cleanup: true
     on:
