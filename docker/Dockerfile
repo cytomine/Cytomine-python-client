@@ -23,8 +23,8 @@ ARG VERSION
 ARG NAMESPACE=Cytomine-ULiege
 ARG RELEASE_PATH=https://github.com/${NAMESPACE}/Cytomine-python-client/releases/download/v${VERSION}
 ADD ${RELEASE_PATH}/Cytomine-Python-Client-${VERSION}.zip /tmp/cytomine-client.zip
-RUN unzip -n /tmp/cytomine-client.zip && \
+RUN cd /tmp && unzip -n cytomine-client.zip && \
     pip install --upgrade pip && \
-    pip install -r /tmp/cytomine-client/requirements.txt && \
+    pip install -r /tmp/Cytomine-Python-Client-${VERSION}/requirements.txt && \
     pip install /tmp/cytomine-client.zip && \
     rm -rf /tmp/*
