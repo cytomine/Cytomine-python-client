@@ -16,11 +16,15 @@ ARG PYTHON_VERSION
 FROM python:$PYTHON_VERSION
 
 RUN apt-get update -y && \
-    apt-get install --no-install-recommends --no-install-suggests -y curl libglib2.0-0 && \
+    apt-get install --no-install-recommends --no-install-suggests -y curl libglib2.0-0 unzip && \
     rm -rf /var/lib/apt/lists/*
 
 ARG VERSION
 ARG NAMESPACE=Cytomine-ULiege
 ARG RELEASE_PATH=https://github.com/${NAMESPACE}/Cytomine-python-client/releases/download/v${VERSION}
 ADD ${RELEASE_PATH}/Cytomine-Python-Client-${VERSION}.zip /tmp/cytomine-client.zip
-RUN pip install --upgrade pip && pip install /tmp/cytomine-client.zip && rm -rf /tmp/*
+RUN unzip -n /tmp/cytomine-client.zip && \
+    pip install --upgrade pip && \
+    pip install -r /tmp/cytomine-client/requirements.txt && \
+    pip install /tmp/cytomine-client.zip && \
+    rm -rf /tmp/*

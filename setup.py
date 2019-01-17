@@ -52,4 +52,5 @@ setup(
     },
     test_suite='cytomine.tests',
     license='LICENSE',
+    data_files=[('', ['LICENSE', 'requirements.txt'])]
 )
