@@ -52,7 +52,12 @@ class ObjectFinder(object):
         self.height = np_size[0]
 
     def _find_components(self, mode, method):
-        _, contours, hierarchy = cv2.findContours(self.np_image.copy(), mode, method)
+        results = cv2.findContours(self.np_image.copy(), mode, method)
+        if len(results) == 3:
+            _, contours, hierarchy = results
+        else:
+            # OpenCV 4+
+            contours, hierarchy = results
 
         components = []
         if len(contours) > 0:
