@@ -19,35 +19,33 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import base64
-import hashlib
-import hmac
-import sys
-from argparse import ArgumentParser
-
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>", "Burtin Elodie <elodie.burtin@cytomine.coop"]
-__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
-
-import logging
-from time import strftime, gmtime
-from future.builtins import bytes
-
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
     # Python 2
     JSONDecodeError = ValueError
 
+import logging
+import base64
+import hashlib
+import hmac
+import sys
 import os
 import requests
 import shutil
 import warnings
 import functools
+from time import strftime, gmtime
+from future.builtins import bytes
+from argparse import ArgumentParser
 from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 from requests_toolbelt.utils import dump
 from logging import StreamHandler, Formatter
+
+__author__ = "Rubens Ulysse <urubens@uliege.be>"
+__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>", "Burtin Elodie <elodie.burtin@cytomine.coop"]
+__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 
 def _cytomine_parameter_name_synonyms(name, prefix="--"):
@@ -540,7 +538,8 @@ class Cytomine(object):
         self._log_response(response, uri)
         if response.status_code == requests.codes.ok:
             self.set_current_user() # refetch user to update *ByNow properties
-            # self._current_user.poulate(response.json()) # response not consistent with the properties returned by user/current.json
+            # self._current_user.poulate(response.json())
+            # response not consistent with the properties returned by user/current.json
             return True
         else:
             return False
