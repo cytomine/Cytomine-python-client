@@ -104,7 +104,7 @@ class CytomineReader(object):
         num_tile += col + row * self.whole_slide.levels[zoom]['x_tiles']
         return int(num_tile / self.whole_slide.tile_size)
 
-    def read(self, async=False):
+    def read(self):
         # prevent reading outside of image and change window position accordingly
         if (self.window_position.x + self.window_position.width) > self.whole_slide.levels[self.zoom]['level_width']:
             self.window_position.x = self.whole_slide.levels[self.zoom]['level_width'] - self.window_position.width
@@ -260,6 +260,12 @@ class CytomineReader(object):
         new_y_middle = y_middle / zoom_factor
         self.window_position.x = int(max(0, new_x_middle - half_width) / self.whole_slide.tile_size) * self.whole_slide.tile_size
         self.window_position.y = int(max(0, new_y_middle - half_height) / self.whole_slide.tile_size) * self.whole_slide.tile_size
+
+    def convert_to_real_coordinates(self, components):
+        return self.whole_slide.convert_to_real_coordinates(components, self.window_position, self.zoom)
+
+    def convert_to_local_coordinates(self, components):
+        return self.whole_slide.convert_to_local_coordinates(components, self.window_position, self.zoom)
 
     # Deprecated method names. Keep for backwards compatibility.
     inc_zoom = increase_zoom
