@@ -710,7 +710,7 @@ class Cytomine(object):
 
         self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
 
-        uf = UploadedFile().populate(response_data["uploadFile"])
+        uf = UploadedFile().populate(response_data["uploadedFile"])
 
         uf.images = AbstractImageCollection()
         if response_data["images"]:
