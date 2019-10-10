@@ -32,12 +32,13 @@ from ._utilities import generic_image_dump, generic_download, is_false
 
 
 class Annotation(Model):
-    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, **attributes):
+    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, **attributes):
         super(Annotation, self).__init__()
         self.location = location
         self.image = id_image
         self.project = id_project
         self.term = id_terms
+        self.track = id_tracks
         self.geometryCompression = None
         self.area = None
         self.areaUnit = None
@@ -183,9 +184,11 @@ class AnnotationCollection(Collection):
         self.showWKT = None
         self.showGIS = None
         self.showTerm = None
+        self.showTrack = None
         self.showAlgo = None
         self.showUser = None
         self.showImage = None
+        self.showSlice = None
         self.reviewed = None
         self.noTerm = None
         self.noAlgoTerm = None
@@ -205,6 +208,9 @@ class AnnotationCollection(Collection):
         self.suggestedTerm = None
         self.userForTermAlgo = None
         self.jobForTermAlgo = None
+
+        self.track = None
+        self.tracks = None
 
         self.bbox = None
         self.bboxAnnotation = None
