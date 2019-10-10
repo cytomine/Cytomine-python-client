@@ -32,19 +32,29 @@ from cytomine.models.model import Model
 
 
 class AbstractImage(Model):
-    def __init__(self, filename=None, mime=None, **attributes):
+    def __init__(self, filename=None, id_uploaded_file=None, **attributes):
         super(AbstractImage, self).__init__()
-        self.filename = filename
-        self.path = filename
-        self.mime = mime
-        self.originalFilename = None
+        self.originalFilename = filename
+        self.uploadedFile = id_uploaded_file
         self.width = None
         self.height = None
-        self.resolution = None
-        self.magnification = None
+        self.depth = None
+        self.duration = None
+        self.channels = None
+
+        self.physicalSizeX = None
+        self.physicalSizeY = None
+        self.physicalSizeZ = None
+        self.fps = None
         self.bitDepth = None
         self.colorspace = None
+        self.magnification = None
 
+        # Read only fields
+        self.filename = None
+        self.path = None
+        self.contentType = None
+        self.zoom = None
         self.thumb = None
         self.preview = None
 
@@ -101,6 +111,27 @@ class AbstractImageCollection(Collection):
         self.set_parameters(parameters)
 
 
+class AbstractSlice(Model):
+    def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None, **attributes):
+        super(AbstractSlice, self).__init__()
+        self.image = id_image
+        self.uploadedFile = id_uploaded_file
+        self.mime = mime
+        self.channel = channel
+        self.zStack = z_stack
+        self.time = time
+        self.path = None
+        self.rank = None
+        self.populate(attributes)
+
+
+class AbstractSliceCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(AbstractSliceCollection, self).__init__(AbstractSlice, filters, max, offset)
+        self._allowed_filters = ["abstractimage", "uploadedfile"]
+        self.set_parameters(parameters)
+
+
 class ImageInstance(Model):
     def __init__(self, id_abstract_image=None, id_project=None, **attributes):
         super(ImageInstance, self).__init__()
@@ -111,15 +142,28 @@ class ImageInstance(Model):
         self.originalFilename = None
         self.instanceFilename = None
         self.path = None
-        self.mime = None
+        self.contentType = None
+
         self.width = None
         self.height = None
-        self.resolution = None
-        self.magnification = None
+        self.depth = None
+        self.duration = None
+        self.channels = None
+
+        self.physicalSizeX = None
+        self.physicalSizeY = None
+        self.physicalSizeZ = None
+        self.fps = None
         self.bitDepth = None
         self.colorspace = None
-        self.preview = None
+        self.magnification = None
+
+        self.filename = None
+        self.path = None
+        self.contentType = None
+        self.zoom = None
         self.thumb = None
+        self.preview = None
         self.numberOfAnnotations = None
         self.numberOfJobAnnotations = None
         self.numberOfReviewedAnnotations = None
@@ -165,6 +209,34 @@ class ImageInstance(Model):
 
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
                                                      dest_pattern, override, parameters)
+
+    def __str__(self):
+        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
+
+
+class ImageInstanceCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(ImageInstanceCollection, self).__init__(ImageInstance, filters, max, offset)
+        self._allowed_filters = ["project"]  # "user"
+        self.set_parameters(parameters)
+
+    def save(self, *args, **kwargs):
+        raise NotImplementedError("Cannot save an imageinstance collection by client.")
+
+
+class SliceInstance(Model):
+    def __init__(self, id_project=None, id_image=None, id_base_slice=None, **attributes):
+        super(SliceInstance, self).__init__()
+        self.project= id_project
+        self.image = id_image
+        self.baseSlice = id_base_slice
+        self.mime = None
+        self.channel = None
+        self.zStack = None
+        self.time = None
+        self.path = None
+        self.rank = None
+        self.populate(attributes)
 
     def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
              colormap=None, inverse=None):
@@ -327,15 +399,9 @@ class ImageInstance(Model):
         return Cytomine.get_instance().download_file("{}/{}/window-{}-{}-{}-{}.{}".format(
             self.callback_identifier, self.id, x, y, w, h, extension), file_path, override, parameters)
 
-    def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
 
-
-class ImageInstanceCollection(Collection):
+class SliceInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ImageInstanceCollection, self).__init__(ImageInstance, filters, max, offset)
-        self._allowed_filters = ["project"]  # "user"
+        super(SliceInstanceCollection, self).__init__(SliceInstance, filters, max, offset)
+        self._allowed_filters = ["imageinstance"]
         self.set_parameters(parameters)
-
-    def save(self, *args, **kwargs):
-        raise NotImplementedError("Cannot save an imageinstance collection by client.")

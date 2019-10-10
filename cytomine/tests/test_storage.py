@@ -28,7 +28,7 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 class TestStorage:
     def test_storage(self, connect, dataset):
         name = random_string()
-        storage = Storage(name, random_string(), dataset["user"].id).save()
+        storage = Storage(name, dataset["user"].id).save()
         assert(isinstance(storage, Storage))
         assert(storage.name == name)
 
@@ -55,7 +55,7 @@ class TestUploadedFile:
     def test_uploaded_file(self, connect, dataset):
         storages = StorageCollection().fetch()
         path = "path"
-        uf = UploadedFile("original", "filename", path, 1, "ext", "contentType", None, storages[0].id,
+        uf = UploadedFile("original", "filename", 1, "ext", "contentType", None, storages[0].id,
                           connect.current_user.id, UploadedFile.UPLOADED, None).save()
         assert(isinstance(uf, UploadedFile))
         assert(uf.path == path)
