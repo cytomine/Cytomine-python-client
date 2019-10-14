@@ -231,30 +231,6 @@ class AnnotationCollection(Collection):
 
         return uri
 
-    def save(self, chunk=100):
-        if chunk is None:
-            super(AnnotationCollection, self).save()
-        elif isinstance(chunk, int):
-            if len(self) == 0:
-                return True
-            nb_chunks = (len(self) + chunk) // chunk
-            success = AnnotationCollection()
-            for i in range(nb_chunks):
-                chunk_collection = AnnotationCollection()
-                start = i * chunk
-                end = start + chunk
-                chunk_collection.extend(self[start:end])
-                if not Cytomine.get_instance().post_collection(chunk_collection):
-                    raise CollectionPartialUploadException(
-                        "Cannot upload annotation in chunk starting from index {} to {}".format(start, end),
-                        created=success,
-                        failed=self[start:]  # TODO some of the current chunk might have been uploaded !
-                    )
-                success.extend(chunk_collection)
-            return True
-        else:
-            raise ValueError("Invalid value '{}' for chunk parameter.".format(chunk))
-
     def dump_crops(self, dest_pattern, n_workers=0, override=True, **dump_params):
         """Download the crops of the annotations
         Parameters
@@ -280,6 +256,7 @@ class AnnotationCollection(Collection):
                 return False
             else:
                 return an
+
 
         results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
 
