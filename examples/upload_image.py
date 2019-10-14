@@ -67,13 +67,9 @@ if __name__ == '__main__':
         if not my_storage:
             raise ValueError("Storage not found")
 
-        # Optionally, you can provide some properties or metadata you want to attach to the image
-        properties = None # {'key1':'value1','key2':'value2'}
-
         uploaded_file = cytomine.upload_image(upload_host=params.upload_host,
                                               filename=params.filepath,
                                               id_storage=my_storage.id,
-                                              id_project=params.id_project,
-                                              properties=properties)
+                                              id_project=params.id_project)
 
         print(uploaded_file)

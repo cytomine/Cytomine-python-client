@@ -233,6 +233,55 @@ class AnnotationCollection(Collection):
 
         return uri
 
+    def dump_crops(self, dest_pattern, n_workers=0, override=True, **dump_params):
+        """Download the crops of the annotations
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        n_workers: int
+            Number of workers to use (default: uses all the available processors)
+        dump_params: dict
+            Parameters for dumping the annotations (see Annotation.dump)
+
+        Returns
+        -------
+        annotations: AnnotationCollection
+            Annotations that have been successfully downloaded (containing a `filenames` attribute)
+        """
+
+        def dump_crop(an):
+            if is_false(an.dump(dest_pattern=dest_pattern, override=override, **dump_params)):
+                return False
+            else:
+                return an
+
+
+        results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
+
+        # check errors
+        count_fail = 0
+        failed = list()
+        for in_annot, out_annot in results:
+            if is_false(out_annot):
+                count_fail += 1
+                failed.append(in_annot.id)
+
+        logger = Cytomine.get_instance().logger
+        if count_fail > 0:
+            n_annots = len(self)
+            ratio = 100 * count_fail / float(n_annots)
+            logger.info(
+                "Failed to download crops for {}/{} annotations ({:3.2f} %).".format(count_fail, n_annots, ratio))
+            logger.debug("Annotation with crop download failure: {}".format(failed))
+
+        collection = AnnotationCollection()
+        collection.extend([an for _, an in results if not isinstance(an, bool) or an])
+        return collection
+
 
 class AnnotationTerm(Model):
     def __init__(self, id_annotation=None, id_term=None, **attributes):
