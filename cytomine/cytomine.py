@@ -125,6 +125,14 @@ class StdoutHandler(StreamHandler):
         self.setFormatter(Formatter("[%(asctime)s][%(levelname)s] %(message)s"))
 
 
+def read_response_message(response, key='message', encoding="utf-8"):
+    content = response.content.decode(encoding)
+    try:
+        return response.json().get(key, content)
+    except JSONDecodeError:
+        return content
+
+
 class Cytomine(object):
     __instance = None
 
@@ -386,7 +394,7 @@ class Cytomine(object):
             if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
                 self.log(msg)
             else:
-                self.log("{} ({})".format(msg, response.json()["errors"]), level=logging.ERROR)
+                self.log("{} ({})".format(msg, read_response_message(response, key="errors")), level=logging.ERROR)
             self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
@@ -529,7 +537,7 @@ class Cytomine(object):
 
     def post_collection(self, collection, query_parameters=None):
         response = self._post(collection.uri(without_filters=True), collection.to_json(), query_parameters)
-        self._log_response(response, response.json()["message"])
+        self._log_response(response, read_response_message(response, key="message"))
         return response.status_code == requests.codes.ok
 
     def open_admin_session(self):
