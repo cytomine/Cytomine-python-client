@@ -149,7 +149,10 @@ class Collection(MutableSequence):
         else:
             self._data = data
         self._total = attributes["size"]
-        self._total_pages = attributes["totalPages"]
+        if self.max is None or self.max == 0:
+            self._total_pages = 1
+        else:
+            self._total_pages = self._total // self.max
         return self
 
     @property
