@@ -1,7 +1,7 @@
 import os
 from shutil import copyfile
 
-from .download import makedirs
+from .parallel import makedirs
 from .pattern_matching import resolve_pattern
 
 
