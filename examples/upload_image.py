@@ -26,7 +26,7 @@ from argparse import ArgumentParser
 import os
 
 from cytomine import Cytomine
-from cytomine.models import StorageCollection, Project
+from cytomine.models import StorageCollection, Project, UploadedFile
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
