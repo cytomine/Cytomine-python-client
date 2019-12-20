@@ -48,7 +48,7 @@ def _convert_type(_type):
     return {
         "Number": _inferred_number_type,
         "String": str,
-        "Boolean": bool,
+        "Boolean": _to_bool,
         "Domain": int,
         "List": str,
         "ListDomain": str,
@@ -59,7 +59,8 @@ def _convert_type(_type):
 def _to_bool(v):
     """
     Convert the value to boolean. Treat the following strings
-    as False: {"0", "0.0", "False", "false", "FALSE"}
+    as False (case insensitive): {"0", "false", "no"}
+    and True (case insensitive): {"1", "true", "yes"}
 
     Parameters
     ----------
@@ -72,7 +73,13 @@ def _to_bool(v):
         The boolean value
     """
     if isinstance(v, str):
-        return v not in {"0", "0.0", "False", "false", "FALSE"}
+        lv = v.lower()
+        if lv in {"0", "false", "no"}:
+            return False
+        elif lv in {"1", "true", "yes"}:
+            return True
+        else:
+            raise ValueError("unexpected value '{}' for a boolean".format(v))
     else:
         return bool(v)
 
@@ -92,19 +99,16 @@ def _software_params_to_argparse(parameters):
     """
     # Check software parameters
     argparse = ArgumentParser()
-    boolean_defaults = {}
     for parameter in parameters:
-        arg_desc = {"dest": parameter.name, "required": parameter.required, "help": ""}  # TODO add help
-        if parameter.type == "Boolean":
-            default = _to_bool(parameter.defaultParamValue)
-            arg_desc["action"] = "store_true" if not default else "store_false"
-            boolean_defaults[parameter.name] = default
-        else:
-            python_type = _convert_type(parameter.type)
-            arg_desc["type"] = python_type
-            arg_desc["default"] = None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue)
+        python_type = _convert_type(parameter.type)
+        arg_desc = {
+            "type": python_type,
+            "default": None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue),
+            "dest": parameter.name,
+            "required": parameter.required,
+            "help": ""  # TODO help
+        }
         argparse.add_argument(*_cytomine_parameter_name_synonyms(parameter.name), **arg_desc)
-    argparse.set_defaults(**boolean_defaults)
     return argparse
 
 
