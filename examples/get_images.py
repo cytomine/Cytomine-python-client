@@ -30,39 +30,46 @@ from cytomine.models.image import ImageInstanceCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+# This example script allows you to get the list of images (metadata) in a given project.
+# If a download path is provided, it downloads all original images like they have been uploaded to Cytomine.
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
-    # Cytomine
+    # Cytomine connection parameters
     parser.add_argument('--cytomine_host', dest='host',
                         default='demo.cytomine.be', help="The Cytomine host")
     parser.add_argument('--cytomine_public_key', dest='public_key',
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
+
+    # Cytomine project ID
     parser.add_argument('--cytomine_id_project', dest='id_project',
                         help="The project from which we want the images")
+
+    # Download path
     parser.add_argument('--download_path', required=False,
                         help="Where to store images")
-    params, other = parser.parse_known_args(sys.argv[1:])
 
-    if params.download_path:
-        original_path = os.path.join(params.download_path, "original")
-        dump_path = os.path.join(params.download_path, "dump")
+    params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
                   verbose=logging.INFO) as cytomine:
+
+        # We want all image instances in a given project.
+        # => Fetch the collection of image instances, filtered by the given project.
         image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
         print(image_instances)
 
         for image in image_instances:
+            # Every element in the collection is an ImageInstance object.
+            # See ImageInstance class for all available properties (width, height, resolution, ...)
             print("Image ID: {} | Width: {} | Height: {} | Resolution: {} | Magnification: {} | Filename: {}".format(
                 image.id, image.width, image.height, image.resolution, image.magnification, image.filename
             ))
 
             if params.download_path:
-                # We will dump the images in a specified directory.
-                # Attributes of ImageInstance are parsed in the filename
-                image.dump(os.path.join(dump_path, str(params.id_project), "{id}_{width}px_{height}px.jpg"))
                 # To download the original files that have been uploaded to Cytomine
-                image.download(os.path.join(original_path, str(params.id_project), "{originalFilename}"))
+                # Attributes of ImageInstance are parsed in the filename
+                image.download(os.path.join(params.download_path, str(params.id_project), "{originalFilename}"))
