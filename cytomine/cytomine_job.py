@@ -59,7 +59,9 @@ def _convert_type(_type):
 
 def _to_bool(v):
     """
-    Convert the value to boolean.
+    Convert the value to boolean. Treat the following strings
+    as False (case insensitive): {"0", "false", "no"}
+    and True (case insensitive): {"1", "true", "yes"}
 
     Parameters
     ----------
@@ -72,7 +74,13 @@ def _to_bool(v):
         The boolean value
     """
     if isinstance(v, str):
-        return v not in {"0", "0.0", "False", "false", "FALSE"}
+        lv = v.lower()
+        if lv in {"0", "false", "no"}:
+            return False
+        elif lv in {"1", "true", "yes"}:
+            return True
+        else:
+            raise ValueError("unexpected value '{}' for a boolean".format(v))
     else:
         return bool(v)
 
@@ -94,14 +102,13 @@ def _software_params_to_argparse(parameters):
     argparse = ArgumentParser()
     for parameter in parameters:
         python_type = _convert_type(parameter.type)
-        arg_desc = {"dest": parameter.name, "required": parameter.required, "type": python_type, "help": ""}  # TODO add help
-        if parameter.type == "Boolean":
-            default = _to_bool(parameter.defaultParamValue)
-            arg_desc["nargs"] = "?"
-            arg_desc["const"] = not default
-            arg_desc["default"] = default
-        else:
-            arg_desc["default"] = None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue)
+        arg_desc = {
+            "type": python_type,
+            "default": None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue),
+            "dest": parameter.name,
+            "required": parameter.required,
+            "help": ""  # TODO help
+        }
         argparse.add_argument(*_cytomine_parameter_name_synonyms(parameter.name), **arg_desc)
     return argparse
 
