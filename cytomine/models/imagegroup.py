@@ -26,13 +26,14 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
-from cytomine.cytomine import Cytomine
+from cytomine.cytomine import Cytomine, deprecated
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
 
 import numpy as np
 
 
+@deprecated
 class ImageGroup(Model):
     def __init__(self, name=None, id_project=None, **attributes):
         super(ImageGroup, self).__init__()
@@ -78,6 +79,7 @@ class ImageGroup(Model):
                                                      dest_pattern, override, parameters)
 
 
+@deprecated
 class ImageGroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(ImageGroupCollection, self).__init__(ImageGroup, filters, max, offset)
@@ -85,6 +87,7 @@ class ImageGroupCollection(Collection):
         self.set_parameters(parameters)
 
 
+@deprecated
 class ImageGroupHDF5(Model):
     def __init__(self, id_group=None, filename=None, **attributes):
         super(ImageGroupHDF5, self).__init__()
@@ -123,6 +126,7 @@ class ImageGroupHDF5(Model):
 #         return "imagegroupHDF5"
 
 
+@deprecated
 class ImageSequence(Model):
     def __init__(self, id_image_group=None, id_image_instance=None, z_stack=None,
                  slice=None, time=None, channel=None, **attributes):
@@ -142,6 +146,7 @@ class ImageSequence(Model):
                                                                    self.channel, self.zStack, self.slice, self.time)
 
 
+@deprecated
 class ImageSequenceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(ImageSequenceCollection, self).__init__(ImageSequence, filters, max, offset)

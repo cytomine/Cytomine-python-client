@@ -26,7 +26,7 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 import re
 import os
 
-from cytomine.cytomine import Cytomine
+from cytomine.cytomine import Cytomine, deprecated
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
 
@@ -46,28 +46,30 @@ class AbstractImage(Model):
         self.physicalSizeY = None
         self.physicalSizeZ = None
         self.fps = None
-        self.bitDepth = None
+        self.bitPerSample = None
+        self.samplePerPixel = None
         self.colorspace = None
         self.magnification = None
 
         # Read only fields
-        self.filename = None
         self.path = None
         self.contentType = None
         self.zoom = None
+        self.dimensions = None
         self.thumb = None
         self.preview = None
 
         self.populate(attributes)
         self._image_servers = None
 
+    @deprecated
     def image_servers(self):
         if not self._image_servers:
             data = Cytomine.get_instance().get("{}/{}/imageservers.json".format(self.callback_identifier, self.id))
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
 
-    def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
+    def download(self, dest_pattern="{originalFilename}", override=True, **kwargs):
         """
         Download the original image.
 
@@ -78,8 +80,6 @@ class AbstractImage(Model):
             if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
-        parent : bool, optional
-            True to download image parent if the abstract image is a part of a multidimensional file.
 
         Returns
         -------
@@ -91,17 +91,16 @@ class AbstractImage(Model):
 
         pattern = re.compile("{(.*?)}")
         dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
-        parameters = {"parent": parent}
 
         destination = os.path.dirname(dest_pattern)
         if not os.path.exists(destination):
             os.makedirs(destination)
 
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
-                                                     dest_pattern, override, parameters)
+                                                     dest_pattern, override)
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
+        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.originalFilename)
 
 
 class AbstractImageCollection(Collection):
@@ -112,7 +111,8 @@ class AbstractImageCollection(Collection):
 
 
 class AbstractSlice(Model):
-    def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None, **attributes):
+    def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None,
+                 **attributes):
         super(AbstractSlice, self).__init__()
         self.image = id_image
         self.uploadedFile = id_uploaded_file
@@ -138,7 +138,6 @@ class ImageInstance(Model):
         self.baseImage = id_abstract_image
         self.project = id_project
         self.user = None
-        self.filename = None
         self.originalFilename = None
         self.instanceFilename = None
         self.path = None
@@ -154,11 +153,11 @@ class ImageInstance(Model):
         self.physicalSizeY = None
         self.physicalSizeZ = None
         self.fps = None
-        self.bitDepth = None
+        self.bitPerSample = None
+        self.samplePerPixel = None
         self.colorspace = None
         self.magnification = None
 
-        self.filename = None
         self.path = None
         self.contentType = None
         self.zoom = None
@@ -171,13 +170,14 @@ class ImageInstance(Model):
         self.populate(attributes)
         self._image_servers = None
 
+    @deprecated
     def image_servers(self):
         if not self._image_servers:
             data = Cytomine.get_instance().get("abstractimage/{}/imageservers.json".format(self.baseImage))
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
 
-    def download(self, dest_pattern="{originalFilename}", override=True, parent=False):
+    def download(self, dest_pattern="{originalFilename}", override=True, **kwargs):
         """
         Download the original image.
 
@@ -188,8 +188,6 @@ class ImageInstance(Model):
             if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
-        parent : bool, optional
-            True to download image parent if the image is a part of a multidimensional file.
 
         Returns
         -------
@@ -201,17 +199,16 @@ class ImageInstance(Model):
 
         pattern = re.compile("{(.*?)}")
         dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
-        parameters = {"parent": parent}
 
         destination = os.path.dirname(dest_pattern)
         if not os.path.exists(destination):
             os.makedirs(destination)
 
         return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
-                                                     dest_pattern, override, parameters)
+                                                     dest_pattern, override)
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
+        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.instanceFilename)
 
 
 class ImageInstanceCollection(Collection):
@@ -227,15 +224,19 @@ class ImageInstanceCollection(Collection):
 class SliceInstance(Model):
     def __init__(self, id_project=None, id_image=None, id_base_slice=None, **attributes):
         super(SliceInstance, self).__init__()
-        self.project= id_project
+        self.project = id_project
         self.image = id_image
         self.baseSlice = id_base_slice
+        self.imageServerUrl = None
         self.mime = None
         self.channel = None
         self.zStack = None
         self.time = None
         self.path = None
         self.rank = None
+
+        self.filename = None  # Used to store local filename after dump on disk.
+
         self.populate(attributes)
 
     def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
@@ -285,8 +286,8 @@ class SliceInstance(Model):
         if not os.path.exists(destination):
             os.makedirs(destination)
 
-        if isinstance(max_size, tuple) or max_size is None:
-            max_size = max(self.width, self.height)
+        if isinstance(max_size, tuple):
+            max_size = max(max_size)
 
         parameters = {
             "maxSize": max_size,
@@ -299,8 +300,7 @@ class SliceInstance(Model):
 
         file_path = os.path.join(destination, "{}.{}".format(filename, extension))
 
-        url = self.preview[:self.preview.index("?")]
-        url = url.replace(".png", ".{}".format(extension))
+        url = "{}/{}/thumb.{}".format(self.callback_identifier, self.id, extension)
         result = Cytomine.get_instance().download_file(url, file_path, override, parameters)
         if result:
             self.filename = file_path

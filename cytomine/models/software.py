@@ -147,7 +147,8 @@ _HUMAN_READABLE_JOB_STATUS = {
     4: "FAILED",
     5: "INDETERMINATE",
     6: "WAIT",
-    7: "PREVIEW_DONE"
+    7: "PREVIEW_DONE",
+    8: "KILLED"
 }
 
 
@@ -160,6 +161,7 @@ class Job(Model):
     INDETERMINATE = 5
     WAIT = 6
     PREVIEW_DONE = 7
+    KILLED = 8
 
     def __init__(self, project_id=None, software_id=None, **attributes):
         super(Job, self).__init__()
@@ -173,18 +175,19 @@ class Job(Model):
         self.softwareNone = None
         self.rate = None
         self.dataDeleted = None
+        self.favorite = None
         self.username = None
         self.userJob = None
         self.jobParameters = None
         self.populate(attributes)
-        
+
     def execute(self):
         if self.is_new():
             raise ValueError("Cannot execute job if no ID was provided.")
         response = Cytomine.get_instance().post(uri="{}/{}/execute.json"
-                                        .format(self.callback_identifier, self.id),
-                                        data=self.to_json(),
-                                        query_parameters={id: self.id})
+                                                .format(self.callback_identifier, self.id),
+                                                data=self.to_json(),
+                                                query_parameters={id: self.id})
         self.populate(response)
         return self
 

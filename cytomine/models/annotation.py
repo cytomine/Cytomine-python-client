@@ -32,10 +32,12 @@ from ._utilities import generic_image_dump, generic_download, is_false
 
 
 class Annotation(Model):
-    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, **attributes):
+    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, id_slice=None,
+                 **attributes):
         super(Annotation, self).__init__()
         self.location = location
         self.image = id_image
+        self.slice = id_slice
         self.project = id_project
         self.term = id_terms
         self.track = id_tracks
@@ -203,6 +205,9 @@ class AnnotationCollection(Collection):
         self.image = None
         self.images = None
 
+        self.slice = None
+        self.slices = None
+
         self.term = None
         self.terms = None
         self.suggestedTerm = None
@@ -256,7 +261,6 @@ class AnnotationCollection(Collection):
                 return False
             else:
                 return an
-
 
         results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
 

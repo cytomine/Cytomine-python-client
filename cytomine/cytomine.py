@@ -616,13 +616,13 @@ class Cytomine(object):
         upload_host = "{}://{}".format(protocol, upload_host)
 
         query_parameters = {
-            "idStorage": id_storage,
-            "cytomine": "{}://{}".format(self._protocol, self._host),
+            "storage": id_storage,
+            "core": "{}://{}".format(self._protocol, self._host),
             "sync": sync
         }
 
         if id_project:
-            query_parameters["idProject"] = id_project
+            query_parameters["projects"] = id_project
 
         if properties:
             query_parameters["keys"] = ','.join(list(properties.keys()))
@@ -679,9 +679,8 @@ class Cytomine(object):
             The uploaded file. Its images attribute is populated with the collection of created abstract images.
         """
 
-
         if not protocol:
-                protocol = self._protocol
+            protocol = self._protocol
         ims_host, protocol = self._parse_url(ims_host, protocol)
         ims_host = "{}://{}".format(protocol, ims_host)
 
@@ -953,7 +952,7 @@ class Cytomine(object):
         from .models.image import AbstractImage
         image = AbstractImage()
         image = image.fetch(id_image)
-        image.filename = filename if filename else image.filename
+        image.originalFilename = filename if filename else image.originalFilename
         image.path = path if path else image.path
         image.mime = mime if mime else image.mime
         image.scanner = id_scanner if id_scanner else image.scanner
