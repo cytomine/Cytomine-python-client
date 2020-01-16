@@ -713,16 +713,29 @@ class Cytomine(object):
 
     def _process_upload_response(self, response_data):
         from .models.storage import UploadedFile
-        from .models.image import AbstractImage, AbstractImageCollection
+        from .models.image import AbstractImage, AbstractSliceCollection, AbstractSlice, ImageInstance, \
+            ImageInstanceCollection
 
         self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
 
         uf = UploadedFile().populate(response_data["uploadedFile"])
 
-        uf.images = AbstractImageCollection()
+        uf.images = []
         if response_data["images"]:
             for image in response_data["images"]:
-                uf.images.append(AbstractImage().populate(image["attr"]))
+                abstract_slices = AbstractSliceCollection()
+                for abstract_slice in image["slices"]:
+                    abstract_slices.append(AbstractSlice().populate(abstract_slice))
+
+                image_instances = ImageInstanceCollection()
+                for image_instance in image["imageInstances"]:
+                    image_instances.append(ImageInstance().populate(image_instance))
+
+                uf.images.append({
+                    "abstractImage": AbstractImage().populate(image["image"]),
+                    "abstractSlices": abstract_slices,
+                    "imageInstances": image_instances
+                })
 
         return uf
 
