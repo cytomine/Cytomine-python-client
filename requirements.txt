@@ -6,7 +6,7 @@ idna==2.8
 msgpack==0.6.0
 numpy==1.16.0
 opencv-python-headless==4.0.0.21
-Pillow==5.4.1
+Pillow==6.2.0
 requests==2.21.0
 requests-toolbelt==0.8.0
 Shapely==1.7a1
