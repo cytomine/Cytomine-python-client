@@ -40,12 +40,13 @@ setup(
     install_requires=['requests-toolbelt>=0.8.0',
                       'CacheControl>=0.12.5',
                       'numpy>=1.15.4',
-                      'Shapely>=1.7a1',
+                      'Shapely>=1.6.4',
                       'six>=1.11.0',
                       'future>=0.17.1',
                       'opencv-python-headless>=3.4.3',
-                      'Pillow>=5.3.0',
-                      'requests>=2.20.1'],
+                      'Pillow>=6.2.0',
+                      'requests>=2.22.0',
+                      'urllib3>=1.25.2'],
     setup_requires=['pytest-runner'],
     extra_requires={
         "test": ['pytest']

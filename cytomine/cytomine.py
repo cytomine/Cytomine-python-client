@@ -560,11 +560,7 @@ class Cytomine(object):
         if not uri:
             uri = model.uri()
 
-        # urllib3 still uses RFC2231, not compliant with our server
-        # https://github.com/shazow/urllib3/issues/303
-        # https://github.com/shazow/urllib3/pull/856
-        filename_ascii = bytes(filename, 'utf-8').decode('ascii', 'ignore')
-        m = MultipartEncoder(fields={"files[]": (filename_ascii, open(filename, 'rb'))})
+        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
         response = self._session.post("{}{}".format(self._base_url(), uri),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
@@ -628,11 +624,7 @@ class Cytomine(object):
             query_parameters["keys"] = ','.join(list(properties.keys()))
             query_parameters["values"] = ','.join(list(properties.values()))
 
-        # urllib3 still uses RFC2231, not compliant with our server
-        # https://github.com/shazow/urllib3/issues/303
-        # https://github.com/shazow/urllib3/pull/856
-        filename_ascii = bytes(filename, 'utf-8').decode('ascii', 'ignore')
-        m = MultipartEncoder(fields={"files[]": (filename_ascii, open(filename, 'rb'))})
+        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
         response = self._session.post("{}/upload".format(upload_host),
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
