@@ -34,7 +34,7 @@ class WholeSlide(object):
         self.width = image.width
         self.height = image.height
         self.server_urls = image.image_servers()
-        self.mime = image.mime
+        self.mime = image.reference_slice().mime
         self.tile_size = tile_size
         self.num_tiles = 0
         self.levels = []

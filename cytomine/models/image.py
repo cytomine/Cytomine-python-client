@@ -166,6 +166,7 @@ class ImageInstance(Model):
         self.reviewed = None
         self.populate(attributes)
         self._image_servers = None
+        self._reference_slice = None
 
     @deprecated
     def image_servers(self):
@@ -173,6 +174,16 @@ class ImageInstance(Model):
             data = Cytomine.get_instance().get("abstractimage/{}/imageservers.json".format(self.baseImage))
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
+
+    def reference_slice(self):
+        if self.id is None:
+            raise ValueError("Cannot get the reference slice of an image with no ID.")
+
+        if not self._reference_slice:
+            data = Cytomine.get_instance().get("imageinstance/{}/sliceinstance/reference.json".format(self.id))
+            self._reference_slice = SliceInstance().populate(data) if data else False
+
+        return self._reference_slice
 
     def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
              colormap=None, inverse=None):
