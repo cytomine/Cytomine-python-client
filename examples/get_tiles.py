@@ -55,7 +55,9 @@ if __name__ == '__main__':
         print(image_instance)
 
         if not params.zoom:
-            params.zoom = int(image_instance.depth / 2)
+            # "depth" attribute is used as zoom in old Cytomine versions
+            zoom = image_instance.zoom if image_instance.zoom is not None else image_instance.depth
+            params.zoom = int(zoom / 2)
         print("Zoom set to {}".format(params.zoom))
 
         whole_slide = WholeSlide(image_instance)

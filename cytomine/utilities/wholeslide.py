@@ -30,7 +30,7 @@ import random
 class WholeSlide(object):
     def __init__(self, image, tile_size=256):
         self.image = image
-        self.depth = image.depth
+        self.depth = image.zoom if image.zoom is not None else image.depth
         self.width = image.width
         self.height = image.height
         self.server_urls = image.image_servers()
