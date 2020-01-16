@@ -29,6 +29,7 @@ import os
 from cytomine.cytomine import Cytomine, deprecated
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
+from ._utilities import generic_image_dump
 
 
 class AbstractImage(Model):
@@ -89,15 +90,11 @@ class AbstractImage(Model):
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
-        pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        def dump_url_fn(model, file_path, **kwargs):
+            return "{}/{}/download".format(model.callback_identifier, model.id)
 
-        destination = os.path.dirname(dest_pattern)
-        if not os.path.exists(destination):
-            os.makedirs(destination)
-
-        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
-                                                     dest_pattern, override)
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
+        return len(files) == 0
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.originalFilename)
@@ -177,6 +174,63 @@ class ImageInstance(Model):
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
 
+    def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
+             colormap=None, inverse=None):
+        """
+        Download the *reference* slice image with optional image modifications.
+
+        Parameters
+        ----------
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        max_size : int, tuple, optional
+            Maximum size (width or height) of returned image. None to get original size.
+        bits : int (8,16,32) or str ("max"), optional
+            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+        contrast : float, optional
+            Optional contrast applied on returned image.
+        gamma : float, optional
+            Optional gamma applied on returned image.
+        colormap : int, optional
+            Cytomine identifier of a colormap to apply on returned image.
+        inverse : bool, optional
+            True to inverse color mapping, False otherwise.
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            is filled with downloaded file path.
+        """
+        if self.id is None:
+            raise ValueError("Cannot dump an image with no ID.")
+
+        parameters = {
+            "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
+            "contrast": contrast,
+            "gamma": gamma,
+            "colormap": colormap,
+            "inverse": inverse,
+            "bits": bits
+        }
+
+        def dump_url_fn(model, file_path, **kwargs):
+            extension = os.path.basename(file_path).split(".")[-1]
+            return "{}/{}/thumb.{}".format(model.callback_identifier, model.id, extension)
+
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
+
+        if len(files) == 0:
+            return False
+
+        self.filenames = files
+        self.filename = files[0]
+
+        return True
+
     def download(self, dest_pattern="{originalFilename}", override=True, **kwargs):
         """
         Download the original image.
@@ -197,15 +251,11 @@ class ImageInstance(Model):
         if self.id is None:
             raise ValueError("Cannot download image with no ID.")
 
-        pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        def dump_url_fn(model, file_path, **kwargs):
+            return "{}/{}/download".format(model.callback_identifier, model.id)
 
-        destination = os.path.dirname(dest_pattern)
-        if not os.path.exists(destination):
-            os.makedirs(destination)
-
-        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
-                                                     dest_pattern, override)
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
+        return len(files) == 0
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.instanceFilename)
@@ -236,13 +286,14 @@ class SliceInstance(Model):
         self.rank = None
 
         self.filename = None  # Used to store local filename after dump on disk.
+        self.filenames = None  # Used to store local filenames after dump on disk.
 
         self.populate(attributes)
 
     def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
              colormap=None, inverse=None):
         """
-        Download the image with optional image modifications.
+        Download the slice image with optional image modifications.
 
         Parameters
         ----------
@@ -271,26 +322,10 @@ class SliceInstance(Model):
             is filled with downloaded file path.
         """
         if self.id is None:
-            raise ValueError("Cannot dump an annotation with no ID.")
-
-        pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
-
-        destination = os.path.dirname(dest_pattern)
-        filename, extension = os.path.splitext(os.path.basename(dest_pattern))
-        extension = extension[1:]
-
-        if extension not in ("jpg", "png", "tif", "tiff"):
-            extension = "jpg"
-
-        if not os.path.exists(destination):
-            os.makedirs(destination)
-
-        if isinstance(max_size, tuple):
-            max_size = max(max_size)
+            raise ValueError("Cannot dump an image with no ID.")
 
         parameters = {
-            "maxSize": max_size,
+            "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
             "contrast": contrast,
             "gamma": gamma,
             "colormap": colormap,
@@ -298,13 +333,19 @@ class SliceInstance(Model):
             "bits": bits
         }
 
-        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
+        def dump_url_fn(model, file_path, **kwargs):
+            extension = os.path.basename(file_path).split(".")[-1]
+            return "{}/{}/thumb.{}".format(model.callback_identifier, model.id, extension)
 
-        url = "{}/{}/thumb.{}".format(self.callback_identifier, self.id, extension)
-        result = Cytomine.get_instance().download_file(url, file_path, override, parameters)
-        if result:
-            self.filename = file_path
-        return result
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
+
+        if len(files) == 0:
+            return False
+
+        self.filenames = files
+        self.filename = files[0]
+
+        return True
 
     def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
                bits=8, annotations=None, terms=None, users=None, reviewed=None):

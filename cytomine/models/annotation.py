@@ -126,7 +126,7 @@ class Annotation(Model):
                 image = "mask"
             else:
                 image = "crop"
-            return model.cropURL.replace("crop.jpg", "{}.{}".format(image, extension))
+            return model.cropURL.replace("crop.png", "{}.{}".format(image, extension))
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
