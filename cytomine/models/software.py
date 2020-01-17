@@ -105,19 +105,16 @@ class SoftwareParameter(Model):
         self.commandLineFlag = command_line_flag
         self.populate(attributes)
 
+    @property
+    def callback_identifier(self):
+        return "software_parameter"
+
 
 class SoftwareParameterCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(SoftwareParameterCollection, self).__init__(SoftwareParameter, filters, max, offset)
         self._allowed_filters = ["software"]
         self.set_parameters(parameters)
-
-    @property
-    def callback_identifier(self):
-        # HACK to save on collection.
-        if len(self._data) > 0:
-            return "softwareparameter"
-        return "parameter"
 
 
 class SoftwareParameterConstraint(Model):
@@ -128,6 +125,7 @@ class SoftwareParameterConstraint(Model):
         self.value = value
         self.populate(attributes)
 
+    @property
     def callback_identifier(self):
         return "software_parameter_constraint"
 
