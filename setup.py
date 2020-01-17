@@ -15,27 +15,43 @@
 # * limitations under the License.
 
 from setuptools import setup
+from io import open
+
+with open("README.md", "r", encoding="utf8") as fh:
+    long_description = fh.read()
 
 setup(
     name='Cytomine Python Client',
-    version='2.0.0',
+    version='2.1.1',
     description='Python client to interact with Cytomine.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=['cytomine', 'cytomine.models', 'cytomine.utilities'],
-    url='http://www.cytomine.be',
-    install_requires=['requests',
-                      'requests-toolbelt',
-                      'cachecontrol',
-                      'numpy',
-                      'shapely',
-                      'six',
-                      'future',
-                      'opencv-python',
-                      'Pillow',
-                      'requests'],
+    url='https://www.cytomine.org',
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Operating System :: OS Independent'
+    ],
+    install_requires=['requests-toolbelt>=0.8.0',
+                      'CacheControl>=0.12.5',
+                      'numpy>=1.15.4',
+                      'Shapely>=1.7a1',
+                      'six>=1.11.0',
+                      'future>=0.17.1',
+                      'opencv-python-headless>=3.4.3',
+                      'Pillow>=5.3.0',
+                      'Pillow<7.0.0',
+                      'requests>=2.20.1'],
     setup_requires=['pytest-runner'],
     extra_requires={
         "test": ['pytest']
     },
     test_suite='cytomine.tests',
     license='LICENSE',
+    data_files=[('', ['LICENSE', 'requirements.txt'])]
 )
