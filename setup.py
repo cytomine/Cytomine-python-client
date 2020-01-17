@@ -27,7 +27,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=['cytomine', 'cytomine.models', 'cytomine.models._utilities', 'cytomine.utilities'],
-    url='http://www.cytomine.org',
+    url='https://www.cytomine.org',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2.7',
@@ -45,6 +45,7 @@ setup(
                       'future>=0.17.1',
                       'opencv-python-headless>=3.4.3',
                       'Pillow>=5.3.0',
+                      'Pillow<7.0.0',
                       'requests>=2.20.1'],
     setup_requires=['pytest-runner'],
     extra_requires={
