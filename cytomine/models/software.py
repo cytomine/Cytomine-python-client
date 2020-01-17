@@ -116,6 +116,10 @@ class SoftwareParameterCollection(Collection):
         self._allowed_filters = ["software"]
         self.set_parameters(parameters)
 
+    @property
+    def callback_identifier(self):
+        return "software_parameter"
+
 
 class SoftwareParameterConstraint(Model):
     def __init__(self, parameter_constraint_id=None, software_parameter_id=None, value=None, **attributes):
@@ -135,6 +139,10 @@ class SoftwareParameterConstraintCollection(Collection):
         super(SoftwareParameterConstraintCollection, self).__init__(SoftwareParameterConstraint, filters, max, offset)
         self._allowed_filters = ["softwareparameter"]
         self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "software_parameter_constraint"
 
 
 _HUMAN_READABLE_JOB_STATUS = {
@@ -342,3 +350,8 @@ class ProcessingServerCollection(Collection):
         super(ProcessingServerCollection, self).__init__(ProcessingServer, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "processing_server"
+
