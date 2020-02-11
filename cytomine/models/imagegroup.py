@@ -33,7 +33,7 @@ from cytomine.models.model import Model
 import numpy as np
 
 
-@deprecated
+@deprecated  # Not working with Cytomine-core V2
 class ImageGroup(Model):
     def __init__(self, name=None, id_project=None, **attributes):
         super(ImageGroup, self).__init__()
@@ -41,10 +41,12 @@ class ImageGroup(Model):
         self.project = id_project
         self.populate(attributes)
 
+    @deprecated
     def characteristics(self):
         uri = "imagegroup/{}/characteristics.json".format(self.id)
         return Cytomine.get_instance().get(uri)
 
+    @deprecated
     def download(self, dest_pattern="{name}", override=True, parent=False):
         """
         Download the original image.
@@ -79,7 +81,7 @@ class ImageGroup(Model):
                                                      dest_pattern, override, parameters)
 
 
-@deprecated
+@deprecated  # Not working with Cytomine-core V2
 class ImageGroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(ImageGroupCollection, self).__init__(ImageGroup, filters, max, offset)
@@ -87,7 +89,7 @@ class ImageGroupCollection(Collection):
         self.set_parameters(parameters)
 
 
-@deprecated
+@deprecated  # Not working with Cytomine-core V2
 class ImageGroupHDF5(Model):
     def __init__(self, id_group=None, filename=None, **attributes):
         super(ImageGroupHDF5, self).__init__()
@@ -102,10 +104,12 @@ class ImageGroupHDF5(Model):
     def callback_identifier(self):
         return "imagegroupHDF5"
 
+    @deprecated
     def pixel(self, x, y):
         uri = "imagegroupHDF5/{}/{}/{}/pixel.json".format(self.id, x, y)
         return np.asarray([[Cytomine.get_instance().get(uri)["spectra"]]])
 
+    @deprecated
     def rectangle(self, x, y, width, height):
         uri = "imagegroupHDF5/{}/{}/{}/{}/{}/rectangle.json".format(self.id, x, y, width, height)
         collection = Cytomine.get_instance().get(uri)["collection"]
@@ -115,18 +119,7 @@ class ImageGroupHDF5(Model):
         return spectrum.reshape((width, height, depth))
 
 
-# class ImageGroupHDF5Collection(Collection):
-#     def __init__(self, filters=None, max=0, offset=0, **parameters):
-#         super(ImageGroupHDF5Collection, self).__init__(ImageGroupHDF5, filters, max, offset)
-#         self._allowed_filters = ["project"]
-#         self.set_parameters(parameters)
-#
-#     @property
-#     def callback_identifier(self):
-#         return "imagegroupHDF5"
-
-
-@deprecated
+@deprecated  # Not working with Cytomine-core V2
 class ImageSequence(Model):
     def __init__(self, id_image_group=None, id_image_instance=None, z_stack=None,
                  slice=None, time=None, channel=None, **attributes):
@@ -146,7 +139,7 @@ class ImageSequence(Model):
                                                                    self.channel, self.zStack, self.slice, self.time)
 
 
-@deprecated
+@deprecated  # Not working with Cytomine-core V2
 class ImageSequenceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(ImageSequenceCollection, self).__init__(ImageSequence, filters, max, offset)

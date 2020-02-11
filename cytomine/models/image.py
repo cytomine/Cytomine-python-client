@@ -271,6 +271,23 @@ class ImageInstance(Model):
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.instanceFilename)
 
+    def profile(self, x, y, width=None, height=None):
+        import numpy as np
+        from shapely.geometry import Point, box
+
+        geometry = box(x, y, x + width, y + height) if (width and height) else Point(x, y)
+
+        uri = "{}/{}/profile.json".format(self.callback_identifier, self.id)
+        data = Cytomine.get_instance().get(uri, {"geometry": geometry})
+
+        if width and height:
+            profile = np.array([d["profile"] for d in data])
+            profile = np.expand_dims(profile, axis=1)
+            _, _, depth = profile.shape
+            return profile.reshape((width, height, depth))
+        else:
+            return np.asarray([[data["profile"]]])
+
 
 class ImageInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):

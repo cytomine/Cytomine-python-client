@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pytest
+
 from cytomine.models.imagegroup import *
 from cytomine.tests.conftest import random_string
 
@@ -26,6 +28,7 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
 
 class TestImageGroup:
+    @pytest.mark.skip()
     def test_imagegroup(self, connect, dataset):
         name = random_string()
         imagegroup = ImageGroup(name, dataset["project"].id).save()
@@ -45,16 +48,19 @@ class TestImageGroup:
         imagegroup.delete()
         assert (not ImageGroup().fetch(imagegroup.id))
 
+    @pytest.mark.skip()
     def test_imagegroup_characteristics(self, connect, dataset):
         characteristics = ImageGroup().fetch(dataset["image_group"].id).characteristics()
         assert (isinstance(characteristics, dict))
         assert ("channel" in characteristics)
 
+    @pytest.mark.skip()
     def test_imagegroups(self, connect, dataset):
         imagegroups = ImageGroupCollection()
         imagegroups.append(ImageGroup(random_string(), dataset["project"].id))
         assert (imagegroups.save())
 
+    @pytest.mark.skip()
     def test_imagegroups_by_project(self, connect, dataset):
         imagegroups = ImageGroupCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(imagegroups, ImageGroupCollection))
@@ -81,9 +87,11 @@ class TestImageGroupHDF5:
     #     imagegroupHDF5.delete()
     #     assert (not ImageGroupHDF5().fetch(imagegroupHDF5.id))
 
+    @pytest.mark.skip()
     def test_imagegroupHDF5_pixel(self, connect, dataset):
         pass
 
+    @pytest.mark.skip()
     def test_imagegroupHDF5_rectangle(self, connect, dataset):
         pass
 
@@ -93,6 +101,7 @@ class TestImageGroupHDF5:
 
 
 class TestImageSequence:
+    @pytest.mark.skip()
     def test_image_sequence(self, connect, dataset):
         channel = 10
         image_sequence = ImageSequence(dataset["image_group"].id, dataset["image_instance"].id, 0, 0, 0, channel).save()
@@ -113,15 +122,18 @@ class TestImageSequence:
         # image_sequence.delete()
         # assert (not ImageSequence().fetch(image_sequence.id))
 
+    @pytest.mark.skip()
     def test_image_sequences(self, connect, dataset):
         image_sequences = ImageSequenceCollection()
         image_sequences.append(ImageSequence(dataset["image_group2"].id, dataset["image_instance"].id, 0, 0, 0, 20))
         assert (image_sequences.save())
 
+    @pytest.mark.skip()
     def test_image_sequences_by_imagegroup(self, connect, dataset):
         image_sequences = ImageSequenceCollection().fetch_with_filter("imagegroup", dataset["image_group"].id)
         assert (isinstance(image_sequences, ImageSequenceCollection))
 
+    @pytest.mark.skip()
     def test_image_sequences_by_imageinstance(self, connect, dataset):
         image_sequences = ImageSequenceCollection().fetch_with_filter("imageinstance", dataset["image_instance"].id)
         assert (isinstance(image_sequences, ImageSequenceCollection))
