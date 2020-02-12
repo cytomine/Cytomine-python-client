@@ -39,7 +39,7 @@ class WholeSlide(object):
         self.num_tiles = 0
         self.levels = []
 
-        for i in range(self.depth):
+        for i in range(self.depth + 1):
             level_width = int(self.width / 2 ** i)
             level_height = int(self.height / 2 ** i)
             x_tiles = int(math.ceil(float(level_width) / (float(tile_size))))
