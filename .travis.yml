@@ -62,7 +62,7 @@ deploy:
       echo "Done."
     skip_cleanup: true
     on:
-      python: 3.5
+      python: 3.7
       condition: $DEPLOY = true
   - provider: releases
     api_key:
@@ -71,7 +71,7 @@ deploy:
     file: "dist/*.{zip,tar,gz}"
     skip_cleanup: true
     on:
-      python: 3.5
+      python: 3.7
       condition: $DEPLOY = true
   - provider: packagecloud
     username: cytomine-uliege
@@ -81,7 +81,7 @@ deploy:
     package_glob: "dist/*.{whl,egg,egg-info,tar,gz}"
     skip_cleanup: true
     on:
-      python: 3.5
+      python: 3.7
       condition: $DEPLOY = true
 notifications:
   email: false
