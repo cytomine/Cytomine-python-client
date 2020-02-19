@@ -63,7 +63,8 @@ class Annotation(Model):
         return Cytomine.get_instance().post("{}/{}/review.json".format(self.callback_identifier, self.id), data)
 
     def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
-             zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None):
+             zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None,
+             complete=True):
         """
         Download the annotation crop, with optional image modifications.
 
@@ -95,6 +96,8 @@ class Annotation(Model):
             Cytomine identifier of a colormap to apply on returned image.
         inverse : bool, optional
             True to inverse color mapping, False otherwise.
+        complete: bool, optional. Default: True
+            True to use the annotation without simplification in masks and alphaMasks
 
         Returns
         -------
@@ -114,6 +117,7 @@ class Annotation(Model):
             "colormap": colormap,
             "inverse": inverse,
             "bits": bits,
+            "complete": complete
         }
 
         def dump_url_fn(model, file_path, **kwargs):

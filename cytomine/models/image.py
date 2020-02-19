@@ -376,7 +376,7 @@ class SliceInstance(Model):
         return True
 
     def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
-               bits=8, annotations=None, terms=None, users=None, reviewed=None):
+               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True):
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -409,6 +409,8 @@ class SliceInstance(Model):
             If mask=True or alpha=True, user identifiers that must be taken into account for masking
         reviewed : bool, optional
             If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking
+        complete : bool, optional. Default: True
+            If mask=True or alpha=True, use the annotations without simplification for masking
 
         Returns
         -------
@@ -460,7 +462,8 @@ class SliceInstance(Model):
             "reviewed": reviewed,
             "bits": bits,
             "mask": mask,
-            "alphaMask": alphamask
+            "alphaMask": alphamask,
+            "complete": complete
         }
 
         file_path = os.path.join(destination, "{}.{}".format(filename, extension))
