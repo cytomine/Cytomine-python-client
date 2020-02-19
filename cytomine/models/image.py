@@ -438,9 +438,10 @@ class SliceInstance(Model):
         if not os.path.exists(destination):
             os.makedirs(destination)
 
-        if mask is None and alpha is None:
+        if alpha is None:
             alphamask = None
-        elif mask and alpha:
+        elif alpha:
+            mask = None
             alphamask = True
             if extension == "jpg":
                 extension = "png"
