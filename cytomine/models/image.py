@@ -404,11 +404,11 @@ class SliceInstance(Model):
         annotations : list of int, optional
             If mask=True or alpha=True, annotation identifiers that must be taken into account for masking
         terms : list of int, optional
-            If mask=True or alpha=True, term identifiers that must be taken into account for masking
+            If mask=True or alpha=True, term identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
         users : list of int, optional
-            If mask=True or alpha=True, user identifiers that must be taken into account for masking
+            If mask=True or alpha=True, user identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
         reviewed : bool, optional
-            If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking
+            If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking. Ignored if 'annotations' is used.
         complete : bool, optional. Default: True
             If mask=True or alpha=True, use the annotations without simplification for masking
 
