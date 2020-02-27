@@ -56,7 +56,7 @@ if __name__ == '__main__':
         annotations.fetch()
         print(annotations)
 
-        f= open("annotations.csv","w+")
+        f= open(params.download_path+".csv","w+")
         f.write("ID;Image;Project;Term;User;Area;Perimeter;WKT \n")
         for annotation in annotations:
             f.write("{};{};{};{};{};{};{};{}\n".format(annotation.id,annotation.image,annotation.project,annotation.term,annotation.user,annotation.area,annotation.perimeter,annotation.location))
