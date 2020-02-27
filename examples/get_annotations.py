@@ -56,10 +56,11 @@ if __name__ == '__main__':
         annotations.fetch()
         print(annotations)
 
-        f= open(params.download_path+".csv","w+")
-        f.write("ID;Image;Project;Term;User;Area;Perimeter;WKT \n")
-        for annotation in annotations:
-            f.write("{};{};{};{};{};{};{};{}\n".format(annotation.id,annotation.image,annotation.project,annotation.term,annotation.user,annotation.area,annotation.perimeter,annotation.location))
+        if params.download_path:
+            f= open(params.download_path+".csv","w+")
+            f.write("ID;Image;Project;Term;User;Area;Perimeter;WKT \n")
+            for annotation in annotations:
+                f.write("{};{};{};{};{};{};{};{}\n".format(annotation.id,annotation.image,annotation.project,annotation.term,annotation.user,annotation.area,annotation.perimeter,annotation.location))
 
         for annotation in annotations:
             print("ID: {} | Image: {} | Project: {} | Term: {} | User: {} | Area: {} | Perimeter: {} | WKT: {}".format(
