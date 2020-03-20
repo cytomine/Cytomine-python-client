@@ -59,7 +59,9 @@ def _convert_type(_type):
 
 def _to_bool(v):
     """
-    Convert the value to boolean.
+    Convert the value to boolean. Treat the following strings
+    as False (case insensitive): {"0", "false", "no"}
+    and True (case insensitive): {"1", "true", "yes"}
 
     Parameters
     ----------
@@ -72,7 +74,13 @@ def _to_bool(v):
         The boolean value
     """
     if isinstance(v, str):
-        return bool(distutils.util.strtobool(v))
+        lv = v.lower()
+        if lv in {"0", "false", "no"}:
+            return False
+        elif lv in {"1", "true", "yes"}:
+            return True
+        else:
+            raise ValueError("unexpected value '{}' for a boolean".format(v))
     else:
         return bool(v)
 
@@ -94,14 +102,13 @@ def _software_params_to_argparse(parameters):
     argparse = ArgumentParser()
     for parameter in parameters:
         python_type = _convert_type(parameter.type)
-        arg_desc = {"dest": parameter.name, "required": parameter.required, "type": python_type, "help": ""}  # TODO add help
-        if parameter.type == "Boolean":
-            default = _to_bool(parameter.defaultParamValue)
-            arg_desc["nargs"] = "?"
-            arg_desc["const"] = not default
-            arg_desc["default"] = default
-        else:
-            arg_desc["default"] = None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue)
+        arg_desc = {
+            "type": python_type,
+            "default": None if parameter.defaultParamValue is None else python_type(parameter.defaultParamValue),
+            "dest": parameter.name,
+            "required": parameter.required,
+            "help": ""  # TODO help
+        }
         argparse.add_argument(*_cytomine_parameter_name_synonyms(parameter.name), **arg_desc)
     return argparse
 
@@ -308,3 +315,117 @@ class CytomineJob(Cytomine):
     def __exit__(self, type, value, traceback):
         self.close(value)
         return False
+
+    def job_logger(self, start=0, end=100, period=None):
+        """Return a logger for the current job."""
+        return CytomineJobLogger(self, start=start, end=end, period=period)
+
+    def monitor(self, iterable, start=0, end=100, period=None, prefix=""):
+        """Return a monitor for the current job"""
+        return self.job_logger(start=start, end=end, period=period).monitor(iterable, prefix=prefix)
+
+
+class CytomineJobLogger(object):
+    def __init__(self, cytomine_job, start=0, end=100, period=None):
+        """A logger serves as intermediary between the job implementation and the job status update requests.
+
+        Parameters
+        ----------
+        cytomine_job: CytomineJob
+            The job
+        start: float (range: [0.0, 100.0[)
+            Progress at which the logger should start
+        end: float (range: ]0.0, 100.0])
+            Progress at which the logger should stop
+        period: int, float
+            The number of iteration to wait before actually updating the status. Also supports
+            frequencies (float values).
+        """
+        self._cytomine_job = cytomine_job
+        self._start = start
+        self._end = end
+        self._update_period = period
+
+    def abs_update(self, statusComment="", status=Job.RUNNING, progress=None):
+        """Update the status with an absolute progress (i.e. integer percentage)
+
+        Parameters
+        ----------
+        statusComment: str
+            Status comment
+        status: int
+            Job status.
+        progress: int
+            An integer percentage of progress
+        """
+        self.update(statusComment=statusComment, status=status, current=int(progress), total=100)
+
+    def update(self, statusComment, current, total, status=Job.RUNNING):
+        """
+        Parameters
+        ----------
+        statusComment: str
+            Job status update message
+        current: int (range: [0, total[)
+            Current iteration
+        total: int
+            Total number of iteration
+        status: int
+            Status of the job to send with the update
+        """
+        period = self._get_period(total)
+        if period is not None and current % period != 0:
+            return
+        relative_progress = self._relative_progress(current / float(total))
+        self._cytomine_job.job.update(progress=relative_progress, statusComment=statusComment, status=status)
+
+    def _get_period(self, n_iter):
+        """Return integer period given a maximum number of iteration """
+        if self._update_period is None:
+            return None
+        if isinstance(self._update_period, float):
+            return max(int(self._update_period * n_iter), 1)
+        return self._update_period
+
+    def _relative_progress(self, ratio):
+        return int(self._start + (self._end - self._start) * ratio)
+
+    def logger(self, progress_start, progress_end, update_period=None):
+        """Return a logger that updates progress in a subrange of the current logger's range."""
+        return CytomineJobLogger(
+            self._cytomine_job,
+            start=self._relative_progress(progress_start / 100.),
+            end=self._relative_progress(progress_end / 100.),
+            period=update_period
+        )
+
+    def monitor(self, iterable, prefix=""):
+        """Return a monitor for the given iterable using this logger"""
+        return CytomineJobProgressMonitor(self, iterable, comment_prefix=prefix)
+
+
+class CytomineJobProgressMonitor(object):
+    def __init__(self, cytomine_logger, iterable, comment_prefix=None):
+        """
+        cytomine_logger: CytomineJobLogger
+            A logger
+        iterable: iterable
+            The iterable to iterate on
+        comment_prefix: str
+            A prefix for the status comment
+        """
+        self._cytomine_logger = cytomine_logger
+        self._iterable = list(iterable)
+        self._comment_prefix = comment_prefix
+
+    def __iter__(self):
+        for i, v in enumerate(self._iterable):
+            self._cytomine_logger.update(
+                "{} ({}/{}).".format(self._comment_prefix, i + 1, len(self)),
+                current=i, total=len(self)
+            )
+            yield v
+
+    def __len__(self):
+        return len(list(self._iterable))
+
