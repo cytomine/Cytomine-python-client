@@ -61,8 +61,9 @@ if __name__ == '__main__':
             ))
 
             if params.download_path:
-                # We will dump the images in a specified directory.
-                # Attributes of ImageInstance are parsed in the filename
-                image.dump(os.path.join(dump_path, str(params.id_project), "{id}_{width}px_{height}px.jpg"))
+                # We will dump the images in a specified /dump directory.
+                # Filename fo this dump will be the original file name with an added .jpg extension
+                # max_size is set to 512 (in pixels) by default. Without max_size it download a dump of the same size that the original image.
+                image.dump(os.path.join(dump_path, str(params.id_project), "{originalFilename}.jpg"),max_size=512)
                 # To download the original files that have been uploaded to Cytomine
                 image.download(os.path.join(original_path, str(params.id_project), "{originalFilename}"))
