@@ -85,6 +85,10 @@ class AnnotationAction(Model):
     def update(self, *args, **kwargs):
         raise NotImplementedError("Cannot update an annotation action.")
 
+    @property
+    def callback_identifier(self):
+        return "annotation_action"
+
 
 class AnnotationActionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -98,4 +102,4 @@ class AnnotationActionCollection(Collection):
 
     @property
     def callback_identifier(self):
-        return "annotationactions"
+        return "annotation_action"

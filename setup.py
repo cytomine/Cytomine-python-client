@@ -26,7 +26,7 @@ setup(
     description='Python client to interact with Cytomine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=['cytomine', 'cytomine.models', 'cytomine.utilities'],
+    packages=['cytomine', 'cytomine.models', 'cytomine.models._utilities', 'cytomine.utilities'],
     url='https://www.cytomine.org',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
