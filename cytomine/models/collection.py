@@ -126,7 +126,10 @@ class Collection(MutableSequence):
         elif isinstance(chunk, int):
             def upload_fn(collection):
                 if not isinstance(collection, Collection):
-                    _tmp = self.__class__(self._model)
+                    if type(self) is Collection :
+                        _tmp = self.__class__(self._model)
+                    else :
+                        _tmp = self.__class__()
                     _tmp.extend(collection)
                     collection = _tmp
                 return Cytomine.get_instance().post_collection(collection)
