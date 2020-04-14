@@ -458,7 +458,10 @@ class Cytomine(object):
     def put_model(self, model, query_parameters=None):
         response = self._put(model.uri(), model.to_json(), query_parameters)
         if response.status_code == requests.codes.ok:
-            model = model.populate(response.json()[model.callback_identifier.lower()])
+            if model.callback_identifier.lower() in response.json() :
+                model = model.populate(response.json()[model.callback_identifier.lower()])
+            else :
+                model = model.populate(response.json()[model.__class__.__name__.lower()]) #remove when REST URL are normalized
 
         self._log_response(response, model)
         if not response.status_code == requests.codes.ok:
@@ -512,7 +515,10 @@ class Cytomine(object):
 
         if response.status_code == requests.codes.ok:
             try:
-                model = model.populate(response.json()[model.callback_identifier.lower()])
+                if model.callback_identifier.lower() in response.json() :
+                    model = model.populate(response.json()[model.callback_identifier.lower()])
+                else :
+                    model = model.populate(response.json()[model.__class__.__name__.lower()]) #remove when REST URL are normalized
             except KeyError:
                 self._logger.warning(response.json())
 
