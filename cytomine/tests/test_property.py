@@ -58,7 +58,7 @@ class TestProperty:
 
 class TestAttachedFile:
     def test_attached_file(self, connect, dataset):
-        filename = "data/attached_file.txt"
+        filename = os.path.dirname(__file__)+"/data/attached_file.txt"
         filename_base = os.path.basename(filename)
         attached_file = AttachedFile(dataset["project"], filename).save()
         assert (isinstance(attached_file, AttachedFile))
@@ -105,3 +105,50 @@ class TestDescription:
 
         description.delete()
         assert (not Description(dataset["project"]).fetch(description.id))
+
+
+class TestTag:
+    def test_tag(self, connect, dataset):
+        name = random_string()
+        tag = Tag(name).save()
+        assert (isinstance(tag, Tag))
+        assert (tag.name == name)
+
+        tag = Tag().fetch(tag.id)
+        assert (isinstance(tag, Tag))
+        assert (tag.name == name)
+
+        name = random_string()
+        tag.name = name
+        tag.update()
+        assert (isinstance(tag, Tag))
+        assert (tag.name == name)
+
+        tag.delete()
+        assert (not Tag().fetch(tag.id))
+
+        tag = Tag().save()
+        assert (tag == False)
+
+    def test_tags(self, connect, dataset):
+        tags = TagCollection().fetch()
+        assert(isinstance(tags, TagCollection))
+
+
+class TestTagDomainAssociation:
+    def test_tag_domain_association(self, connect, dataset):
+        tda = TagDomainAssociation(dataset["project"], dataset["tag"].id).save()
+        assert (isinstance(tda, TagDomainAssociation))
+        assert (tda.tag == dataset["tag"].id)
+        assert (tda.domainIdent == dataset["project"].id)
+
+        tag = TagDomainAssociation(dataset["project"]).fetch(tda.id)
+        assert (isinstance(tda, TagDomainAssociation))
+        assert (tda.domainIdent == dataset["project"].id)
+
+        tda.delete()
+        assert (not TagDomainAssociation(dataset["project"]).fetch(tda.id))
+
+    def test_tag_domain_association_by_projects(self, connect, dataset):
+        tags = TagDomainAssociationCollection(dataset["project"]).fetch()
+        assert(isinstance(tags, TagDomainAssociationCollection))

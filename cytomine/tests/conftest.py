@@ -25,6 +25,8 @@ from cytomine.models.image import AbstractImage, ImageInstance
 from cytomine.models.imagegroup import ImageGroup
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
+from cytomine.models.property import Tag
+from cytomine.models.software import Software, SoftwareParameter, Job
 from cytomine.models.user import User, Group
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
@@ -79,6 +81,7 @@ def dataset(request):
     data["image_group2"] = ImageGroup(random_string(), data["project"].id).save()
     # data["image_sequence"] = ImageSequence(data["image_group"].id, data["image_instance"].id, 0, 0, 0, 0).save()
     # data["job"] = Job(data["project"].id, data["software"].id).save()
+    data["tag"] = Tag(random_string()).save()
 
     def teardown():
         # ImageSequence().delete(data["image_sequence"].id)
@@ -97,6 +100,7 @@ def dataset(request):
         User().delete(data["user"].id)
         # SoftwareParameter().delete(data["software_parameter"].id)
         # Software().delete(data["software"].id)
+        Tag().delete(data["tag"].id)
 
     request.addfinalizer(teardown)
 
