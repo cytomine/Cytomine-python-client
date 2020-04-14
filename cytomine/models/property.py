@@ -27,8 +27,8 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.annotation import Annotation
-from cytomine.models.collection import DomainCollection
-from cytomine.models.model import DomainModel
+from cytomine.models.collection import Collection, DomainCollection
+from cytomine.models.model import Model, DomainModel
 
 
 class Property(DomainModel):
@@ -169,3 +169,47 @@ class Description(DomainModel):
             self.id = id
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+
+class Tag(Model):
+    def __init__(self, name=None, **attributes):
+        super(Tag, self).__init__()
+        self.name = name
+        self.populate(attributes)
+
+
+class TagCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(TagCollection, self).__init__(Tag, filters, max, offset)
+        self._allowed_filters = [None]
+        self.set_parameters(parameters)
+
+
+class TagDomainAssociation(DomainModel):
+    def __init__(self, object, tag=None, **attributes):
+        super(TagDomainAssociation, self).__init__(object)
+        self.tag = tag
+        self.populate(attributes)
+
+    def uri(self):
+        if self.id:
+            uri = "tag_domain_association/{}.json".format(self.id)
+        elif self.domainClassName and self.domainIdent:
+            uri = super(TagDomainAssociation, self).uri()
+
+        return uri
+
+    @property
+    def callback_identifier(self):
+        return "tag_domain_association"
+
+
+class TagDomainAssociationCollection(DomainCollection):
+    def __init__(self, object, filters=None, max=0, offset=0, **parameters):
+        super(TagDomainAssociationCollection, self).__init__(TagDomainAssociation, object, filters, max, offset)
+        self._allowed_filters = [None]
+        self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "tag_domain_association"
