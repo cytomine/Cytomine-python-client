@@ -68,7 +68,7 @@ def dataset(request):
     data["term1"] = Term(random_string(), data["ontology"].id, "#000000").save()
     data["term2"] = Term(random_string(), data["ontology"].id, "#000000").save()
 
-    data["software"] = Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation").save()
+    data["software"] = Software(random_string(), "ValidateAnnotation").save()
     data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
     data["abstract_image"] = AbstractImage(random_string(), "image/tiff").save()
