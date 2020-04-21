@@ -118,9 +118,10 @@ if __name__ == '__main__':
                 print("Geometry with OpenCV coordinate system: {}".format(geometry_opencv))
 
             if params.download_path:
+                # max_size is set to 512 (in pixels). Without max_size parameter, it download a dump of the same size that the annotation.
                 # Dump a rectangular crop containing the annotation
-                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "crop", "{id}.jpg"))
+                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "crop", "{id}.jpg"), max_size=512)
                 # Dumps a rectangular mask containing the annotation
-                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "mask", "{id}.jpg"), mask=True)
+                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "mask", "{id}.jpg"), mask=True, max_size=512)
                 # Dumps the annotation crop where pixels oustide it are transparent.
-                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "alpha", "{id}.png"), mask=True, alpha=True)
+                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "alpha", "{id}.png"), mask=True, alpha=True, max_size=512)

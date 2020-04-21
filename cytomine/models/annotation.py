@@ -83,7 +83,7 @@ class Annotation(Model):
             Optional image zoom number
         bits : int (8,16,32) or str ("max"), optional
             Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
-        max_size : int, tuple, optional
+        max_size : int, optional
             Maximum size (width or height) of returned image. None to get original size.
         increase_area : float, optional
             Increase the crop size. For example, an annotation whose bounding box size is (w,h) will have
@@ -130,7 +130,7 @@ class Annotation(Model):
                 image = "mask"
             else:
                 image = "crop"
-            return model.cropURL.replace("crop.png", "{}.{}".format(image, extension))
+            return model.cropURL.replace("crop.png", "{}.{}".format(image, extension)).replace("crop.jpg", "{}.{}".format(image, extension))
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
