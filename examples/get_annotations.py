@@ -75,6 +75,7 @@ if __name__ == '__main__':
             ))
 
             if params.download_path:
-                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "crop", "{id}.jpg"))
-                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "mask", "{id}.jpg"), mask=True)
-                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "alpha", "{id}.png"), mask=True, alpha=True)
+                # max_size is set to 512 (in pixels). Without max_size parameter, it download a dump of the same size that the annotation.
+                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "crop", "{id}.jpg"), max_size = 512)
+                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "mask", "{id}.jpg"), mask=True, max_size = 512)
+                annotation.dump(dest_pattern=os.path.join(params.download_path, "{project}", "alpha", "{id}.png"), mask=True, alpha=True, max_size = 512)
