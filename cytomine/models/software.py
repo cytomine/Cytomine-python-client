@@ -55,6 +55,10 @@ class Software(Model):
         self.numberOfWait = None
         self.populate(attributes)
 
+    def upload(self, file_path=None):
+        return Cytomine.get_instance().upload_file(self, file_path,
+                                                   query_parameters={"name":self.name}, uri="{}/upload".format(self.callback_identifier))
+
 
 class SoftwareCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
