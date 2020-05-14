@@ -26,6 +26,7 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 from collections import MutableSequence
 
 import six
+import copy
 
 from cytomine.cytomine import Cytomine
 from ._utilities.parallel import generic_chunk_parallel
@@ -249,13 +250,21 @@ class Collection(MutableSequence):
     def __add__(self, other):
         if type(self) is not type(other):
             raise TypeError("Only two same Collection objects can be added together.")
-        collection = self.__class__(self._model)
+        collection = copy.copy(self)
+        collection._data = list()
         collection += self
         collection += other
         return collection
 
     def data(self):
         return self._data
+
+    def filter(self, fn):
+        """Return another Collection instance containing only element of the current collection that the function
+        evaluates to true."""
+        collection = copy.copy(self)
+        collection._data = list(filter(fn, self))
+        return collection
 
 
 class DomainCollection(Collection):

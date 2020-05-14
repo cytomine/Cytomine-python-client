@@ -24,7 +24,8 @@ def parse_domain_list(s):
     return list(map(int, s.split(',')))
 
 
-def setup_classify(args, logger, root_path=None, image_folder="images", set_folder=None, dest_pattern=None, **annot_params):
+def setup_classify(args, logger, root_path=None, image_folder="images", set_folder=None, dest_pattern=None,
+                   keep_without_term=False, **annot_params):
     """Download annotations for classification
     Parameters
     ----------
@@ -51,6 +52,8 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         Destination pattern for annotation crops. By default (if dest_pattern is None):
             - if "showTerm" is in 'annot_params': "{term}/{image}_{id}.png"
             - otherwise: "{image}_{id}.png"
+    keep_without_term: bool
+        True for keeping annotations without terms (ignored if showTerm is missing in annot_params)
     annot_params: dict
         Additional parameters for fetching the annotations (e.g. showTerm, showWKT,...)
 
@@ -105,6 +108,9 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         reviewed=args.cytomine_reviewed,
         **annot_params
     )
+
+    if 'showTerm' in annot_params and not keep_without_term:
+        annotations = annotations.filter(lambda a: hasattr(a, '__len__') and len(a.term) > 0)
 
     # download annotations
     logger.abs_update(progress=65, statusComment="Download crops of annotations.")
