@@ -28,6 +28,7 @@ from .ontology import Ontology, OntologyCollection, Term, TermCollection, Relati
 from .project import Project, ProjectCollection, Discipline, DisciplineCollection
 from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description, \
     Tag, TagCollection, TagDomainAssociation, TagDomainAssociationCollection
+from .track import Track, TrackCollection, AnnotationTrack
 from .social import AnnotationAction, AnnotationActionCollection, Position, PositionCollection
 from .software import Software, SoftwareCollection, SoftwareParameter, SoftwareParameterCollection, \
     SoftwareProject, SoftwareProjectCollection, Job, JobCollection, JobParameter, \
