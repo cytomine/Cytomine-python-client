@@ -281,10 +281,14 @@ class ImageInstance(Model):
         data = Cytomine.get_instance().get(uri, {"geometry": geometry})
 
         if width and height:
-            profile = np.array([d["profile"] for d in data])
-            profile = np.expand_dims(profile, axis=1)
-            _, _, depth = profile.shape
-            return profile.reshape((width, height, depth))
+            data = data["collection"]
+            depth = len(data[0]["profile"])
+            profile = np.empty((height, width, depth), dtype=np.uint)
+            for p in data:
+                row = p["point"][1] - y
+                col = p["point"][0] - x
+                profile[row, col, :] = p["profile"]
+            return profile
         else:
             return np.asarray([[data["profile"]]])
 
