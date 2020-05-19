@@ -288,6 +288,106 @@ class ImageInstance(Model):
         else:
             return np.asarray([[data["profile"]]])
 
+    def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
+               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, projection=None):
+        """
+        Extract a window (rectangle) from an image and download it.
+
+        Parameters
+        ----------
+        x : int
+            The X position of window top-left corner. 0 is image left.
+        y : int
+            The Y position of window top-left corner. 0 is image top.
+        w : int
+            The window width
+        h : int
+            The window height
+        dest_pattern : str, optional
+            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            if it exists.
+        override : bool, optional
+            True if a file with same name can be overrided by the new file.
+        mask : bool, optional
+            True if a binary mask based on given annotations must be returned, False otherwise.
+        alpha : bool, optional
+            True if image background (outside annotations) must be transparent, False otherwise.
+        bits : int (8/16/32), optional
+            Optional output bit depth of returned images
+        annotations : list of int, optional
+            If mask=True or alpha=True, annotation identifiers that must be taken into account for masking
+        terms : list of int, optional
+            If mask=True or alpha=True, term identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
+        users : list of int, optional
+            If mask=True or alpha=True, user identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
+        reviewed : bool, optional
+            If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking. Ignored if 'annotations' is used.
+        complete : bool, optional. Default: True
+            If mask=True or alpha=True, use the annotations without simplification for masking
+        projection: string, optional
+            For 3D image with a profile, get the given projection (min, max, average)
+
+        Returns
+        -------
+        downloaded : bool
+            True if everything happens correctly, False otherwise.
+        """
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        pattern = re.compile("{(.*?)}")
+        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        del self.x
+        del self.y
+        del self.w
+        del self.h
+
+        destination = os.path.dirname(dest_pattern)
+        filename, extension = os.path.splitext(os.path.basename(dest_pattern))
+        extension = extension[1:]
+
+        if extension not in ("jpg", "png", "tif", "tiff"):
+            extension = "jpg"
+
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
+        if alpha is None:
+            alphamask = None
+        elif alpha:
+            mask = None
+            alphamask = True
+            if extension == "jpg":
+                extension = "png"
+        else:
+            alphamask = False
+
+        # Temporary fix due to Cytomine-core
+        if mask is not None:
+            mask = str(mask).lower()
+
+        if alphamask is not None:
+            alphamask = str(alphamask).lower()
+        # ===
+
+        parameters = {
+            "annotations": ",".join(str(item) for item in annotations) if annotations else None,
+            "terms": ",".join(str(item) for item in terms) if terms else None,
+            "users": ",".join(str(item) for item in users) if users else None,
+            "reviewed": reviewed,
+            "bits": bits,
+            "mask": mask,
+            "alphaMask": alphamask,
+            "complete": complete,
+            "projection": projection
+        }
+
+        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
+
+        return Cytomine.get_instance().download_file("{}/{}/window-{}-{}-{}-{}.{}".format(
+            self.callback_identifier, self.id, x, y, w, h, extension), file_path, override, parameters)
+
 
 class ImageInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
