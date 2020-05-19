@@ -26,7 +26,8 @@ from .image import AbstractImage, AbstractImageCollection, AbstractSlice, Abstra
 from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupHDF5, ImageSequence, ImageSequenceCollection
 from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm
 from .project import Project, ProjectCollection, Discipline, DisciplineCollection
-from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description
+from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description, \
+    Tag, TagCollection, TagDomainAssociation, TagDomainAssociationCollection
 from .social import AnnotationAction, AnnotationActionCollection, Position, PositionCollection
 from .software import Software, SoftwareCollection, SoftwareParameter, SoftwareParameterCollection, \
     SoftwareProject, SoftwareProjectCollection, Job, JobCollection, JobParameter, \
