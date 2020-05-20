@@ -24,6 +24,7 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
 
 import os
+import re
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection, CollectionPartialUploadException
@@ -139,6 +140,42 @@ class Annotation(Model):
 
         self.filenames = files
         self.filename = files[0]
+
+        return True
+
+    def profile(self):
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        data = Cytomine.get_instance().get("{}/{}/profile.json".format(self.callback_identifier, self.id))
+        return data['collection'] if "collection" in data else data
+
+    def profile_projections(self, csv=False, csv_destination="projections-annotation-{id}.csv"):
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        uri = "{}/{}/profile/projections.json".format(self.callback_identifier, self.id)
+        if csv:
+            pattern = re.compile("{(.*?)}")
+            destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), csv_destination)
+
+            return Cytomine.get_instance().download_file(uri, destination, {"format": "csv"})
+
+        data = Cytomine.get_instance().get(uri)
+        return data['collection'] if "collection" in data else data
+
+    def profile_projection(self, projection='max',  dest_pattern="{id}.png", override=True):
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        def dump_url_fn(model, file_path, **kwargs):
+            extension = os.path.basename(file_path).split(".")[-1]
+            return "{}/{}/profile/{}-projection.{}".format(self.callback_identifier, model.id, projection, extension)
+
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
+
+        if len(files) == 0:
+            return False
 
         return True
 

@@ -599,7 +599,8 @@ class Cytomine(object):
                 response.raw.decode_content = True
                 shutil.copyfileobj(response.raw, f)
 
-                self._logger.info("File downloaded successfully from {} with parameters {}".format(url, str(dict(filter(lambda item: item[1] is not None, payload.items())))))
+                parameters = str(dict(filter(lambda item: item[1] is not None, payload.items()))) if payload else {}
+                self._logger.info("File downloaded successfully from {} with parameters {}".format(url, parameters))
             return True
         else:
             return True
