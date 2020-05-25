@@ -150,14 +150,14 @@ class Annotation(Model):
         data = Cytomine.get_instance().get("{}/{}/profile.json".format(self.callback_identifier, self.id))
         return data['collection'] if "collection" in data else data
 
-    def profile_projections(self, csv=False, csv_destination="projections-annotation-{id}.csv"):
+    def profile_projections(self, csv=False, csv_dest_pattern="projections-annotation-{id}.csv"):
         if self.id is None:
             raise ValueError("Cannot review an annotation with no ID.")
 
-        uri = "{}/{}/profile/projections.json".format(self.callback_identifier, self.id)
+        uri = "{}/{}/profile/projections.{}".format(self.callback_identifier, self.id, "csv" if csv else "json")
         if csv:
             pattern = re.compile("{(.*?)}")
-            destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), csv_destination)
+            destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), csv_dest_pattern)
 
             return Cytomine.get_instance().download_file(uri, destination, {"format": "csv"})
 
