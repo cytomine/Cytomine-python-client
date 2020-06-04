@@ -111,7 +111,7 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     )
 
     if 'showTerm' in annot_params and not keep_without_term:
-        annotations = annotations.filter(lambda a: hasattr(a, '__len__') and len(a.term) > 0)
+        annotations = annotations.filter(lambda a: hasattr(a.term, '__len__') and len(a.term) > 0)
 
     # download annotations
     logger.abs_update(progress=65, statusComment="Download crops of annotations.")
