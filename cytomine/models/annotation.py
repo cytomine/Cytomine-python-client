@@ -150,7 +150,18 @@ class Annotation(Model):
         data = Cytomine.get_instance().get("{}/{}/profile.json".format(self.callback_identifier, self.id))
         return data['collection'] if "collection" in data else data
 
-    def profile_projections(self, csv=False, csv_dest_pattern="projections-annotation-{id}.csv"):
+    def profile_projections(self, axis=None, csv=False, csv_dest_pattern="projections-annotation-{id}.csv"):
+        """
+        Get profile projections (min, max, average) for the given annotation.
+
+        Parameters
+        ----------
+        axis The axis along which the projections (min, max, average) are performed. By default last axis is used.
+        To project along spatial X, Y axes, use special value "xy" or "spatial".
+        csv True to return result in a CSV file.
+        csv_dest_pattern The CSV destination pattern.
+
+        """
         if self.id is None:
             raise ValueError("Cannot review an annotation with no ID.")
 
@@ -159,9 +170,9 @@ class Annotation(Model):
             pattern = re.compile("{(.*?)}")
             destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), csv_dest_pattern)
 
-            return Cytomine.get_instance().download_file(uri, destination, {"format": "csv"})
+            return Cytomine.get_instance().download_file(uri, destination, payload={"axis": axis})
 
-        data = Cytomine.get_instance().get(uri)
+        data = Cytomine.get_instance().get(uri, {"axis": axis})
         return data['collection'] if "collection" in data else data
 
     def profile_projection(self, projection='max',  dest_pattern="{id}.png", override=True):
