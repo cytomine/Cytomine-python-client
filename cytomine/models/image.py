@@ -194,7 +194,7 @@ class ImageInstance(Model):
         ----------
         dest_pattern : str, optional
             Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            if it exists. The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         max_size : int, tuple, optional
@@ -431,7 +431,7 @@ class SliceInstance(Model):
         ----------
         dest_pattern : str, optional
             Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            if it exists. The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         max_size : int, tuple, optional
