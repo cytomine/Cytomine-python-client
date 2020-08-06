@@ -10,7 +10,7 @@ class DumpError(Exception):
     pass
 
 
-def generic_image_dump(dest_pattern, model, url_fn, override=True, **parameters):
+def generic_image_dump(dest_pattern, model, url_fn, override=True, check_extension=True, **parameters):
     """A generic function for 'dumping' a model as an image (crop, windows,...).
     Parameters
     ----------
@@ -25,6 +25,8 @@ def generic_image_dump(dest_pattern, model, url_fn, override=True, **parameters)
         parameters.
     override: bool
         True for overriding the file. False
+    check_extension: bool
+        True if the extension must be internally validated
     parameters: dict
 
     Returns
@@ -44,7 +46,7 @@ def generic_image_dump(dest_pattern, model, url_fn, override=True, **parameters)
         filename, extension = os.path.splitext(os.path.basename(file_path))
         extension = extension[1:]
 
-        if extension not in ("jpg", "png", "tif", "tiff"):
+        if check_extension and extension not in ("jpg", "png", "tif", "tiff"):
             extension = "jpg"
 
         makedirs(destination, exist_ok=True)

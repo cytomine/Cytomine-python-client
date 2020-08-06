@@ -93,8 +93,8 @@ class AbstractImage(Model):
         def dump_url_fn(model, file_path, **kwargs):
             return "{}/{}/download".format(model.callback_identifier, model.id)
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
-        return len(files) == 0
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, check_extension=False)
+        return len(files) > 0
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.originalFilename)
@@ -265,8 +265,8 @@ class ImageInstance(Model):
         def dump_url_fn(model, file_path, **kwargs):
             return "{}/{}/download".format(model.callback_identifier, model.id)
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
-        return len(files) == 0
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, check_extension=False)
+        return len(files) > 0
 
     def __str__(self):
         return "[{}] {} : {}".format(self.callback_identifier, self.id, self.instanceFilename)
