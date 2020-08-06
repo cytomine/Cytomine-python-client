@@ -83,6 +83,7 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         zoom_level = args.cytomine_zoom_level
         base_path = os.path.join(base_path, "zoom_level", str(zoom_level))
     if hasattr(args, "cytomine_download_alpha"):
+        # to download the alphamask as a fourth channel
         download_alpha = args.cytomine_download_alpha
         base_path = os.path.join(base_path, "alpha", str(int(download_alpha)))
     if set_folder is not None:
@@ -110,7 +111,7 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     )
 
     if 'showTerm' in annot_params and not keep_without_term:
-        annotations = annotations.filter(lambda a: hasattr(a, '__len__') and len(a.term) > 0)
+        annotations = annotations.filter(lambda a: hasattr(a.term, '__len__') and len(a.term) > 0)
 
     # download annotations
     logger.abs_update(progress=65, statusComment="Download crops of annotations.")
@@ -118,6 +119,7 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         dest_pattern=os.path.join(base_path, dest_pattern),
         override=True,
         alpha=download_alpha,
+        mask=download_alpha,
         zoom=zoom_level,
         n_workers=args.n_jobs
     )
