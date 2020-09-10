@@ -26,20 +26,31 @@
 # * python add_tags.py --host "YOUR-CYTOMINE-URL" --public_key "YOUR-USER-PUBLIC-KEY" --private_key "YOUR-USER-PRIVATE-KEY" --tag "NEW-TAG" 
 # * with all values set to your use case: --id_project "YOUR-PROJECT-ID" and/or --id_image "YOUR-IMAGE-ID-IN-A-PROJECT" and/or --id_annotation "YOUR-ANNOTATION-ID"
 # * Exemple :
-# * python dd_tags.py --host "http://demo.cytomine.local" --public_key "091d732d-89ae-43d7-bdfb-cc455d38680f" --private_key "54efff2a-01e2-4f7f-b833-cbe609686ddf" 
-# * will set a resolution of 0.499µm/px and magnification to 20x to the abstract image related to image instance of id 10372.
-# *
+# * python add_tags.py --host "http://demo.cytomine.local" --public_key "091d732d-89ae-43d7-bdfb-cc455d38680f" --private_key "54efff2a-01e2-4f7f-b833-cbe609686ddf" --tag "MyTag" --id_project "10966" --id_image "10978" --id_annotation "11431"
+# * 
 # * The ouput of this command applied to https://cytomine.coop/collection/cmu-1/cmu-1-tiff uploaded in a local Cytomine gives :
-# * [2020-07-15 01:17:08,318][INFO] [GET] [currentuser] CURRENT USER - 61 : admin | 200 OK
-# * [2020-07-15 01:17:08,335][INFO] [GET] [imageinstance] 10372 : /1594767914587/CMU-1.tiff | 200 OK
-# * [2020-07-15 01:17:08,357][INFO] [GET] [abstractimage] 10335 : /1594767914587/CMU-1.tiff | 200 OK
-# * [2020-07-15 01:17:08,584][INFO] [PUT] [abstractimage] 10335 : /1594767914587/CMU-1.tiff | 200 OK
+# [2020-09-10 17:10:41,137][INFO] [GET] [currentuser] CURRENT USER - 61 : admin | 200 OK
+# [2020-09-10 17:10:41,209][INFO] [GET] [tag collection] 1 objects | 200 OK
+# [2020-09-10 17:10:41,426][INFO] [POST] [tag] 15990 : MyTag | 200 OK
+# [2020-09-10 17:10:41,454][INFO] [GET] [project] 10966 : Test tags | 200 OK
+# [2020-09-10 17:10:41,589][INFO] [POST] [tag_domain_association] 15996 : None | 200 OK
+# [tag_domain_association] 15996 : None
+# [2020-09-10 17:10:41,615][INFO] [GET] [imageinstance] 10978 : /1594767914587/CMU-1.tiff | 200 OK
+# [2020-09-10 17:10:41,662][INFO] [POST] [tag_domain_association] 16002 : None | 200 OK
+# [tag_domain_association] 16002 : None
+# [2020-09-10 17:10:41,727][INFO] [GET] [annotation] 11431 | 200 OK
+# [2020-09-10 17:10:41,792][INFO] [POST] [tag_domain_association] 16008 : None | 200 OK
+# [tag_domain_association] 16008 : None
 # *
 # -----------------------------------------------------------------------------------------------------------
 # *
 # * HOWTO get your user public and private keys : https://doc.cytomine.org/Get%20Started%20V2?structure=UsersV2#Check_your_account_page
+# * HOWTO get your project id : look at the URL of your project when exploring it in the web ui and take the value after /project/ :
+# *         if URL = http://demo.cytomine.local/#/project/10359 then your project id = 10359
 # * HOWTO get your image instance id : look at the URL of your image when exploring it in the web ui and take the value after /image/ :
 # *         if URL = http://demo.cytomine.local/#/project/10359/image/10372 then your image instance id = 10372
+# * HOWTO get your annotation id : select your annotation using the web ui and click on "Copy URL". Then paste your URL in any document or browser and get the value after /annotation/:
+# *         if URL = http://demo.cytomine.local/#/project/10359/image/10372/annotation/11431 then your annotation id = 11431
 # * 
 # -----------------------------------------------------------------------------------------------------------
 # Import of all python necessary modules, including the Cytomine Python client
@@ -53,7 +64,7 @@ from argparse import ArgumentParser
 from cytomine import Cytomine
 from cytomine.models import TagDomainAssociation, Tag, TagCollection, Project, Annotation, ImageInstance
 # -----------------------------------------------------------------------------------------------------------
-__author__ = "Grégoire Vincke <gregoire.vincke@cytomine.coop> and Renaud Hoyoux <renaud.hoyoux@cytomine.coop>
+__author__ = "Grégoire Vincke <gregoire.vincke@cytomine.coop> and Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
 __maintainer__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
 __status__ = "Production"
 __copyright__ = "Apache 2 license. Made by Cytomine SCRLFS, Belgium, https://cytomine.coop/"
