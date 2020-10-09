@@ -19,9 +19,6 @@ See [documentation](http://doc.cytomine.be/display/ALGODOC/%5BDOC%5D+Data+access
 
 **To install *official* release of Cytomine-python-client, see @cytomine. Follow this guide to install forked version by ULiege.** 
 
-### Manual installation
-To download and install manually the package, see [manual installation procedure](http://doc.cytomine.be/display/ALGODOC/Data+access+using+Python+client#DataaccessusingPythonclient-Installation).
-
 ### Automatic installation
 To retrieve package using `pip`:
 
@@ -29,6 +26,16 @@ To retrieve package using `pip`:
     pip install cytomine-python-client
 
 See [package repository](https://packagecloud.io/cytomine-uliege/Cytomine-python-client) for details.
+
+### Manual installation
+To download and install manually the package in a Python env, run (here for version 2.7.3):
+
+    wget https://github.com/Cytomine-ULiege/Cytomine-python-client/releases/download/v2.7.3/Cytomine-Python-Client-2.7.3.zip 
+    unzip Cytomine-Python-Client-2.7.3.zip 
+    cd Cytomine-Python-Client-2.7.3
+    pip install .
+
+For more details and manual installation with Miniconda, see [manual installation procedure](http://doc.cytomine.be/display/ALGODOC/Data+access+using+Python+client#DataaccessusingPythonclient-Installation).
 
 ### In a Docker container
 To ease developpement of new Cytomine software, the Cytomine-python-client package is available in Docker containers:
