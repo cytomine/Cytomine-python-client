@@ -44,6 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--filepath', dest='filepath', help="The filepath (on your file system) of the file you want to upload")
     params, other = parser.parse_known_args(sys.argv[1:])
 # -----------------------------------------------------------------------------------------------------------
+# Upload the software
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key, verbose=logging.INFO) as cytomine:
         software = Software(name=params.software_name).upload(params.filepath)
 # -----------------------------------------------------------------------------------------------------------
