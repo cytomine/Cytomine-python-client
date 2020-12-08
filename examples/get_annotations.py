@@ -53,6 +53,7 @@ if __name__ == '__main__':
         annotations.showWKT = True
         annotations.showMeta = True
         annotations.showGIS = True
+        annotations.showTerm = True
         annotations.fetch()
         print(annotations)
 
