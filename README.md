@@ -22,6 +22,10 @@ See [documentation](http://doc.cytomine.be/display/ALGODOC/%5BDOC%5D+Data+access
 ### Automatic installation
 To retrieve package using `pip`:
 
+    pip install --extra-index-url=https://packagecloud.io/cytomine-uliege/Cytomine-python-client/pypi/simple cytomine-python-client
+    
+or, to add the extra index permanently to your `pip` configuration:
+
     curl -s https://packagecloud.io/install/repositories/cytomine-uliege/Cytomine-python-client/script.python.sh | bash
     pip install cytomine-python-client
 
