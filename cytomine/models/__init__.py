@@ -20,12 +20,12 @@ __copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.c
 
 from .model import Model, DomainModel
 from .collection import Collection, DomainCollection
-from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm
+from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm, AnnotationGroup, \
+    AnnotationGroupCollection, AnnotationLink, AnnotationLinkCollection
 from .image import AbstractImage, AbstractImageCollection, AbstractSlice, AbstractSliceCollection,\
     ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection, \
     ImageServer, ImageServerCollection
-#from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupImageInstance, ImageGroupImageInstanceCollection
-#from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupHDF5, ImageSequence, ImageSequenceCollection
+from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupImageInstance, ImageGroupImageInstanceCollection
 from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm
 from .project import Project, ProjectCollection, Discipline, DisciplineCollection
 from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description, \
