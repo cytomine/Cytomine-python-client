@@ -20,17 +20,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import re
 import sys
 from argparse import ArgumentParser
 
-import os
 
 from cytomine import Cytomine
-from cytomine.models import ImageSequence, ImageGroup
+from cytomine.models import ImageGroup, ImageGroupImageInstance
 from cytomine.models.image import ImageInstanceCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
+
+from models import ImageGroupCollection
 
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
@@ -53,36 +53,19 @@ if __name__ == '__main__':
         print(image_instances)
 
         # This script will create an image group from image instances in the specified project.
-        # The position of the image in the group is inferred from its filename.
-        # The following patterns are supported:
-        # For time: -t123 / -T123 / _t123 / _T123
-        # For channel: -c123 / -C123 / _c123 / _C123
-        # For z stack: -z123 / -Z123 / _z123 / _Z123
-        # Triplets (Z, C, T) must be unique.
+        group = ImageGroup(name=params.group_name, id_project=params.id_project).save()
 
-        # Examples:
-        # myfile-z1-c2-t3.png => image in position Z=1, C=2, T=3
-        # otherfile-c3.jpg => image in position Z=0, C=3, T=0
-
-        patterns = {
-            "z": re.compile("[-_]z[0-9]*"),
-            "c": re.compile("[-_]c[0-9]*"),
-            "t": re.compile("[-_]t[0-9]*")
-        }
-
-        group = ImageGroup(name=params.group_name, id_project=params.cytomine_id_project).save()
-
-        for image in image_instances:
+        # It adds the 3 first images of the project into the image group as example
+        for image in image_instances[:3]:
             print("Image ID: {} | Width: {} | Height: {} | Filename: {}".format(
                 image.id, image.width, image.height, image.filename))
 
-            sequence = {}
-            for dimension in ["z", "c", "t"]:
-                match = re.findall(patterns[dimension], image.instanceFilename.lower())
-                sequence[dimension] = match[0][2:] if len(match) > 0 and len(match[0]) > 2 else 0
+            igii = ImageGroupImageInstance(group.id, image.id).save()
+            print(igii)
 
-            print(sequence)
-            image_sequence = ImageSequence(group.id, image.id, z_stack=sequence["z"], channel=sequence["c"],
-                                           time=sequence["t"]).save()
-            print(image_sequence)
-
+        # We list all image groups in the project
+        image_groups = ImageGroupCollection().fetch_with_filter("project", params.id_project)
+        for image_group in image_groups:
+            print("Group {} has name {} and following images: ".format(image_group.id, image_group.name))
+            for image in ImageInstanceCollection().fetch_with_filter("imagegroup", image_group.id):
+                print(" * {}".format(image.filename))

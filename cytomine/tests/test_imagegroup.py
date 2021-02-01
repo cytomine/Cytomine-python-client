@@ -100,40 +100,40 @@ class TestImageGroupHDF5:
     #     assert (isinstance(imagegroupHDF5s, ImageGroupHDF5Collection))
 
 
-class TestImageSequence:
-    @pytest.mark.skip()
-    def test_image_sequence(self, connect, dataset):
-        channel = 10
-        image_sequence = ImageSequence(dataset["image_group"].id, dataset["image_instance"].id, 0, 0, 0, channel).save()
-        assert (isinstance(image_sequence, ImageSequence))
-        assert (image_sequence.channel == channel)
-
-        image_sequence = ImageSequence().fetch(image_sequence.id)
-        assert (isinstance(image_sequence, ImageSequence))
-        assert (image_sequence.channel == channel)
-
-        channel += 3
-        image_sequence.channel = channel
-        image_sequence.update()
-        assert (isinstance(image_sequence, ImageSequence))
-        assert (image_sequence.channel == channel)
-
-        # TODO: Cytomine-core delete image instance and abstract image in cascade !!
-        # image_sequence.delete()
-        # assert (not ImageSequence().fetch(image_sequence.id))
-
-    @pytest.mark.skip()
-    def test_image_sequences(self, connect, dataset):
-        image_sequences = ImageSequenceCollection()
-        image_sequences.append(ImageSequence(dataset["image_group2"].id, dataset["image_instance"].id, 0, 0, 0, 20))
-        assert (image_sequences.save())
-
-    @pytest.mark.skip()
-    def test_image_sequences_by_imagegroup(self, connect, dataset):
-        image_sequences = ImageSequenceCollection().fetch_with_filter("imagegroup", dataset["image_group"].id)
-        assert (isinstance(image_sequences, ImageSequenceCollection))
-
-    @pytest.mark.skip()
-    def test_image_sequences_by_imageinstance(self, connect, dataset):
-        image_sequences = ImageSequenceCollection().fetch_with_filter("imageinstance", dataset["image_instance"].id)
-        assert (isinstance(image_sequences, ImageSequenceCollection))
+# class TestImageSequence:
+#     @pytest.mark.skip()
+#     def test_image_sequence(self, connect, dataset):
+#         channel = 10
+#         image_sequence = ImageSequence(dataset["image_group"].id, dataset["image_instance"].id, 0, 0, 0, channel).save()
+#         assert (isinstance(image_sequence, ImageSequence))
+#         assert (image_sequence.channel == channel)
+#
+#         image_sequence = ImageSequence().fetch(image_sequence.id)
+#         assert (isinstance(image_sequence, ImageSequence))
+#         assert (image_sequence.channel == channel)
+#
+#         channel += 3
+#         image_sequence.channel = channel
+#         image_sequence.update()
+#         assert (isinstance(image_sequence, ImageSequence))
+#         assert (image_sequence.channel == channel)
+#
+#         # TODO: Cytomine-core delete image instance and abstract image in cascade !!
+#         # image_sequence.delete()
+#         # assert (not ImageSequence().fetch(image_sequence.id))
+#
+#     @pytest.mark.skip()
+#     def test_image_sequences(self, connect, dataset):
+#         image_sequences = ImageSequenceCollection()
+#         image_sequences.append(ImageSequence(dataset["image_group2"].id, dataset["image_instance"].id, 0, 0, 0, 20))
+#         assert (image_sequences.save())
+#
+#     @pytest.mark.skip()
+#     def test_image_sequences_by_imagegroup(self, connect, dataset):
+#         image_sequences = ImageSequenceCollection().fetch_with_filter("imagegroup", dataset["image_group"].id)
+#         assert (isinstance(image_sequences, ImageSequenceCollection))
+#
+#     @pytest.mark.skip()
+#     def test_image_sequences_by_imageinstance(self, connect, dataset):
+#         image_sequences = ImageSequenceCollection().fetch_with_filter("imageinstance", dataset["image_instance"].id)
+#         assert (isinstance(image_sequences, ImageSequenceCollection))

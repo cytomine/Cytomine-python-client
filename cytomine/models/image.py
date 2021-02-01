@@ -396,7 +396,7 @@ class ImageInstance(Model):
 class ImageInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(ImageInstanceCollection, self).__init__(ImageInstance, filters, max, offset)
-        self._allowed_filters = ["project"]  # "user"
+        self._allowed_filters = ["project", "imagegroup"]  # "user"
         self.set_parameters(parameters)
 
     def save(self, *args, **kwargs):

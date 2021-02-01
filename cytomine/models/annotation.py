@@ -243,6 +243,8 @@ class AnnotationCollection(Collection):
         self.showUser = None
         self.showImage = None
         self.showSlice = None
+        self.showImageGroup = None
+        self.showLink = None
         self.reviewed = None
         self.noTerm = None
         self.noAlgoTerm = None
@@ -268,6 +270,9 @@ class AnnotationCollection(Collection):
 
         self.track = None
         self.tracks = None
+
+        self.group = None
+        self.groups = None
 
         self.bbox = None
         self.bboxAnnotation = None
@@ -426,3 +431,71 @@ class AnnotationFilterCollection(Collection):
 
     def save(self, *args, **kwargs):
         raise NotImplementedError("Cannot save an annotation filter collection by client.")
+
+
+class AnnotationGroup(Model):
+    def __init__(self, id_project=None, id_image_group=None, type="SAME_OBJECT", **attributes):
+        super(AnnotationGroup, self).__init__()
+        self.project = id_project
+        self.imageGroup = id_image_group
+        self.type = type
+        self.populate(attributes)
+
+    def merge(self, id_other_annotation_group):
+        if self.id is None:
+            raise ValueError("Cannot merge an annotaiton group with no ID.")
+
+        return Cytomine.get_instance().post("annotationgroup/{}/annotationgroup/{}/merge.json".format(
+            self.id, id_other_annotation_group))
+
+
+class AnnotationGroupCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(AnnotationGroupCollection, self).__init__(AnnotationGroup, filters, max, offset)
+        self._allowed_filters = ["project", "imagegroup"]
+        self.set_parameters(parameters)
+
+
+class AnnotationLink(Model):
+    def __init__(self, annotation_class_name=None, id_annotation=None, id_annotation_group=None, **attributes):
+        super(AnnotationLink, self).__init__()
+        self.annotationClassName = annotation_class_name
+        self.annotationIdent = id_annotation
+        self.group = id_annotation_group
+        self.populate(attributes)
+
+    def uri(self):
+        if self.is_new():
+            return "{}.json".format(self.callback_identifier)
+        else:
+            return "annotationgroup/{}/annotation/{}.json".format(self.group, self.annotationIdent)
+
+    def fetch(self, id_annotation=None, id_annotation_group=None):
+        self.id = -1
+
+        if self.annotationIdent is None and id_annotation is None:
+            raise ValueError("Cannot fetch a model with no annotation ID.")
+        elif self.group is None and id_annotation_group is None:
+            raise ValueError("Cannot fetch a model with no annotation group ID.")
+
+        if id_annotation is not None:
+            self.annotationIdent = id_annotation
+
+        if id_annotation_group is not None:
+            self.group = id_annotation_group
+
+        return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+    def update(self, *args, **kwargs):
+        raise NotImplementedError("Cannot update an annotation link.")
+
+    def __str__(self):
+        return "[{}] Annotation {} - Annotation group {}".format(self.callback_identifier, self.annotationIdent,
+                                                                 self.group)
+
+
+class AnnotationLinkCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(AnnotationLinkCollection, self).__init__(AnnotationLink, filters, max, offset)
+        self._allowed_filters = ["annotationgroup", "annotation"]
+        self.set_parameters(parameters)
