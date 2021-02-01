@@ -27,7 +27,14 @@ from cytomine.models import Software, SoftwareParameter, SoftwareCollection, Sof
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
 
-def read_descriptor(filename, schema_version="cytomine-0.1"):
+def _format_type(type):
+    if type.lower() == "listdomain":
+        return "ListDomain"
+    else:
+        return type.lower().capitalize()
+
+
+def read_descriptor(filename, schema_version="cytomine-0.1", delete_missing=False):
     """
     Read a software descriptor and add a not executable version of it to Cytomine.
     It should be used only for software development or testing purpose.
@@ -45,6 +52,8 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
         The descriptor file path.
     schema_version: String
         The version of descriptor schema.
+    delete_missing: Bool
+        If set to True, deletes the registered parameters missing from the descriptor file.
 
     Returns
     -------
@@ -66,6 +75,7 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
             software = existing_software[0]
 
         existing_software_parameters = SoftwareParameterCollection().fetch_with_filter("software", software.id)
+        processed_parameters = set()
 
         for parameter_descriptor in descriptor["inputs"]:
             if "id" not in parameter_descriptor.keys():
@@ -87,13 +97,9 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
                          .replace("@id", parameter_descriptor["id"].lower()) if isinstance(v, str) else v
                      for k, v in parameter_descriptor.items()}
 
-            type = param["type"].lower().capitalize()
-            if type == 'Listdomain':
-                type = 'ListDomain'
-
             sp = SoftwareParameter(
                 name=param["id"],
-                type=type,
+                type=_format_type(param["type"]),
                 id_software=software.id,
                 default_value=(param["default-value"] if "default-value" in param.keys() else ""),
                 required=(not param["optional"] if "optional" in param.keys() else False),
@@ -112,6 +118,13 @@ def read_descriptor(filename, schema_version="cytomine-0.1"):
                 sp.save()
             else:
                 sp.update(existing_software_parameter[0].id)
+
+            processed_parameters.add(param["id"])
+
+        if delete_missing:
+            for parameter in existing_software_parameters:
+                if parameter.name not in processed_parameters:
+                    parameter.delete()
 
         return software
 
