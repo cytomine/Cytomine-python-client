@@ -53,11 +53,12 @@ if __name__ == '__main__':
         annotations.showWKT = True
         annotations.showMeta = True
         annotations.showGIS = True
+        annotations.showTerm = True
         annotations.fetch()
         print(annotations)
 
         if params.download_path:
-            f= open(params.download_path+".csv","w+")
+            f= open(params.download_path+"/"+params.id_project+".csv","w+")
             f.write("ID;Image;Project;Term;User;Area;Perimeter;WKT \n")
             for annotation in annotations:
                 f.write("{};{};{};{};{};{};{};{}\n".format(annotation.id,annotation.image,annotation.project,annotation.term,annotation.user,annotation.area,annotation.perimeter,annotation.location))
