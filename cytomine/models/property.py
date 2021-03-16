@@ -134,9 +134,14 @@ class AttachedFile(DomainModel):
         return self.upload()
 
     def upload(self):
-        return Cytomine.get_instance().upload_file(self, self.file, uri='attachedfile.json',
+        if self.file:
+            return Cytomine.get_instance().upload_file(self, self.file, uri='attachedfile.json',
                                                     query_parameters={"domainClassName": self.domainClassName,
                                                     "domainIdent": self.domainIdent, "filename":self.filename})
+        else:
+            return Cytomine.get_instance().upload_file(self, self.filename,
+                                                    query_parameters={"domainClassName": self.domainClassName,
+                                                    "domainIdent": self.domainIdent})
 
     def download(self, destination="{filename}", override=False):
         if self.is_new():
