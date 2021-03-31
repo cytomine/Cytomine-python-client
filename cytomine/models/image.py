@@ -293,7 +293,8 @@ class ImageInstance(Model):
             return np.asarray([[data["profile"]]])
 
     def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
-               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, projection=None):
+               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, projection=None,
+               max_size=None, zoom=None):
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -330,6 +331,10 @@ class ImageInstance(Model):
             If mask=True or alpha=True, use the annotations without simplification for masking
         projection: string, optional
             For 3D image with a profile, get the given projection (min, max, average)
+        max_size : int, optional
+            Maximum size (width or height) of returned image. None to get original size.
+        zoom : int, optional
+            Optional image zoom number
 
         Returns
         -------
@@ -384,7 +389,9 @@ class ImageInstance(Model):
             "mask": mask,
             "alphaMask": alphamask,
             "complete": complete,
-            "projection": projection
+            "projection": projection,
+            "zoom": zoom,
+            "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
         }
 
         file_path = os.path.join(destination, "{}.{}".format(filename, extension))
@@ -480,7 +487,7 @@ class SliceInstance(Model):
         return True
 
     def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
-               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True):
+               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, max_size=None, zoom=None):
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -515,6 +522,10 @@ class SliceInstance(Model):
             If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking. Ignored if 'annotations' is used.
         complete : bool, optional. Default: True
             If mask=True or alpha=True, use the annotations without simplification for masking
+        max_size : int, optional
+            Maximum size (width or height) of returned image. None to get original size.
+        zoom : int, optional
+            Optional image zoom number
 
         Returns
         -------
@@ -568,7 +579,9 @@ class SliceInstance(Model):
             "bits": bits,
             "mask": mask,
             "alphaMask": alphamask,
-            "complete": complete
+            "complete": complete,
+            "zoom": zoom,
+            "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
         }
 
         file_path = os.path.join(destination, "{}.{}".format(filename, extension))
