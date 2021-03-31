@@ -89,7 +89,8 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
     if set_folder is not None:
         base_path = os.path.join(base_path, set_folder)
 
-    makedirs(base_path)
+    if base_path:
+        makedirs(base_path)
 
     # fetch annotations
     filter_projects = parse_domain_list(args.cytomine_id_projects)

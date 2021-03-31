@@ -6,7 +6,7 @@ future==0.17.1
 idna==2.8
 importlib-metadata==1.4.0
 msgpack==0.6.0
-numpy==1.16.0
+numpy>=1.16.0
 opencv-python-headless==4.0.0.21
 Pillow==5.4.1
 pytest==4.6.9

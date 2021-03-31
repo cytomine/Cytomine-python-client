@@ -359,7 +359,7 @@ class ImageInstance(Model):
         if extension not in ("jpg", "png", "tif", "tiff"):
             extension = "jpg"
 
-        if not os.path.exists(destination):
+        if destination and not os.path.exists(destination):
             os.makedirs(destination)
 
         if alpha is None:
@@ -550,7 +550,7 @@ class SliceInstance(Model):
         if extension not in ("jpg", "png", "tif", "tiff"):
             extension = "jpg"
 
-        if not os.path.exists(destination):
+        if destination and not os.path.exists(destination):
             os.makedirs(destination)
 
         if alpha is None:

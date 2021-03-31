@@ -49,7 +49,8 @@ def generic_image_dump(dest_pattern, model, url_fn, override=True, check_extensi
         if check_extension and extension not in ("jpg", "png", "tif", "tiff"):
             extension = "jpg"
 
-        makedirs(destination, exist_ok=True)
+        if destination:
+            makedirs(destination, exist_ok=True)
         files_to_download.append(os.path.join(destination, "{}.{}".format(filename, extension)))
 
     if len(files_to_download) == 0:
