@@ -1,0 +1,38 @@
+version: "3.4"
+services:
+
+  nginx:
+    image: cytomine/nginx:v1.3.1
+    container_name: nginxTest
+    hostname: nginxTest
+    ports: [ "80:80" ]
+    restart: unless-stopped
+    volumes:
+      - "${PWD}/scripts/config/nginx/nginxCORS.conf:/usr/local/nginx/conf/nginx.conf"
+    links:
+      - "core:core"
+
+  core:
+    image: cytomine/core:v3.0.4
+    restart: unless-stopped
+    ports: [ "8090:8080" ]
+    volumes:
+      - "${PWD}/scripts/config/cytomineconfig.groovy:/usr/share/tomcat7/.grails/cytomineconfig.groovy"
+      - "${PWD}/scripts/config/addHosts.sh:/tmp/addHosts.sh"
+    links:
+      - "postgresql:postgresql"
+      - "mongodb:mongodb"
+      - "rabbitmq:rabbitmq"
+
+  postgresql:
+    image: cytomine/postgis:v2.0.0
+    restart: unless-stopped
+
+  mongodb:
+    image: cytomine/mongodb:v1.1.2
+    restart: unless-stopped
+
+  rabbitmq:
+    image: cytomine/rabbitmq:v1.1.2
+    ports: [ "5672:5672", "15672:15672" ]
+    restart: unless-stopped
