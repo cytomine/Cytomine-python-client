@@ -7,7 +7,7 @@ srcRoot=$(git rev-parse --show-toplevel)
 cd $srcRoot
 
 # get version number from git
-gitLongTag=$(git describe --long --dirty)
+gitLongTag=$(git describe --long --dirty --tags)
 # get the branch name from first arg or from git
 branchName=${1:-$(git rev-parse --abbrev-ref HEAD)}
 
