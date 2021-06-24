@@ -22,7 +22,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 
 setup(
     name='Cytomine Python Client',
-    version='2.2.1',
+    version='2.2.2',
     description='Python client to interact with Cytomine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
