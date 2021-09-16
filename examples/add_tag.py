@@ -28,6 +28,10 @@ from cytomine.models import ImageInstance, Tag, TagDomainAssociation, TagDomainA
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -45,8 +49,7 @@ if __name__ == '__main__':
                         help="The tag that will be added to the image")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         image = ImageInstance().fetch(params.id_image_instance)
         tag = Tag().fetch(params.id_tag)
 

@@ -33,6 +33,10 @@ from cytomine.utilities import CytomineReader
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -49,8 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--zoom', help="Zoom at which tiles are extracted", default=None)
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         image_instance = ImageInstance().fetch(params.id_image_instance)
         print(image_instance)
 

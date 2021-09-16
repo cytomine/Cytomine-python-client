@@ -33,6 +33,10 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 # This example script allows you to get the list of images (metadata) in a given project.
 # If a download path is provided, it downloads all original images like they have been uploaded to Cytomine.
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -54,8 +58,7 @@ if __name__ == '__main__':
 
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         # We want all image instances in a given project.
         # => Fetch the collection of image instances, filtered by the given project.

@@ -29,6 +29,11 @@ from models import TermCollection
 
 
 # This example script allows you to get the list of terms (labels) in a project.
+
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -46,8 +51,7 @@ if __name__ == '__main__':
 
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         terms = TermCollection().fetch_with_filter("project", params.id_project)
         for term in terms:

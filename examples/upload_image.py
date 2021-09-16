@@ -30,6 +30,10 @@ from cytomine.models import StorageCollection, Project, UploadedFile
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -48,8 +52,7 @@ if __name__ == '__main__':
                         help="The filepath (on your file system) of the file you want to upload")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         # Check that the file exists on your file system
         if not os.path.exists(params.filepath):

@@ -38,6 +38,10 @@ def get_by_id(haystack, needle):
     return next((item for item in haystack if item.id == needle), None)
 
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -64,8 +68,7 @@ if __name__ == '__main__':
 
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         if params.opencv:
             image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)

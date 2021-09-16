@@ -29,6 +29,10 @@ from cytomine import Cytomine
 from cytomine.models import Annotation, AnnotationCollection, \
     ImageGroupImageInstanceCollection, AnnotationGroup, AnnotationLink
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -48,8 +52,7 @@ if __name__ == '__main__':
                         help="The image to which the linked annotation will be added"),
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         # Sanity check: the 2 images must be in the same image group.
         igii1 = ImageGroupImageInstanceCollection().fetch_with_filter("imageinstance", params.id_image_instance1)
