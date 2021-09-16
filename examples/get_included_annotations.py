@@ -28,6 +28,10 @@ from cytomine.models import AnnotationCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -46,8 +50,7 @@ if __name__ == '__main__':
                         help="The term that represents objects")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         roi_annotations = AnnotationCollection()
         roi_annotations.image = params.id_image_instance
         roi_annotations.term = params.id_roi_term

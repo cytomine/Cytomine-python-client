@@ -28,6 +28,10 @@ from cytomine.models import Property, Project, Annotation, ImageInstance
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -50,8 +54,7 @@ if __name__ == '__main__':
                         help="The annotation to which the property will be added (optional)")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         if params.id_project:
             prop = Property(Project().fetch(params.id_project), key=params.key, value=params.value).save()

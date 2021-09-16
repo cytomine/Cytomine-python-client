@@ -30,6 +30,13 @@ from cytomine.models.image import ImageInstanceCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+# This example script allows you to get the list of images (metadata) in a given project.
+# If a download path is provided, it downloads all original images like they have been uploaded to Cytomine.
+
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -50,8 +57,7 @@ if __name__ == '__main__':
         original_path = os.path.join(params.download_path, "original")
         dump_path = os.path.join(params.download_path, "dump")
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
         print(image_instances)
 

@@ -28,6 +28,10 @@ from cytomine.models.ontology import Ontology, Term, RelationTerm, TermCollectio
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -41,8 +45,7 @@ if __name__ == '__main__':
 
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         """
         We will create a new ontology with the following structure:
         _MY_ONTOLOGY_NAME_

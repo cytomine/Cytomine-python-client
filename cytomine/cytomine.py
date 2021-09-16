@@ -41,7 +41,6 @@ from argparse import ArgumentParser
 from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 from requests_toolbelt.utils import dump
-from logging import StreamHandler, Formatter
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>", "Burtin Elodie <elodie.burtin@cytomine.coop"]
@@ -118,13 +117,6 @@ def deprecated(func):
     return new_func
 
 
-class StdoutHandler(StreamHandler):
-    def __init__(self):
-        super(StreamHandler, self).__init__()
-        self.stream = sys.stdout
-        self.setFormatter(Formatter("[%(asctime)s][%(levelname)s] %(message)s"))
-
-
 def read_response_message(response, key='message', encoding="utf-8"):
     content = response.content.decode(encoding)
     try:
@@ -136,8 +128,9 @@ def read_response_message(response, key='message', encoding="utf-8"):
 class Cytomine(object):
     __instance = None
 
-    def __init__(self, host, public_key, private_key, verbose=None, use_cache=True, protocol=None,
-                 logging_handlers=None, working_path="/tmp", **kwargs):
+    def __init__(self, host, public_key, private_key, verbose=None,
+                 use_cache=True, protocol=None, working_path="/tmp",
+                 configure_logging=True, **kwargs):
         """
         Initialize the Cytomine Python client which is a singleton.
 
@@ -149,14 +142,19 @@ class Cytomine(object):
             The Cytomine public key.
         private_key : str
             The Cytomine private key.
-        verbose : int
-            The verbosity level of the client.
+        verbose : int or str (optional)
+            The verbosity level of the client as a valid Python logging level.
         use_cache : bool
             True to use HTTP cache, False otherwise.
-        protocol : str ("http", "https", "http://", "https://")
+        protocol : str ("http", "https", "http://", "https://") (optional)
             The default protocol - used only if the host value does not specify one
         working_path : str
             Deprecated. Only for backwards compatibility.
+        configure_logging : bool
+            Whether the Cytomine Python Client has to configure logging (with
+            `basicConfig`) if the root logger has no handler already configured.
+            Default value is True to mimic backwards compatibility.
+            Starting v3.x, default value should be set to False.
         kwargs : dict
             Deprecated arguments.
         """
@@ -167,19 +165,35 @@ class Cytomine(object):
         self._use_cache = use_cache
         self._base_path = "/api/"
 
-        self._logger = logging.getLogger()
-        self._logger.handlers = []
+        if configure_logging:
+            logging.basicConfig(
+                stream=sys.stdout,
+                format="[%(asctime)s][%(levelname)s] %(message)s"
+            )
 
-        if not verbose:
-            verbose = logging.INFO
-        self._verbose = verbose
-        self._logger.setLevel(verbose)
+        self._logger = logging.getLogger("cytomine.client")
 
-        logging_handlers = logging_handlers if logging_handlers is not None else [StdoutHandler()]
-        for handler in logging_handlers:
-            self._logger.addHandler(handler)
+        # Deprecated adding of logging handlers - To be removed in next major release
+        logging_handlers = kwargs.get('logging_handlers', None)
+        if logging_handlers:
+            for handler in logging_handlers:
+                self._logger.addHandler(handler)
+        # ---
 
-        if verbose == logging.DEBUG:
+        if not verbose and self._logger.level == logging.NOTSET:
+            # Here for backwards compatibility, but the logging level should be
+            # set by the application and not this low-level library.
+            log_level = logging.INFO
+        elif type(verbose) is str:
+            log_level = logging.getLevelName(verbose)
+        elif verbose is None:
+            log_level = self._logger.level
+        else:
+            log_level = verbose
+        self._verbose = log_level
+        self._logger.setLevel(log_level)
+
+        if log_level == logging.DEBUG:
             try:
                 import http.client as http_client
             except ImportError:
@@ -187,11 +201,8 @@ class Cytomine(object):
                 import httplib as http_client
 
             http_client.HTTPConnection.debuglevel = 1
-            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log = logging.getLogger("urllib3")
             requests_log.setLevel(logging.DEBUG)
-            requests_log.propagate = True
-            for handler in logging_handlers:
-                requests_log.addHandler(handler)
 
         # Deprecated
         self._working_path = working_path
