@@ -114,6 +114,13 @@ class Collection(MutableSequence):
         self.offset = max(0, self.offset - self.max)
         return self._fetch()
 
+    def _upload_fn(self, collection):
+        if not isinstance(collection, Collection):
+            _tmp = self.__class__(model=self._model)
+            _tmp.extend(collection)
+            collection = _tmp
+        return Cytomine.get_instance().post_collection(collection)
+
     def save(self, chunk=15, n_workers=0):
         """
         chunk: int|None
@@ -124,18 +131,13 @@ class Collection(MutableSequence):
         if chunk is None:
             return Cytomine.get_instance().post_collection(self)
         elif isinstance(chunk, int):
-            def upload_fn(collection):
-                if not isinstance(collection, Collection):
-                    _tmp = self.__class__(self._model)
-                    _tmp.extend(collection)
-                    collection = _tmp
-                return Cytomine.get_instance().post_collection(collection)
+            upload_fn = self._upload_fn
             results = generic_chunk_parallel(self, worker_fn=upload_fn, chunk_size=chunk, n_workers=n_workers)
             added, failed = list(), list()
             for (start, end), success in results:
                 (added if success else failed).extend(self[start:end])
             if len(added) != len(self):
-                raise CollectionPartialUploadException("Some annotations could not be uploaded", created=added, failed=failed)
+                raise CollectionPartialUploadException("Some items could not be uploaded", created=added, failed=failed)
             return True
         else:
             raise ValueError("Invalid value '{}' for chunk parameter.".format(chunk))
@@ -299,3 +301,10 @@ class DomainCollection(Collection):
         self._object = value
         self._domainClassName = value.class_
         self._domainIdent = value.id
+
+    def _upload_fn(self, collection):
+        if not isinstance(collection, Collection):
+            _tmp = self.__class__(model=self._model, object=self._obj)
+            _tmp.extend(collection)
+            collection = _tmp
+        return Cytomine.get_instance().post_collection(collection)
