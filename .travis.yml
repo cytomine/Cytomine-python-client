@@ -23,7 +23,7 @@ env:
 install:
   - >
     if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then
-      pip install -r requirements-2.7.txt ;
+      pip install -r requirements-py2.7.txt ;
     else
       pip install -r requirements.txt ;
     fi
