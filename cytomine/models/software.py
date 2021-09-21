@@ -187,7 +187,7 @@ class Job(Model):
         self.userJob = None
         self.jobParameters = None
         self.populate(attributes)
-        
+
     def execute(self):
         if self.is_new():
             raise ValueError("Cannot execute job if no ID was provided.")

@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 
 from argparse import ArgumentParser
 import logging
-import distutils.util
 
 from cytomine.cytomine import Cytomine, _cytomine_parameter_name_synonyms
 from cytomine.models.project import Project
