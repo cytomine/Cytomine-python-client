@@ -85,14 +85,20 @@ if __name__ == '__main__':
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key, verbose=logging.INFO) as cytomine:
         # Fetch all tags already existing in this Cytomine instance
         tags = TagCollection().fetch()
+        inCollection=False
         # Add the tag to Cytomine only if it do not yet exist, and if exist, select it
         for t in tags:
             if t.name == params.tag :
-                print("Tag already in collection")
-                tag = t
-            else:
-                tag = Tag(params.tag).save()
-    # Add the tag to the mentioned domain 
+                inCollection = True
+                break    # break here as we only need to know that this proposed tag is already in the list, and as we need t to be this tag
+                
+        if inCollection == True:
+            print("Tag already in collection")
+            tag = t
+        else:
+            tag = Tag(params.tag).save()
+
+        # Add the tag to the mentioned domain 
         if params.id_project:
             association = TagDomainAssociation(Project().fetch(params.id_project), tag.id).save()
             print(association)
