@@ -21,7 +21,12 @@ env:
     - secure: "HlLEI3l37JxT0KWhmIyBaw1dmfmB0b1Dz1yFNP83IZuHFDumb33XG74lTkZpcoL16y5dogqFDgYkiCH6R5cBC7GS/OS+xD1aDPodFqEdjTqCMZRZsK5eTG0xW2Bs0nuu9igKos9yMM3/HE+bfKRZ+Qt8Ke+/0xcWvEfk1JRdAvuW/sRWnyADnZ4ScoxJl74cVoYHxu3cu47WvecHn4w9hFeHzBWQI7rihexjBWTQoovc9vP6B/camtCAo/++aXxn13hsJAlhvEhuJ3JnDLzXi5FCi69FKblbkB/7tz5U4hSRdg56pPwsu5cKMWCptAlehs6L+eH6UXJi8zioqm/AThe9nweTk/G/9Q7JSY14Fnkmgmp0tMcFLyh+SR2ntsDs/HqPQsZszvBijFaIueYutas6wzjVwT/Z5SriwU7DjXx1G30XMT+e14or3xC1LupERapnW1X9wk05d2SHfk5S/YAI9C+bUFm7gPGetMm80eUtru082ITEzTiGtJowFnvyszWz8rpTqbop5ggqgGIH6C7094Cp+/xDUaWTKfuInyKoF1Nx36/qfOqMlHbgFoHp9U7eedkZ/H2u5/nK9BW+4pPRHpyLJHmVffByyYMM7Ys8JcP/hF7qN8ziuETaxdRb+yHnR5mg7I5Xh1JRt9eQV2vxviDiZtZ9noAW7Q3XNvc="
 
 install:
-  - pip install -r requirements.txt
+  - >
+    if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then
+      pip install -r requirements-2.7.txt ;
+    else
+      pip install -r requirements.txt ;
+    fi
   - pip install wheel
 
 script:
