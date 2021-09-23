@@ -25,7 +25,7 @@ pillow_version_constraint = ',<7.0.0' if sys.version_info.major < 3 else ''
 
 setup(
     name='Cytomine-Python-Client',
-    version='2.8.2',
+    version='2.8.3',
     description='Python client to interact with Cytomine.',
     long_description=long_description,
     long_description_content_type="text/markdown",
