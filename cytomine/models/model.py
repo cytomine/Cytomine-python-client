@@ -50,8 +50,10 @@ class Model(object):
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
     def save(self):
-        self.id = None
-        return Cytomine.get_instance().post_model(self)
+        if self.id is None:
+            return Cytomine.get_instance().post_model(self)
+        else:
+            return self.update()
 
     def delete(self, id=None):
         if self.id is None and id is None:

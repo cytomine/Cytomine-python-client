@@ -25,6 +25,9 @@ from argparse import ArgumentParser
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
 
 if __name__ == '__main__':
     from cytomine import Cytomine
@@ -41,8 +44,7 @@ if __name__ == '__main__':
                         help="The Cytomine private key")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         # Get the list of existing users
         users = UserCollection().fetch()
         print(users)

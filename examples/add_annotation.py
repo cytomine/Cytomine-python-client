@@ -30,6 +30,10 @@ from cytomine.models import Property, Annotation, AnnotationTerm, AnnotationColl
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -49,8 +53,7 @@ if __name__ == '__main__':
                         help="The term to associate to the annotations (optional)")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
 
         # We first add a point in (10,10) where (0,0) is bottom-left corner
         point = Point(10, 10)
