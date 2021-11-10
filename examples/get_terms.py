@@ -25,7 +25,7 @@ from argparse import ArgumentParser
 
 
 from cytomine import Cytomine
-from models import TermCollection
+from cytomine.models import TermCollection
 
 
 # This example script allows you to get the list of terms (labels) in a project.
