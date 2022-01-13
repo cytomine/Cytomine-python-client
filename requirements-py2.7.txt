@@ -20,7 +20,7 @@ numpy==1.16.6
     # via Cytomine-Python-Client (setup.py)
 opencv-python-headless==4.2.0.32
     # via Cytomine-Python-Client (setup.py)
-pillow==6.2.2
+pillow==9.0.0
     # via Cytomine-Python-Client (setup.py)
 requests-toolbelt==0.9.1
     # via Cytomine-Python-Client (setup.py)
