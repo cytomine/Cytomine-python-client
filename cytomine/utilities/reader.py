@@ -261,12 +261,6 @@ class CytomineReader(object):
         self.window_position.x = int(max(0, new_x_middle - half_width) / self.whole_slide.tile_size) * self.whole_slide.tile_size
         self.window_position.y = int(max(0, new_y_middle - half_height) / self.whole_slide.tile_size) * self.whole_slide.tile_size
 
-    def convert_to_real_coordinates(self, components):
-        return self.whole_slide.convert_to_real_coordinates(components, self.window_position, self.zoom)
-
-    def convert_to_local_coordinates(self, components):
-        return self.whole_slide.convert_to_local_coordinates(components, self.window_position, self.zoom)
-
     # Deprecated method names. Keep for backwards compatibility.
     inc_zoom = increase_zoom
     dec_zoom = decrease_zoom

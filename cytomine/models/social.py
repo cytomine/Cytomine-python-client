@@ -32,10 +32,12 @@ class Position(Model):
         super(Position, self).__init__()
         self.user = None
         self.image = None
+        self.slice = None
         self.project = None
-        self.session = None
+        self.broadcast = None
         self.location = None
         self.zoom = None
+        self.rotation = None
         self.x = None
         self.y = None
 
@@ -52,7 +54,7 @@ class Position(Model):
 class PositionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super(PositionCollection, self).__init__(Position, filters, max, offset)
-        self._allowed_filters = ["imageinstance"]
+        self._allowed_filters = ["imageinstance", "sliceinstance"]
 
         self.user = None
         self.afterThan = None
@@ -60,16 +62,12 @@ class PositionCollection(Collection):
         self.showDetails = True
         self.set_parameters(parameters)
 
-    @property
-    def callback_identifier(self):
-        return "positions"
-
-
 class AnnotationAction(Model):
     def __init__(self):
         super(AnnotationAction, self).__init__()
         self.user = None
         self.image = None
+        self.slice = None
         self.project = None
         self.annotationClassName = None
         self.annotationIdent = None
@@ -85,10 +83,6 @@ class AnnotationAction(Model):
     def update(self, *args, **kwargs):
         raise NotImplementedError("Cannot update an annotation action.")
 
-    @property
-    def callback_identifier(self):
-        return "annotation_action"
-
 
 class AnnotationActionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -100,6 +94,3 @@ class AnnotationActionCollection(Collection):
         self.beforeThan = None
         self.set_parameters(parameters)
 
-    @property
-    def callback_identifier(self):
-        return "annotation_action"

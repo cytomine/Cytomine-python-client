@@ -21,11 +21,15 @@ __copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.c
 from .model import Model, DomainModel
 from .collection import Collection, DomainCollection
 from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm
-from .image import AbstractImage, AbstractImageCollection, ImageInstance, ImageInstanceCollection
-from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupHDF5, ImageSequence, ImageSequenceCollection
+from .image import AbstractImage, AbstractImageCollection, AbstractSlice, AbstractSliceCollection,\
+    ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection
+#from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupImageInstance, ImageGroupImageInstanceCollection
+#from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupHDF5, ImageSequence, ImageSequenceCollection
 from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm
 from .project import Project, ProjectCollection, Discipline, DisciplineCollection
-from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description, Tag, TagCollection, TagDomainAssociation, TagDomainAssociationCollection
+from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description, \
+    Tag, TagCollection, TagDomainAssociation, TagDomainAssociationCollection
+from .track import Track, TrackCollection, AnnotationTrack
 from .social import AnnotationAction, AnnotationActionCollection, Position, PositionCollection
 from .software import Software, SoftwareCollection, SoftwareParameter, SoftwareParameterCollection, \
     SoftwareProject, SoftwareProjectCollection, Job, JobCollection, JobParameter, \

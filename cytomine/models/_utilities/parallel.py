@@ -134,11 +134,12 @@ def generic_download(data, download_instance_fn, n_workers=0):
 
 def makedirs(path, exist_ok=True):
     """Python 2.7 compatinle"""
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if not (exist_ok and e.errno == errno.EEXIST):
-            raise  # Reraise if failed for reasons other than existing already
+    if path:
+        try:
+            os.makedirs(path)
+        except OSError as e:
+            if not (exist_ok and e.errno == errno.EEXIST):
+                raise  # Reraise if failed for reasons other than existing already
 
 
 

@@ -187,7 +187,7 @@ class Job(Model):
         self.userJob = None
         self.jobParameters = None
         self.populate(attributes)
-        
+
     def execute(self):
         if self.is_new():
             raise ValueError("Cannot execute job if no ID was provided.")
@@ -212,7 +212,7 @@ class Job(Model):
                 job_id=self.id,
                 statusComment=attributes.get("statusComment", self.statusComment),
                 status=_HUMAN_READABLE_JOB_STATUS[attributes.get("status", self.status)],
-                progress=attributes.get("progess", self.progress)
+                progress=attributes.get("progress", self.progress)
             )
         )
         return super(Job, self).update(id=id, **attributes)
