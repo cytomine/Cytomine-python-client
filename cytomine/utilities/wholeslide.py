@@ -30,16 +30,16 @@ import random
 class WholeSlide(object):
     def __init__(self, image, tile_size=256):
         self.image = image
-        self.depth = image.depth
+        self.depth = image.zoom if image.zoom is not None else image.depth
         self.width = image.width
         self.height = image.height
         self.server_urls = image.image_servers()
-        self.mime = image.mime
+        self.mime = image.reference_slice().mime
         self.tile_size = tile_size
         self.num_tiles = 0
         self.levels = []
 
-        for i in range(self.depth):
+        for i in range(self.depth + 1):
             level_width = int(self.width / 2 ** i)
             level_height = int(self.height / 2 ** i)
             x_tiles = int(math.ceil(float(level_width) / (float(tile_size))))

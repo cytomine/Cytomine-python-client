@@ -27,18 +27,21 @@ import os
 import re
 
 from cytomine.cytomine import Cytomine
-from cytomine.models.collection import Collection
+from cytomine.models.collection import Collection, CollectionPartialUploadException
 from cytomine.models.model import Model
 from ._utilities import generic_image_dump, generic_download, is_false
 
 
 class Annotation(Model):
-    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, **attributes):
+    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, id_slice=None,
+                 **attributes):
         super(Annotation, self).__init__()
         self.location = location
         self.image = id_image
+        self.slice = id_slice
         self.project = id_project
         self.term = id_terms
+        self.track = id_tracks
         self.geometryCompression = None
         self.area = None
         self.areaUnit = None
@@ -70,7 +73,7 @@ class Annotation(Model):
         ----------
         dest_pattern : str, optional
             Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            if it exists. The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         mask : bool, optional
@@ -140,6 +143,53 @@ class Annotation(Model):
 
         return True
 
+    def profile(self):
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        data = Cytomine.get_instance().get("{}/{}/profile.json".format(self.callback_identifier, self.id))
+        return data['collection'] if "collection" in data else data
+
+    def profile_projections(self, axis=None, csv=False, csv_dest_pattern="projections-annotation-{id}.csv"):
+        """
+        Get profile projections (min, max, average) for the given annotation.
+
+        Parameters
+        ----------
+        axis The axis along which the projections (min, max, average) are performed. By default last axis is used.
+        To project along spatial X, Y axes, use special value "xy" or "spatial".
+        csv True to return result in a CSV file.
+        csv_dest_pattern The CSV destination pattern.
+
+        """
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        uri = "{}/{}/profile/projections.{}".format(self.callback_identifier, self.id, "csv" if csv else "json")
+        if csv:
+            pattern = re.compile("{(.*?)}")
+            destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), csv_dest_pattern)
+
+            return Cytomine.get_instance().download_file(uri, destination, payload={"axis": axis})
+
+        data = Cytomine.get_instance().get(uri, {"axis": axis})
+        return data['collection'] if "collection" in data else data
+
+    def profile_projection(self, projection='max',  dest_pattern="{id}.png", override=True):
+        if self.id is None:
+            raise ValueError("Cannot review an annotation with no ID.")
+
+        def dump_url_fn(model, file_path, **kwargs):
+            extension = os.path.basename(file_path).split(".")[-1]
+            return "{}/{}/profile/{}-projection.{}".format(self.callback_identifier, model.id, projection, extension)
+
+        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
+
+        if len(files) == 0:
+            return False
+
+        return True
+
     """
     Deprecated functions. Still here for backwards compatibility.
     """
@@ -188,9 +238,13 @@ class AnnotationCollection(Collection):
         self.showWKT = None
         self.showGIS = None
         self.showTerm = None
+        self.showTrack = None
         self.showAlgo = None
         self.showUser = None
         self.showImage = None
+        self.showSlice = None
+        self.showImageGroup = None
+        self.showLink = None
         self.reviewed = None
         self.noTerm = None
         self.noAlgoTerm = None
@@ -205,11 +259,20 @@ class AnnotationCollection(Collection):
         self.image = None
         self.images = None
 
+        self.slice = None
+        self.slices = None
+
         self.term = None
         self.terms = None
         self.suggestedTerm = None
         self.userForTermAlgo = None
         self.jobForTermAlgo = None
+
+        self.track = None
+        self.tracks = None
+
+        self.group = None
+        self.groups = None
 
         self.bbox = None
         self.bboxAnnotation = None
@@ -368,3 +431,4 @@ class AnnotationFilterCollection(Collection):
 
     def save(self, *args, **kwargs):
         raise NotImplementedError("Cannot save an annotation filter collection by client.")
+
