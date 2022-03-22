@@ -54,6 +54,7 @@ def connect(request):
                          request.config.getoption("--public_key"),
                          request.config.getoption("--private_key"),
                          logging.DEBUG)
+    c.wait_to_accept_connection()
     c.open_admin_session()
     return c
 
