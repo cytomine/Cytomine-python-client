@@ -35,6 +35,7 @@ import requests
 import shutil
 import warnings
 import functools
+import time
 from time import strftime, gmtime
 from future.builtins import bytes
 from argparse import ArgumentParser
@@ -344,7 +345,7 @@ class Cytomine(object):
             self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
 
         Cytomine.__instance = self
-
+        self.wait_to_accept_connection()
         self._current_user = None
         self.set_current_user()
 
@@ -572,6 +573,26 @@ class Cytomine(object):
             return True
         else:
             return False
+
+    def is_alive(self):
+        uri = "/server/ping"
+        try:
+            response = self._get(uri, None, with_base_path=False)
+            self._log_response(response, uri)
+            if response.status_code == requests.codes.ok:
+                return True
+            else:
+                return False
+        except Exception:
+            return False
+
+    def wait_to_accept_connection(self, timeout_in_seconds=120, delay_between_retry_in_seconds=1):
+        mustend = time.time() + timeout_in_seconds
+        while time.time() < mustend:
+            if self.is_alive(): return True
+            time.sleep(delay_between_retry_in_seconds)
+        return False
+
 
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
