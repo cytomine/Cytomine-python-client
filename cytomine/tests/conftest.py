@@ -21,12 +21,13 @@ from __future__ import unicode_literals
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.annotation import Annotation
-from cytomine.models.image import AbstractImage, ImageInstance
+from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, SliceInstance
 from cytomine.models.imagegroup import ImageGroup
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
 from cytomine.models.property import Tag
 from cytomine.models.software import Software, SoftwareParameter, Job
+from cytomine.models.storage import UploadedFile
 from cytomine.models.user import User, Group
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
@@ -54,6 +55,7 @@ def connect(request):
                          request.config.getoption("--public_key"),
                          request.config.getoption("--private_key"),
                          logging.DEBUG)
+    c.wait_to_accept_connection()
     c.open_admin_session()
     return c
 
@@ -71,12 +73,22 @@ def dataset(request):
     data["software"] = Software(random_string(), "ValidateAnnotation").save()
     data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
 
-    data["abstract_image"] = AbstractImage(random_string(), "image/tiff").save()
-    data["abstract_image2"] = AbstractImage(random_string(), "image/tiff", width=50, height=50).save()
+    data["uploaded_file"] = UploadedFile(random_string(), random_string(), id_user=data["user"].id, ext="tiff", contentType="tiff/ddd",size=1232, id_image_server=154, id_storage=67).save()
+    data["uploaded_file2"] = UploadedFile(random_string(), random_string(), id_user=data["user"].id, ext="tiff", contentType="tiff/ddd",size=1232, id_image_server=154, id_storage=67).save()
+
+    data["abstract_image"] = AbstractImage(random_string(), data["uploaded_file"].id).save()
+    data["abstract_image2"] = AbstractImage(random_string(), data["uploaded_file2"].id, width=50, height=50).save()
+
+    abstract_slice = AbstractSlice(id_image=data["abstract_image"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file"].id, mime="image/pyrtiff").save()
+    abstract_slice2 = AbstractSlice(id_image=data["abstract_image2"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file2"].id, mime="image/pyrtiff").save()
 
     data["project"] = Project(random_string(), data["ontology"].id).save()
     data["image_instance"] = ImageInstance(data["abstract_image2"].id, data["project"].id).save()
-    data["annotation"] = Annotation("POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", data["image_instance"].id, [data["term1"].id]).save()
+    SliceInstance(id_project=data["project"].id, id_image=data["image_instance"].id, id_base_slice=abstract_slice2.id).save()
+
+
+    data["annotation"] = Annotation(location="POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", id_image=data["image_instance"].id, id_terms=[data["term1"].id]).save()
+
     data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
     data["image_group2"] = ImageGroup(random_string(), data["project"].id).save()
     # data["image_sequence"] = ImageSequence(data["image_group"].id, data["image_instance"].id, 0, 0, 0, 0).save()

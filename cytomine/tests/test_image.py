@@ -28,7 +28,7 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 class TestAbstractImage:
     def test_abstract_image(self, connect, dataset):
         filename = random_string()
-        abstract_image = AbstractImage(filename, "image/tiff").save()
+        abstract_image = AbstractImage(filename, dataset["uploaded_file"].id).save()
         assert (isinstance(abstract_image, AbstractImage))
         assert (abstract_image.filename == filename)
 
