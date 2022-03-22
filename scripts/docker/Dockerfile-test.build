@@ -1,4 +1,4 @@
-FROM python:2.7.18 AS imageWithDependencies
+FROM python:3.8.12 AS imageWithDependencies
 
 # We first copy the requirements.txt file
 # This way, we retrieve all maven dependencies at the beginning. All these steps will be cached by Docker unless requirements.txt has been updated.

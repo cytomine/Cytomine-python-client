@@ -2,7 +2,7 @@ version: "3.4"
 services:
 
   nginx:
-    image: cytomine/nginx:v1.3.1
+    image: cytomine/nginx:v1.4.0
     container_name: nginxTest
     hostname: nginxTest
     ports: [ "80:80" ]
@@ -13,11 +13,11 @@ services:
       - "core:core"
 
   core:
-    image: cytomine/core:v3.0.4
+    image: cytomine/core:v3.2.1
     restart: unless-stopped
     ports: [ "8090:8080" ]
     volumes:
-      - "${PWD}/scripts/config/cytomineconfig.groovy:/usr/share/tomcat7/.grails/cytomineconfig.groovy"
+      - "${PWD}/scripts/config/cytomineconfig.groovy:/usr/share/tomcat9/.grails/cytomineconfig.groovy"
       - "${PWD}/scripts/config/addHosts.sh:/tmp/addHosts.sh"
     links:
       - "postgresql:postgresql"
