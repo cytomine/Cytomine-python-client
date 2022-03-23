@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2018. Authors: see NOTICE file.
+# * Copyright (c) 2009-2022. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
-__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
+__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 
 import re
 import os
@@ -106,6 +106,19 @@ class AbstractImageCollection(Collection):
         self._allowed_filters = [None]  # "project"]
         self.set_parameters(parameters)
 
+class ImageServer(Model):
+    def __init__(self, name=None, url=None, available=False, base_path=None, **attributes):
+        super(ImageServer, self).__init__()
+        self.name = name
+        self.url = url
+        self.available = available
+        self.base_path = base_path
+
+class ImageServerCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(ImageServerCollection, self).__init__(ImageServer, filters, max, offset)
+        self._allowed_filters = [None]
+        self.set_parameters(parameters)
 
 class AbstractSlice(Model):
     def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None,

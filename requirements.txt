@@ -4,11 +4,11 @@
 #
 #    pip-compile setup.py
 #
-cachecontrol==0.12.6
+cachecontrol==0.12.10
     # via Cytomine-Python-Client (setup.py)
 certifi==2021.5.30
     # via requests
-charset-normalizer==2.0.6
+charset-normalizer==2.0.12
     # via requests
 future==0.18.2
     # via Cytomine-Python-Client (setup.py)
@@ -24,7 +24,7 @@ opencv-python-headless==4.5.3.56
     # via Cytomine-Python-Client (setup.py)
 pillow==8.3.2
     # via Cytomine-Python-Client (setup.py)
-requests==2.26.0
+requests==2.27.1
     # via
     #   Cytomine-Python-Client (setup.py)
     #   cachecontrol

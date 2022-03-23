@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2018. Authors: see NOTICE file.
+# * Copyright (c) 2009-2022. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cytomine.cytomine import Cytomine
-from cytomine.models.annotation import Annotation
-from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, SliceInstance
+from cytomine.models.storage import Storage, UploadedFile
+from cytomine.models.annotation import Annotation, AnnotationCollection, AnnotationTerm
+from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, SliceInstance, ImageServerCollection
 from cytomine.models.imagegroup import ImageGroup
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
@@ -29,6 +30,7 @@ from cytomine.models.property import Tag
 from cytomine.models.software import Software, SoftwareParameter, Job
 from cytomine.models.storage import UploadedFile
 from cytomine.models.user import User, Group
+from cytomine.models.track import Track
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -72,26 +74,28 @@ def dataset(request):
 
     data["software"] = Software(random_string(), "ValidateAnnotation").save()
     data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
-
-    data["uploaded_file"] = UploadedFile(random_string(), random_string(), id_user=data["user"].id, ext="tiff", contentType="tiff/ddd",size=1232, id_image_server=154, id_storage=67).save()
-    data["uploaded_file2"] = UploadedFile(random_string(), random_string(), id_user=data["user"].id, ext="tiff", contentType="tiff/ddd",size=1232, id_image_server=154, id_storage=67).save()
-
-    data["abstract_image"] = AbstractImage(random_string(), data["uploaded_file"].id).save()
-    data["abstract_image2"] = AbstractImage(random_string(), data["uploaded_file2"].id, width=50, height=50).save()
-
-    abstract_slice = AbstractSlice(id_image=data["abstract_image"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file"].id, mime="image/pyrtiff").save()
-    abstract_slice2 = AbstractSlice(id_image=data["abstract_image2"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file2"].id, mime="image/pyrtiff").save()
-
+    
     data["project"] = Project(random_string(), data["ontology"].id).save()
-    data["image_instance"] = ImageInstance(data["abstract_image2"].id, data["project"].id).save()
-    SliceInstance(id_project=data["project"].id, id_image=data["image_instance"].id, id_base_slice=abstract_slice2.id).save()
+    data["storage"] = Storage(random_string(), data["user"].id).save()
+    data["image_servers"] = ImageServerCollection().fetch()
+    data["uploaded_file"] = UploadedFile(originalFilename=random_string(), filename=random_string(), size=1, ext="tiff", contentType="tiff/ddd", id_projects=data["project"].id, id_storage=data["storage"].id, id_user=data["user"].id, id_image_server=data["image_servers"][0].id).save()
+    data["uploaded_file2"] = UploadedFile(originalFilename=random_string(), filename=random_string(), size=1, ext="tiff", contentType="tiff/ddd", id_projects=data["project"].id, id_storage=data["storage"].id, id_user=data["user"].id, id_image_server=data["image_servers"][0].id).save()
+    data["uploaded_file3"] = UploadedFile(originalFilename=random_string(), filename=random_string(), size=1, ext="tiff", contentType="tiff/ddd", id_projects=data["project"].id, id_storage=data["storage"].id, id_user=data["user"].id, id_image_server=data["image_servers"][0].id).save()
+    
+    data["abstract_image"] = AbstractImage(random_string(), data["uploaded_file"].id, width=50, height=50).save()
+    data["abstract_image2"] = AbstractImage(random_string(), data["uploaded_file2"].id, width=50, height=50).save()
+    data["abstract_image3"] = AbstractImage(random_string(), data["uploaded_file3"].id, width=50, height=50).save()
+        
+    data["abstract_slice"] = AbstractSlice(id_image=data["abstract_image"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file"].id, mime="image/pyrtiff").save()
+    #data["abstract_slice2"] = AbstractSlice(id_image=data["abstract_image2"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file2"].id, mime="image/pyrtiff").save()
+    
+    data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
+    data["image_instance2"] = ImageInstance(data["abstract_image2"].id, data["project"].id).save()
+    
+    data["track"] = Track(random_string(), data["image_instance2"].id, "#000000").save()
+    
+    data["annotation"] = Annotation(location="POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", id_image=data["image_instance"].id, id_terms=[data["term2"].id]).save()
 
-
-    data["annotation"] = Annotation(location="POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", id_image=data["image_instance"].id, id_terms=[data["term1"].id]).save()
-
-    data["image_group"] = ImageGroup(random_string(), data["project"].id).save()
-    data["image_group2"] = ImageGroup(random_string(), data["project"].id).save()
-    # data["image_sequence"] = ImageSequence(data["image_group"].id, data["image_instance"].id, 0, 0, 0, 0).save()
     data["job"] = Job(data["project"].id, data["software"].id).save()
     data["tag"] = Tag(random_string()).save()
 

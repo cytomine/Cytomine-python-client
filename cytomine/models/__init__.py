@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2018. Authors: see NOTICE file.
+# * Copyright (c) 2009-2022. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
-__copyright__ = "Copyright 2010-2018 University of Liège, Belgium, http://www.cytomine.be/"
+__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 
 from .model import Model, DomainModel
 from .collection import Collection, DomainCollection
 from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm
 from .image import AbstractImage, AbstractImageCollection, AbstractSlice, AbstractSliceCollection,\
-    ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection
+    ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection, \
+    ImageServer, ImageServerCollection
 #from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupImageInstance, ImageGroupImageInstanceCollection
 #from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupHDF5, ImageSequence, ImageSequenceCollection
 from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm

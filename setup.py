@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2018. Authors: see NOTICE file.
+# * Copyright (c) 2009-2022. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -41,14 +41,14 @@ setup(
         'Operating System :: OS Independent'
     ],
     install_requires=['requests-toolbelt>=0.8.0',
-                      'CacheControl>=0.12.5',
+                      'CacheControl>=0.12.10',
                       'numpy>=1.15.4',
                       'Shapely>=1.6.4',
                       'six>=1.11.0',
                       'future>=0.17.1',
                       'opencv-python-headless>=3.4.3',
                       'Pillow>=5.3.0{}'.format(pillow_version_constraint),
-                      'requests>=2.22.0',
+                      'requests>=2.27.1',
                       'urllib3>=1.25.2'],
     setup_requires=['pytest-runner'],
     extra_requires={
