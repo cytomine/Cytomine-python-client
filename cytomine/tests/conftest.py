@@ -23,7 +23,6 @@ from cytomine.cytomine import Cytomine
 from cytomine.models.storage import Storage, UploadedFile
 from cytomine.models.annotation import Annotation, AnnotationCollection, AnnotationTerm
 from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, SliceInstance, ImageServerCollection
-from cytomine.models.imagegroup import ImageGroup
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
 from cytomine.models.property import Tag
