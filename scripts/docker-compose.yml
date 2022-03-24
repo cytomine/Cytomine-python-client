@@ -13,7 +13,7 @@ services:
       - "core:core"
 
   core:
-    image: cytomine/core:try-to-fix-circular-dep-20220324201813-SNAPSHOT
+    image: cytomine/core:try-to-fix-circular-dep-20220324212615-SNAPSHOT
     restart: unless-stopped
     ports: [ "8090:8080" ]
     volumes:
