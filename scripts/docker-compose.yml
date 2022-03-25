@@ -8,7 +8,7 @@ services:
     ports: [ "80:80" ]
     restart: unless-stopped
     volumes:
-      - "./scripts/config/nginx/nginxCORS.conf:/usr/local/nginx/conf/nginx.conf"
+      - "./config/nginx/nginxCORS.conf:/usr/local/nginx/conf/nginx.conf"
     links:
       - "core:core"
 
@@ -17,8 +17,8 @@ services:
     restart: unless-stopped
     ports: [ "8090:8080" ]
     volumes:
-      - "./scripts/config/cytomineconfig.groovy:/usr/share/tomcat9/.grails/cytomineconfig.groovy"
-      - "./scripts/config/addHosts.sh:/tmp/addHosts.sh"
+      - "./config/cytomineconfig.groovy:/usr/share/tomcat9/.grails/cytomineconfig.groovy"
+      - "./config/addHosts.sh:/tmp/addHosts.sh"
     links:
       - "postgresql:postgresql"
       - "mongodb:mongodb"
