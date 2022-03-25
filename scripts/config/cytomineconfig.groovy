@@ -17,6 +17,8 @@ cytomine.customUI.global = [
         help : ["ALL"]
 ]
 
+cytomine.forceVersion="3.2.0"
+
 
 grails.serverURL='http://localhost-core'
 grails.imageServerURL=['http://localhost-ims','http://localhost-ims2']
