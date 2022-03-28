@@ -5,7 +5,6 @@ services:
     image: cytomine/nginx:v1.4.0
     container_name: nginxTest
     hostname: nginxTest
-    ports: [ "80:80" ]
     restart: unless-stopped
     volumes:
       - "./config/nginx/nginxCORS.conf:/usr/local/nginx/conf/nginx.conf"
@@ -15,7 +14,6 @@ services:
   core:
     image: cytomine/core:try-to-fix-circular-dep-20220324212615-SNAPSHOT
     restart: unless-stopped
-    ports: [ "8090:8080" ]
     volumes:
       - "./config/cytomineconfig.groovy:/usr/share/tomcat9/.grails/cytomineconfig.groovy"
       - "./config/addHosts.sh:/tmp/addHosts.sh"
@@ -34,5 +32,4 @@ services:
 
   rabbitmq:
     image: cytomine/rabbitmq:v1.1.2
-    ports: [ "5672:5672", "15672:15672" ]
     restart: unless-stopped

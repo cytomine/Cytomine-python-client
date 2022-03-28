@@ -24,7 +24,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 pillow_version_constraint = ',<7.0.0' if sys.version_info.major < 3 else ''
 
 setup(
-    name='Cytomine-Python-Client',
+    name='cytomine-python-client',
     version='2.3.0',
     description='Python client to interact with Cytomine.',
     long_description=long_description,
