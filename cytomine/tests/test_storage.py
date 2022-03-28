@@ -55,7 +55,7 @@ class TestUploadedFile:
     def test_uploaded_file(self, connect, dataset):
         storages = StorageCollection().fetch()
         filename = "filename"
-        uf = UploadedFile("original", filename, id_user=connect.current_user.id, size=1, ext="ext", contentType="contentType", id_storage=storages[0].id, id_image_server=154).save()
+        uf = UploadedFile("original", filename, id_user=connect.current_user.id, size=1, ext="ext", contentType="contentType", id_storage=storages[0].id, id_image_server=dataset["image_servers"][0].id).save()
         assert(isinstance(uf, UploadedFile))
         assert(uf.filename == filename)
 
