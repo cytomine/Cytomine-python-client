@@ -575,7 +575,7 @@ class Cytomine(object):
             return False
 
     def is_alive(self):
-        uri = "/server/ping"
+        uri = "/server/ping.json"
         try:
             response = self._get(uri, None, with_base_path=False)
             self._log_response(response, uri)
