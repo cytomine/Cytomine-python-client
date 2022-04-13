@@ -1,0 +1,80 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgresql:5432/docker
+    username: docker
+    password: docker
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your.email@gmail.com
+    password: passwd
+    auth: true
+
+  data:
+    mongodb:
+      authentication-database: admin
+      username: mongoadmin
+      password: secret
+      database: cytomine
+      port: 27017
+      host: mongodb
+
+javamelody:
+  enabled: true
+#  url-exclude-pattern: /notify*
+  init-parameters:
+    authorized-users: admin:password
+    storage-directory: /javamelody-core
+
+#  grails.mongo.options.threadsAllowedToBlockForConnectionMultiplier=5
+
+application:
+  customUI:
+    global:
+      dashboard: ["ALL"]
+      search: [ "ROLE_ADMIN" ]
+      project: [ "ALL" ]
+      ontology: [ "ROLE_ADMIN" ]
+      storage: [ "ROLE_USER","ROLE_ADMIN" ]
+      software: [ "ROLE_ADMIN" ]
+      activity: [ "ALL" ]
+      admin: [ "ROLE_ADMIN" ]
+      help: [ "ALL" ]
+      feedback: ["ROLE_USER","ROLE_ADMIN"]
+      explore: ["ROLE_USER","ROLE_ADMIN"]
+
+  serverId: 86f55071-eac0-4fd4-8e3d-ecd35e775f52
+  serverURL: http://localhost-core
+  imageServerURL: ['http://localhost-ims','http://localhost-ims2']
+#   grails.uploadURL='http://localhost-upload' // still useful?
+
+  storagePath: "/data/images"
+
+  adminPassword: c6a0aef9-ce9c-48c1-aacd-d09ed142cd3e
+  adminEmail: info@cytomine.coop
+  adminPrivateKey: 806dc4fa-201b-42bf-9204-32a3015895a4
+  adminPublicKey: ab7838e1-7733-4bfe-9809-13ecccebe858
+  superAdminPrivateKey: 563de51e-d78c-4e07-9589-7873bd3341be
+  superAdminPublicKey: 4c6339f4-289a-4add-82cf-120a6a808b6f
+  ImageServerPrivateKey: e55cd53c-21f5-4d99-8759-a9a15f7949a1
+  ImageServerPublicKey: af6007fb-a20a-4722-9247-4c6d916cf699
+  rabbitMQPrivateKey: 409aa181-2512-459e-bb86-9cde2840a94b
+  rabbitMQPublicKey: d6376301-eb72-4c46-b4f7-0ffcd6313ccc
+
+  notification:
+    email: your.email@gmail.com
+
+  softwareSources: softwareSources/
+  useHTTPInternally: true
+
+  instanceHostWebsite: http://localhost-core
+  instanceHostSupportMail:
+  instanceHostPhoneNumber:
+
+  authentication:
+    jwt:
+      # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 256` on your command line to generate a 256 bits one)
+      secret: KPZsGs9gBdU7NQrVT2pvT6kQ4QGfYrzhQ94Mkr+CwxhmRrx1YHRS1b1BSKNaGGHa
+  
+ # grails.messageBrokerServerURL='rabbitmq:5672

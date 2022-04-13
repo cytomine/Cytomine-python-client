@@ -12,10 +12,11 @@ services:
       - "core:core"
 
   core:
-    image: cytomine/core:try-to-fix-circular-dep-20220324212615-SNAPSHOT
+    image: cytomine/core:v4.0.0-beta.11
     restart: unless-stopped
+    ports: [ "8090:8080" ]
     volumes:
-      - "./config/cytomineconfig.groovy:/usr/share/tomcat9/.grails/cytomineconfig.groovy"
+      - "./config/application.yml:/app/application.yml"
       - "./config/addHosts.sh:/tmp/addHosts.sh"
     links:
       - "postgresql:postgresql"
@@ -27,8 +28,13 @@ services:
     restart: unless-stopped
 
   mongodb:
-    image: cytomine/mongodb:v1.1.2
+    image: mongo:4.4
     restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+      - MONGO_INITDB_DATABASE=cytomine
+
 
   rabbitmq:
     image: cytomine/rabbitmq:v1.1.2
