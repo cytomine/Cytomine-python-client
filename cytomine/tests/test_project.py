@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from cytomine.models.project import *
 from cytomine.tests.conftest import random_string
+import pytest
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
@@ -56,36 +57,8 @@ class TestProject:
     def test_projects_by_ontology(self, connect, dataset):
         projects = ProjectCollection().fetch_with_filter("ontology", dataset["ontology"].id)
         assert(isinstance(projects, ProjectCollection))
-        
+
+    @pytest.mark.skip(reason="wait software package migration")
     def test_projects_by_software(self, connect, dataset):
         projects = ProjectCollection().fetch_with_filter("software", dataset["software"].id)
         assert(isinstance(projects, ProjectCollection))
-
-
-class TestDiscipline:
-    def test_discipline(self, connect, dataset):
-        name = random_string()
-        discipline = Discipline(name).save()
-        assert (isinstance(discipline, Discipline))
-        assert (discipline.name == name)
-
-        discipline = Discipline().fetch(discipline.id)
-        assert (isinstance(discipline, Discipline))
-        assert (discipline.name == name)
-
-        name = random_string()
-        discipline.name = name
-        discipline.update()
-        assert (isinstance(discipline, Discipline))
-        assert (discipline.name == name)
-
-        discipline.delete()
-        assert (not Discipline().fetch(discipline.id))
-
-    def test_disciplines(self, connect, dataset):
-        disciplines = DisciplineCollection().fetch()
-        assert (isinstance(disciplines, DisciplineCollection))
-
-        disciplines = DisciplineCollection()
-        disciplines.append(Discipline(random_string()))
-        assert (disciplines.save())

@@ -119,6 +119,7 @@ def deprecated(func):
 
 
 def read_response_message(response, key='message', encoding="utf-8"):
+    print(response.text)
     content = response.content.decode(encoding)
     try:
         return response.json().get(key, content)

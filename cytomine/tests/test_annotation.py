@@ -55,11 +55,12 @@ class TestAnnotation:
         pass
 
     def test_annotations(self, connect, dataset):
-        annotations = AnnotationCollection()
-        annotations.showMeta = True
-        annotations.showWKT = True
-        annotations.fetch()
-        assert (isinstance(annotations, AnnotationCollection))
+# Not expected to work because no project, no image(s), nor slice(s) filters
+#         annotations = AnnotationCollection()
+#         annotations.showMeta = True
+#         annotations.showWKT = True
+#         annotations.fetch()
+#         assert (isinstance(annotations, AnnotationCollection))
 
         location = "POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))"
         annotations = AnnotationCollection()

@@ -71,9 +71,9 @@ def dataset(request):
     data["term1"] = Term(random_string(), data["ontology"].id, "#000000").save()
     data["term2"] = Term(random_string(), data["ontology"].id, "#000000").save()
 
-    data["software"] = Software(random_string(), "ValidateAnnotation").save()
-    data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
-    
+#     data["software"] = Software(random_string(), "ValidateAnnotation").save()
+#     data["software_parameter"] = SoftwareParameter(random_string(), "Number", data["software"].id, 0, False, 1).save()
+#
     data["project"] = Project(random_string(), data["ontology"].id).save()
     data["storage"] = Storage(random_string(), data["user"].id).save()
     data["image_servers"] = ImageServerCollection().fetch()
@@ -95,7 +95,7 @@ def dataset(request):
     
     data["annotation"] = Annotation(location="POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", id_image=data["image_instance"].id, id_terms=[data["term2"].id]).save()
 
-    data["job"] = Job(data["project"].id, data["software"].id).save()
+#     data["job"] = Job(data["project"].id, data["software"].id).save()
     data["tag"] = Tag(random_string()).save()
 
     def teardown():
@@ -108,12 +108,12 @@ def dataset(request):
         Term().delete(data["term1"].id)
         Term().delete(data["term2"].id)
         Group().delete(data["group"].id)
-        Job().delete(data["job"].id)
+#         Job().delete(data["job"].id)
         Project().delete(data["project"].id)
         Ontology().delete(data["ontology"].id)
         User().delete(data["user"].id)
-        SoftwareParameter().delete(data["software_parameter"].id)
-        Software().delete(data["software"].id)
+#         SoftwareParameter().delete(data["software_parameter"].id)
+#         Software().delete(data["software"].id)
         Tag().delete(data["tag"].id)
 
     # request.addfinalizer(teardown)
