@@ -92,7 +92,8 @@ class TestImageInstance:
     def test_image_instance_by_project(self, connect, dataset):
         image_instances = ImageInstanceCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(image_instances, ImageInstanceCollection))
-        
+
+
 class TestAbstractSlice:
     def test_abstract_slice(self, connect, dataset):
         abstract_slice = AbstractSlice(dataset["abstract_image2"].id, dataset["uploaded_file2"].id, "image/pyrtiff", 0, 0, 0).save()
@@ -108,7 +109,8 @@ class TestAbstractSlice:
     def test_abstract_slices_by_uploadedfile(self, connect, dataset):
         abstract_slices = AbstractSliceCollection().fetch_with_filter("uploadedfile", dataset["uploaded_file"].id)
         assert (isinstance(abstract_slices, AbstractSliceCollection))
-        
+
+
 class TestSliceInstance:
     @pytest.mark.skip(reason="SliceInstance object automatically created when creating ImageInstance object, so trying to create a slice instance based on the image instance returns a 409 code")
     def test_slice_instance(self, connect, dataset):

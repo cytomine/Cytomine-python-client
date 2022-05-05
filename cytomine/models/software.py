@@ -56,8 +56,10 @@ class Software(Model):
         self.populate(attributes)
 
     def upload(self, file_path=None):
-        return Cytomine.get_instance().upload_file(self, file_path,
-                                                   query_parameters={"name":self.name}, uri="{}/upload".format(self.callback_identifier))
+        return Cytomine.get_instance().upload_file(
+            self, file_path, query_parameters={"name": self.name},
+            uri="{}/upload".format(self.callback_identifier)
+        )
 
 
 class SoftwareCollection(Collection):
@@ -191,10 +193,10 @@ class Job(Model):
     def execute(self):
         if self.is_new():
             raise ValueError("Cannot execute job if no ID was provided.")
-        response = Cytomine.get_instance().post(uri="{}/{}/execute.json"
-                                        .format(self.callback_identifier, self.id),
-                                        data=self.to_json(),
-                                        query_parameters={id: self.id})
+        response = Cytomine.get_instance().post(
+            uri="{}/{}/execute.json".format(self.callback_identifier, self.id),
+            data=self.to_json(), query_parameters={id: self.id}
+        )
         self.populate(response)
         return self
 

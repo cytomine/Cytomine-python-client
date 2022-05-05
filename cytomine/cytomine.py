@@ -579,17 +579,15 @@ class Cytomine(object):
         try:
             response = self._get(uri, None, with_base_path=False)
             self._log_response(response, uri)
-            if response.status_code == requests.codes.ok:
-                return True
-            else:
-                return False
+            return response.status_code == requests.codes.ok
         except Exception:
             return False
 
     def wait_to_accept_connection(self, timeout_in_seconds=120, delay_between_retry_in_seconds=1):
         mustend = time.time() + timeout_in_seconds
         while time.time() < mustend:
-            if self.is_alive(): return True
+            if self.is_alive():
+                return True
             time.sleep(delay_between_retry_in_seconds)
         return False
 

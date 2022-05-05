@@ -66,6 +66,7 @@ class PositionCollection(Collection):
     def callback_identifier(self):
         return "positions"
 
+
 class AnnotationAction(Model):
     def __init__(self):
         super(AnnotationAction, self).__init__()
@@ -90,6 +91,7 @@ class AnnotationAction(Model):
     @property
     def callback_identifier(self):
         return "annotation_action"
+
 
 class AnnotationActionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
