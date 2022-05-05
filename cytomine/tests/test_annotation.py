@@ -37,7 +37,7 @@ class TestAnnotation:
                                 [dataset["term1"].id]).save()
         assert (isinstance(annotation, Annotation))
         assert (annotation.location == location)
-        print(f"annotation id: {annotation.id}")
+
         annotation = Annotation().fetch(annotation.id)
         assert (isinstance(annotation, Annotation))
         assert (annotation.location == location)
