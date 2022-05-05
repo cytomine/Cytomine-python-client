@@ -32,6 +32,10 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
 from models import ImageGroupCollection
 
+logging.basicConfig()
+logger = logging.getLogger("cytomine.client")
+logger.setLevel(logging.INFO)
+
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
@@ -47,8 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--group_name', help="Name of the future image group", default="GROUP")
     params, other = parser.parse_known_args(sys.argv[1:])
 
-    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key,
-                  verbose=logging.INFO) as cytomine:
+    with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
         image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
         print(image_instances)
 
