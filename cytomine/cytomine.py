@@ -641,21 +641,25 @@ class Cytomine(object):
         else:
             return True
 
-    def upload_image(self, upload_host, filename, id_storage, id_project=None, 
+    def upload_image(self, upload_host, filename, id_storage, id_project=None,
                      properties=None, sync=False, protocol=None):
         if not protocol:
             protocol = self._protocol
         upload_host, protocol = self._parse_url(upload_host, protocol)
         upload_host = "{}://{}".format(protocol, upload_host)
 
+        cytomine_core = "{}://{}".format(self._protocol, self._host)
         query_parameters = {
-            "idStorage": id_storage,
-            "cytomine": "{}://{}".format(self._protocol, self._host),
+            "idStorage": id_storage,  # backwards compatibility
+            "storage": id_storage,
+            "cytomine": cytomine_core,  # backwards compatibility
+            "core": cytomine_core,
             "sync": sync
         }
 
         if id_project:
-            query_parameters["idProject"] = id_project
+            query_parameters["idProject"] = id_project  # backwards compatibility
+            query_parameters["projects"] = id_project
 
         if properties:
             query_parameters["keys"] = ','.join(list(properties.keys()))
@@ -742,18 +746,47 @@ class Cytomine(object):
 
     def _process_upload_response(self, response_data):
         from .models.storage import UploadedFile
-        from .models.image import AbstractImage, AbstractImageCollection
+        from .models.image import AbstractImage, AbstractSliceCollection, AbstractSlice, ImageInstance, \
+            ImageInstanceCollection, AbstractImageCollection
 
         self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
 
-        uf = UploadedFile().populate(response_data["uploadFile"])
+        if "uploadFile" in response_data:
+            # backwards compatibility
+            uf = UploadedFile().populate(response_data["uploadFile"])
 
-        uf.images = AbstractImageCollection()
-        if response_data["images"]:
-            for image in response_data["images"]:
-                uf.images.append(AbstractImage().populate(image["attr"]))
+            uf.images = AbstractImageCollection()
+            if "images" in response_data:
+                for image in response_data["images"]:
+                    if "attr" in image:
+                        uf.images.append(AbstractImage().populate(image["attr"]))
 
-        return uf
+            return uf
+        else:
+            uf = UploadedFile().populate(response_data["uploadedFile"])
+
+            uf.images = []
+            if "images" in response_data:
+                for image in response_data["images"]:
+                    data = dict()
+
+                    if "slices" in image:
+                        abstract_slices = AbstractSliceCollection()
+                        for abstract_slice in image["slices"]:
+                            abstract_slices.append(AbstractSlice().populate(abstract_slice))
+                        data["abstractSlices"] = abstract_slices
+
+                    if "imageInstances" in image:
+                        image_instances = ImageInstanceCollection()
+                        for image_instance in image["imageInstances"]:
+                            image_instances.append(ImageInstance().populate(image_instance))
+                        data["imageInstances"] = image_instances
+
+                    if "image" in image:
+                        data["abstractImage"] = AbstractImage().populate(image["image"])
+                    uf.images.append(data)
+
+            return uf
 
     """
     Following methods are deprecated methods, only temporary here for backwards compatibility.
