@@ -56,5 +56,5 @@ setup(
     },
     test_suite='cytomine.tests',
     license='LICENSE',
-    data_files=[('', ['LICENSE', 'requirements.txt'])]
+    data_files=[('', ['LICENSE', 'requirements.txt', 'requirements-py2.7.txt'])]
 )
