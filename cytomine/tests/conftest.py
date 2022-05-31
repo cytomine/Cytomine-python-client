@@ -21,13 +21,12 @@ from __future__ import unicode_literals
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.storage import Storage, UploadedFile
-from cytomine.models.annotation import Annotation, AnnotationCollection, AnnotationTerm
-from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, SliceInstance, ImageServerCollection
+from cytomine.models.annotation import Annotation
+from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, ImageServerCollection
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
 from cytomine.models.property import Tag
 from cytomine.models.software import Software, SoftwareParameter, Job
-from cytomine.models.storage import UploadedFile
 from cytomine.models.user import User, Group
 from cytomine.models.track import Track
 
@@ -86,8 +85,7 @@ def dataset(request):
     data["abstract_image3"] = AbstractImage(random_string(), data["uploaded_file3"].id, width=50, height=50).save()
         
     data["abstract_slice"] = AbstractSlice(id_image=data["abstract_image"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file"].id, mime="image/pyrtiff").save()
-    #data["abstract_slice2"] = AbstractSlice(id_image=data["abstract_image2"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file2"].id, mime="image/pyrtiff").save()
-    
+
     data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
     data["image_instance2"] = ImageInstance(data["abstract_image2"].id, data["project"].id).save()
     
@@ -99,10 +97,8 @@ def dataset(request):
     data["tag"] = Tag(random_string()).save()
 
     def teardown():
-        # ImageSequence().delete(data["image_sequence"].id)
         ImageInstance().delete(data["image_instance"].id)
         Annotation().delete(data["annotation"].id)
-        ImageGroup().delete(data["image_group"].id)
         AbstractImage().delete(data["abstract_image"].id)
         AbstractImage().delete(data["abstract_image2"].id)
         Term().delete(data["term1"].id)

@@ -159,7 +159,8 @@ _HUMAN_READABLE_JOB_STATUS = {
     4: "FAILED",
     5: "INDETERMINATE",
     6: "WAIT",
-    7: "PREVIEW_DONE"
+    7: "PREVIEW_DONE",
+    8: "KILLED"
 }
 
 
@@ -172,6 +173,7 @@ class Job(Model):
     INDETERMINATE = 5
     WAIT = 6
     PREVIEW_DONE = 7
+    KILLED = 8
 
     def __init__(self, project_id=None, software_id=None, **attributes):
         super(Job, self).__init__()
