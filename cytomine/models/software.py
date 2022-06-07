@@ -55,6 +55,12 @@ class Software(Model):
         self.numberOfWait = None
         self.populate(attributes)
 
+    def upload(self, file_path=None):
+        return Cytomine.get_instance().upload_file(
+            self, file_path, query_parameters={"name": self.name},
+            uri="{}/upload".format(self.callback_identifier)
+        )
+
 
 class SoftwareCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -105,6 +111,10 @@ class SoftwareParameter(Model):
         self.commandLineFlag = command_line_flag
         self.populate(attributes)
 
+    @property
+    def callback_identifier(self):
+        return "software_parameter"
+
 
 class SoftwareParameterCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -114,10 +124,7 @@ class SoftwareParameterCollection(Collection):
 
     @property
     def callback_identifier(self):
-        # HACK to save on collection.
-        if len(self._data) > 0:
-            return "softwareparameter"
-        return "parameter"
+        return "software_parameter"
 
 
 class SoftwareParameterConstraint(Model):
@@ -128,6 +135,7 @@ class SoftwareParameterConstraint(Model):
         self.value = value
         self.populate(attributes)
 
+    @property
     def callback_identifier(self):
         return "software_parameter_constraint"
 
@@ -137,6 +145,10 @@ class SoftwareParameterConstraintCollection(Collection):
         super(SoftwareParameterConstraintCollection, self).__init__(SoftwareParameterConstraint, filters, max, offset)
         self._allowed_filters = ["softwareparameter"]
         self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "software_parameter_constraint"
 
 
 _HUMAN_READABLE_JOB_STATUS = {
@@ -175,7 +187,6 @@ class Job(Model):
         self.softwareNone = None
         self.rate = None
         self.dataDeleted = None
-        self.favorite = None
         self.username = None
         self.userJob = None
         self.jobParameters = None
@@ -184,10 +195,10 @@ class Job(Model):
     def execute(self):
         if self.is_new():
             raise ValueError("Cannot execute job if no ID was provided.")
-        response = Cytomine.get_instance().post(uri="{}/{}/execute.json"
-                                                .format(self.callback_identifier, self.id),
-                                                data=self.to_json(),
-                                                query_parameters={id: self.id})
+        response = Cytomine.get_instance().post(
+            uri="{}/{}/execute.json".format(self.callback_identifier, self.id),
+            data=self.to_json(), query_parameters={id: self.id}
+        )
         self.populate(response)
         return self
 
@@ -347,3 +358,8 @@ class ProcessingServerCollection(Collection):
         super(ProcessingServerCollection, self).__init__(ProcessingServer, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
+
+    @property
+    def callback_identifier(self):
+        return "processing_server"
+

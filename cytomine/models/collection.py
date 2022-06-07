@@ -23,7 +23,14 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 
-from collections import MutableSequence
+# Importing collections.abc objects from collections is deprecated
+# since python 3.3. 
+from sys import version_info
+if version_info.major < 3 or \
+        (version_info.major == 3 and version_info.minor < 3):
+    from collections import MutableSequence
+else:
+    from collections.abc import MutableSequence
 
 import six
 import copy

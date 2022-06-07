@@ -24,7 +24,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 pillow_version_constraint = ',<7.0.0' if sys.version_info.major < 3 else ''
 
 setup(
-    name='Cytomine-Python-Client',
+    name='cytomine-python-client',
     version='2.8.3',
     description='Python client to interact with Cytomine.',
     long_description=long_description,
@@ -41,14 +41,14 @@ setup(
         'Operating System :: OS Independent'
     ],
     install_requires=['requests-toolbelt>=0.8.0',
-                      'CacheControl>=0.12.5',
+                      'CacheControl>=0.12.10',
                       'numpy>=1.15.4',
                       'Shapely>=1.6.4',
                       'six>=1.11.0',
                       'future>=0.17.1',
                       'opencv-python-headless>=3.4.3',
                       'Pillow>=5.3.0{}'.format(pillow_version_constraint),
-                      'requests>=2.22.0',
+                      'requests>=2.27.1',
                       'urllib3>=1.25.2'],
     setup_requires=['pytest-runner'],
     extra_requires={

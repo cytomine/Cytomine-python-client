@@ -35,6 +35,7 @@ import requests
 import shutil
 import warnings
 import functools
+import time
 from time import strftime, gmtime
 from future.builtins import bytes
 from argparse import ArgumentParser
@@ -344,7 +345,7 @@ class Cytomine(object):
             self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
 
         Cytomine.__instance = self
-
+        self.wait_to_accept_connection()
         self._current_user = None
         self.set_current_user()
 
@@ -475,7 +476,10 @@ class Cytomine(object):
     def put_model(self, model, query_parameters=None):
         response = self._put(model.uri(), model.to_json(), query_parameters)
         if response.status_code == requests.codes.ok:
-            model = model.populate(response.json()[model.callback_identifier.lower()])
+            if model.callback_identifier.lower() in response.json() :
+                model = model.populate(response.json()[model.callback_identifier.lower()])
+            else :
+                model = model.populate(response.json()[model.__class__.__name__.lower()]) #remove when REST URL are normalized
 
         self._log_response(response, model)
         if not response.status_code == requests.codes.ok:
@@ -529,7 +533,10 @@ class Cytomine(object):
 
         if response.status_code == requests.codes.ok:
             try:
-                model = model.populate(response.json()[model.callback_identifier.lower()])
+                if model.callback_identifier.lower() in response.json() :
+                    model = model.populate(response.json()[model.callback_identifier.lower()])
+                else :
+                    model = model.populate(response.json()[model.__class__.__name__.lower()]) #remove when REST URL are normalized
             except KeyError:
                 self._logger.warning(response.json())
 
@@ -566,6 +573,24 @@ class Cytomine(object):
             return True
         else:
             return False
+
+    def is_alive(self):
+        uri = "/server/ping"
+        try:
+            response = self._get(uri, None, with_base_path=False)
+            self._log_response(response, uri)
+            return response.status_code == requests.codes.ok
+        except Exception:
+            return False
+
+    def wait_to_accept_connection(self, timeout_in_seconds=120, delay_between_retry_in_seconds=1):
+        mustend = time.time() + timeout_in_seconds
+        while time.time() < mustend:
+            if self.is_alive():
+                return True
+            time.sleep(delay_between_retry_in_seconds)
+        return False
+
 
     def upload_file(self, model, filename, query_parameters=None, uri=None):
         if not uri:
@@ -623,13 +648,17 @@ class Cytomine(object):
         upload_host, protocol = self._parse_url(upload_host, protocol)
         upload_host = "{}://{}".format(protocol, upload_host)
 
+        cytomine_core = "{}://{}".format(self._protocol, self._host)
         query_parameters = {
+            "idStorage": id_storage,  # backwards compatibility
             "storage": id_storage,
-            "core": "{}://{}".format(self._protocol, self._host),
+            "cytomine": cytomine_core,  # backwards compatibility
+            "core": cytomine_core,
             "sync": sync
         }
 
         if id_project:
+            query_parameters["idProject"] = id_project  # backwards compatibility
             query_parameters["projects"] = id_project
 
         if properties:
@@ -718,30 +747,46 @@ class Cytomine(object):
     def _process_upload_response(self, response_data):
         from .models.storage import UploadedFile
         from .models.image import AbstractImage, AbstractSliceCollection, AbstractSlice, ImageInstance, \
-            ImageInstanceCollection
+            ImageInstanceCollection, AbstractImageCollection
 
         self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
 
-        uf = UploadedFile().populate(response_data["uploadedFile"])
+        if "uploadFile" in response_data:
+            # backwards compatibility
+            uf = UploadedFile().populate(response_data["uploadFile"])
 
-        uf.images = []
-        if response_data["images"]:
-            for image in response_data["images"]:
-                abstract_slices = AbstractSliceCollection()
-                for abstract_slice in image["slices"]:
-                    abstract_slices.append(AbstractSlice().populate(abstract_slice))
+            uf.images = AbstractImageCollection()
+            if "images" in response_data:
+                for image in response_data["images"]:
+                    if "attr" in image:
+                        uf.images.append(AbstractImage().populate(image["attr"]))
 
-                image_instances = ImageInstanceCollection()
-                for image_instance in image["imageInstances"]:
-                    image_instances.append(ImageInstance().populate(image_instance))
+            return uf
+        else:
+            uf = UploadedFile().populate(response_data["uploadedFile"])
 
-                uf.images.append({
-                    "abstractImage": AbstractImage().populate(image["image"]),
-                    "abstractSlices": abstract_slices,
-                    "imageInstances": image_instances
-                })
+            uf.images = []
+            if "images" in response_data:
+                for image in response_data["images"]:
+                    data = dict()
 
-        return uf
+                    if "slices" in image:
+                        abstract_slices = AbstractSliceCollection()
+                        for abstract_slice in image["slices"]:
+                            abstract_slices.append(AbstractSlice().populate(abstract_slice))
+                        data["abstractSlices"] = abstract_slices
+
+                    if "imageInstances" in image:
+                        image_instances = ImageInstanceCollection()
+                        for image_instance in image["imageInstances"]:
+                            image_instances.append(ImageInstance().populate(image_instance))
+                        data["imageInstances"] = image_instances
+
+                    if "image" in image:
+                        data["abstractImage"] = AbstractImage().populate(image["image"])
+                    uf.images.append(data)
+
+            return uf
 
     """
     Following methods are deprecated methods, only temporary here for backwards compatibility.
@@ -969,7 +1014,7 @@ class Cytomine(object):
         from .models.image import AbstractImage
         image = AbstractImage()
         image = image.fetch(id_image)
-        image.originalFilename = filename if filename else image.originalFilename
+        image.filename = filename if filename else image.filename
         image.path = path if path else image.path
         image.mime = mime if mime else image.mime
         image.scanner = id_scanner if id_scanner else image.scanner

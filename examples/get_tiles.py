@@ -29,7 +29,7 @@ import os
 from cytomine import Cytomine
 from cytomine.models.image import ImageInstanceCollection, ImageInstance
 from cytomine.utilities import WholeSlide
-from cytomine.utilities import CytomineReader
+from cytomine.utilities.reader import CytomineReader
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 

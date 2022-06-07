@@ -23,7 +23,8 @@ from .collection import Collection, DomainCollection
 from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm, AnnotationGroup, \
     AnnotationGroupCollection, AnnotationLink, AnnotationLinkCollection
 from .image import AbstractImage, AbstractImageCollection, AbstractSlice, AbstractSliceCollection,\
-    ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection
+    ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection, \
+    ImageServer, ImageServerCollection
 from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupImageInstance, ImageGroupImageInstanceCollection
 from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm
 from .project import Project, ProjectCollection, Discipline, DisciplineCollection

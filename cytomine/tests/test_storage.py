@@ -54,17 +54,16 @@ class TestStorage:
 class TestUploadedFile:
     def test_uploaded_file(self, connect, dataset):
         storages = StorageCollection().fetch()
-        path = "path"
-        uf = UploadedFile("original", "filename", 1, "ext", "contentType", None, storages[0].id,
-                          connect.current_user.id, UploadedFile.UPLOADED, None).save()
+        filename = "filename"
+        uf = UploadedFile("original", filename, id_user=connect.current_user.id, size=1, ext="ext", contentType="contentType", id_storage=storages[0].id, id_image_server=dataset["image_servers"][0].id).save()
         assert(isinstance(uf, UploadedFile))
-        assert(uf.path == path)
+        assert(uf.filename == filename)
 
-        path = path + "bis"
-        uf.path = path
+        filename = filename + "bis"
+        uf.filename = filename
         uf.update()
         assert(isinstance(uf, UploadedFile))
-        assert(uf.path == path)
+        assert(uf.filename == filename)
 
         uf.delete()
         assert(not UploadedFile().fetch(uf.id))

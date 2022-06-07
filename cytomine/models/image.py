@@ -107,6 +107,22 @@ class AbstractImageCollection(Collection):
         self.set_parameters(parameters)
 
 
+class ImageServer(Model):
+    def __init__(self, name=None, url=None, available=False, base_path=None, **attributes):
+        super(ImageServer, self).__init__()
+        self.name = name
+        self.url = url
+        self.available = available
+        self.base_path = base_path
+
+
+class ImageServerCollection(Collection):
+    def __init__(self, filters=None, max=0, offset=0, **parameters):
+        super(ImageServerCollection, self).__init__(ImageServer, filters, max, offset)
+        self._allowed_filters = [None]
+        self.set_parameters(parameters)
+
+
 class AbstractSlice(Model):
     def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None,
                  **attributes):

@@ -31,7 +31,7 @@ class TestSoftware:
     @pytest.mark.skip()
     def test_software(self, connect, dataset):
         name = random_string()
-        software = Software(name, "createRabbitJobWithArgsService", "ValidateAnnotation").save()
+        software = Software(name, "ValidateAnnotation").save()
         assert (isinstance(software, Software))
         assert (software.name == name)
 
@@ -54,14 +54,13 @@ class TestSoftware:
         assert (isinstance(softwares, SoftwareCollection))
 
         softwares = SoftwareCollection()
-        softwares.append(Software(random_string(), "createRabbitJobWithArgsService", "ValidateAnnotation"))
+        softwares.append(Software(random_string(), "ValidateAnnotation"))
         assert (softwares.save())
 
     @pytest.mark.skip()
     def test_softwares_by_project(self, connect, dataset):
         softwares = SoftwareCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(softwares, SoftwareCollection))
-
 
 class TestSoftwareProject:
     @pytest.mark.skip()
