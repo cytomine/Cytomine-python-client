@@ -21,17 +21,14 @@ from __future__ import unicode_literals
 
 import logging
 import sys
-import numpy as np
 from argparse import ArgumentParser
 
-import os
 
 from cytomine import Cytomine
-from cytomine.models.image import ImageInstanceCollection, ImageInstance
-from cytomine.utilities import WholeSlide
-from cytomine.utilities.reader import CytomineReader
+from cytomine.models import TermCollection
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
+# This example script allows you to get the list of terms (labels) in a project.
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")
@@ -40,36 +37,23 @@ logger.setLevel(logging.INFO)
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
 
-    # Cytomine
+    # Cytomine connection parameters
     parser.add_argument('--cytomine_host', dest='host',
                         default='demo.cytomine.be', help="The Cytomine host")
     parser.add_argument('--cytomine_public_key', dest='public_key',
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_id_image_instance', dest='id_image_instance',
-                        help="The image from which tiles will be extracted")
-    parser.add_argument('--overlap', help="Overlap between tiles", default=10)
-    parser.add_argument('--zoom', help="Zoom at which tiles are extracted", default=None)
+
+    # Cytomine project ID
+    parser.add_argument('--cytomine_id_project', dest='id_project',
+                        help="The project from which we want the images")
+
     params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
-        image_instance = ImageInstance().fetch(params.id_image_instance)
-        print(image_instance)
 
-        if not params.zoom:
-            # "depth" attribute is used as zoom in old Cytomine versions
-            zoom = image_instance.zoom if image_instance.zoom is not None else image_instance.depth
-            params.zoom = int(zoom / 2)
-        print("Zoom set to {}".format(params.zoom))
+        terms = TermCollection().fetch_with_filter("project", params.id_project)
+        for term in terms:
+            print("Term ID: {} | Name: {} | Color: {}".format(term.id, term.name, term.color))
 
-        whole_slide = WholeSlide(image_instance)
-        reader = CytomineReader(whole_slide, overlap=params.overlap, zoom=params.zoom)
-        while True:
-            reader.read()
-            image = np.array(reader.result())
-            print(image.shape)
-            print(reader.window_position)
-
-            if not reader.next():
-                break

@@ -756,32 +756,35 @@ class Cytomine(object):
             uf = UploadedFile().populate(response_data["uploadFile"])
 
             uf.images = AbstractImageCollection()
-            if response_data["images"]:
+            if "images" in response_data:
                 for image in response_data["images"]:
-                    uf.images.append(AbstractImage().populate(image["attr"]))
+                    if "attr" in image:
+                        uf.images.append(AbstractImage().populate(image["attr"]))
 
             return uf
         else:
             uf = UploadedFile().populate(response_data["uploadedFile"])
 
             uf.images = []
-            if response_data["images"]:
+            if "images" in response_data:
                 for image in response_data["images"]:
-                    abstract_slices = AbstractSliceCollection()
-                    for abstract_slice in image["slices"]:
-                        abstract_slices.append(AbstractSlice().populate(abstract_slice))
+                    data = dict()
 
-                    image_instances = ImageInstanceCollection()
-                    for image_instance in image["imageInstances"]:
-                        image_instances.append(ImageInstance().populate(image_instance))
+                    if "slices" in image:
+                        abstract_slices = AbstractSliceCollection()
+                        for abstract_slice in image["slices"]:
+                            abstract_slices.append(AbstractSlice().populate(abstract_slice))
+                        data["abstractSlices"] = abstract_slices
 
-                    uf.images.append(
-                        {
-                            "abstractImage": AbstractImage().populate(image["image"]),
-                            "abstractSlices": abstract_slices,
-                            "imageInstances": image_instances
-                        }
-                    )
+                    if "imageInstances" in image:
+                        image_instances = ImageInstanceCollection()
+                        for image_instance in image["imageInstances"]:
+                            image_instances.append(ImageInstance().populate(image_instance))
+                        data["imageInstances"] = image_instances
+
+                    if "image" in image:
+                        data["abstractImage"] = AbstractImage().populate(image["image"])
+                    uf.images.append(data)
 
             return uf
 
