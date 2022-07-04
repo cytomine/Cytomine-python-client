@@ -55,18 +55,30 @@ if __name__ == '__main__':
     params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
+        obj = None
 
         if params.id_project:
-            prop = Property(Project().fetch(params.id_project), key=params.key, value=params.value).save()
+            obj = Project().fetch(params.id_project)
+            prop = Property(obj, key=params.key, value=params.value).save()
             print(prop)
 
         if params.id_image_instance:
-            prop = Property(ImageInstance().fetch(params.id_image_instance), key=params.key, value=params.value).save()
+            obj = ImageInstance().fetch(params.id_image_instance)
+            prop = Property(obj, key=params.key, value=params.value).save()
             print(prop)
 
         if params.id_annotation:
-            prop = Property(Annotation().fetch(params.id_annotation), key=params.key, value=params.value).save()
+            obj = Annotation().fetch(params.id_annotation)
+            prop = Property(obj, key=params.key, value=params.value).save()
             print(prop)
+            
+        # Get the property from the API using property ID
+        fetched_prop = Property(obj).fetch(prop.id)
+        print(fetched_prop)
+        
+        # Get the property from the API using property key
+        fetched_prop = Property(obj).fetch(key=params.key)
+        print(fetched_prop)
 
         """
         You can add property to any Cytomine domain.
