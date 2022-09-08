@@ -57,7 +57,7 @@ class Software(Model):
 
     def upload(self, file_path=None):
         return Cytomine.get_instance().upload_file(
-            self, file_path, query_parameters={"name": self.name},
+            self, file_path, query_parameters={"name": self.name, "softwareVersion": self.softwareVersion},
             uri="{}/upload".format(self.callback_identifier)
         )
 
