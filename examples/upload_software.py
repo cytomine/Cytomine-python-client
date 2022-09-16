@@ -24,7 +24,7 @@ __author__ = "Grégoire Vincke <gregoire.vincke@cytomine.coop> and Renaud Hoyoux
 __maintainer__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
 __status__ = "Production"
 __copyright__ = "Apache 2 license. Made by Cytomine SCRLFS, Belgium, https://cytomine.coop/"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 # -----------------------------------------------------------------------------------------------------------
 # Import of all python necessary modules, including the Cytomine Python client
 import cytomine
@@ -37,16 +37,15 @@ from argparse import ArgumentParser
 # Parsing all the arguments from the command line
 if __name__ == '__main__':
     parser = ArgumentParser(prog="Cytomine Python client example")
-    parser.add_argument('--cytomine_host', dest='host', default='demo.cytomine.be', help="The Cytomine host")
+    parser.add_argument('--cytomine_host', dest='host', default='demo.cytomine.com', help="The Cytomine host")
     parser.add_argument('--cytomine_public_key', dest='public_key', help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key', help="The Cytomine private key")
     parser.add_argument('--software_name', dest='software_name', help="The name of your Software")
-    # You can specify the software version but it is not mandatory
-    parser.add_argument('--softwareVersion', dest='softwareVersion', help='The version number of your software')
-    parser.add_argument('--filepath', dest='filepath', help="The filepath (on your file system) of the file you want to upload")
+    parser.add_argument('--software_version', dest='software_version', help='The version number of your software (optional)', required=False)
+    parser.add_argument('--filepath', dest='filepath', help="The filepath (on your file system) of the zip file you want to upload")
     params, other = parser.parse_known_args(sys.argv[1:])
 # -----------------------------------------------------------------------------------------------------------
 # Upload the software
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key, verbose=logging.INFO) as cytomine:
-        software = Software(name=params.software_name, softwareVersion=params.softwareVersion).upload(params.filepath)
+        software = Software(name=params.software_name, softwareVersion=params.software_version).upload(params.filepath)
 # -----------------------------------------------------------------------------------------------------------
