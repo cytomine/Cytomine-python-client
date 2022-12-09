@@ -6,7 +6,7 @@
 #
 cachecontrol==0.12.10
     # via Cytomine-Python-Client (setup.py)
-certifi==2021.5.30
+certifi==2022.12.7
     # via requests
 charset-normalizer==2.0.12
     # via requests
