@@ -125,6 +125,11 @@ def read_response_message(response, key='message', encoding="utf-8"):
     except JSONDecodeError:
         return content
 
+class URLRedirectionException(BaseException):
+    def __init__(self, status_code, url):
+        self.status_code = status_code
+        self.message = f"HTTP return code : {status_code}. URL was redirected to {url}."
+        super().__init__(self.message)
 
 class Cytomine(object):
     __instance = None
@@ -405,11 +410,16 @@ class Cytomine(object):
             msg = "[{}] {} | {} {}".format(response.request.method, message, response.status_code, response.reason)
             if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
                 self.log(msg)
+            elif response.status_code == 301 or response.status_code == 302:
+                redirected_url = response.headers['Location']
+                raise URLRedirectionException(response.status_code, redirected_url)
             else:
                 self.log("{} ({})".format(msg, read_response_message(response, key="errors")), level=logging.ERROR)
             self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
+        except URLRedirectionException as e:
+            raise
 
     def log(self, msg, level=logging.INFO):
         self._logger.log(level, msg)
@@ -420,6 +430,7 @@ class Cytomine(object):
 
     def _get(self, uri, query_parameters, with_base_path=True):
         return self._session.get("{}{}".format(self._base_url(with_base_path), uri),
+                                 allow_redirects=False,
                                  auth=CytomineAuth(
                                      self._public_key, self._private_key,
                                      self._base_url(), self._base_path),
@@ -436,11 +447,14 @@ class Cytomine(object):
 
     def get_model(self, model, query_parameters=None):
         response = self._get(model.uri(), query_parameters)
+        
         if response.status_code == requests.codes.ok:
-            model = model.populate(response.json())
-
-        self._log_response(response, model)
+            response_json = response.json()
+            model = model.populate(response_json)
+            self._log_response(response, model)
+            
         if not response.status_code == requests.codes.ok:
+            self._log_response(response, model.uri())
             model = False
 
         return model
