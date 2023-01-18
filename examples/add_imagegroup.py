@@ -23,12 +23,14 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-import os
 
 from cytomine import Cytomine
-from cytomine.models import StorageCollection, Project, UploadedFile
+from cytomine.models import ImageGroup, ImageGroupImageInstance
+from cytomine.models.image import ImageInstanceCollection
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
+
+from models import ImageGroupCollection
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")
@@ -44,35 +46,29 @@ if __name__ == '__main__':
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_upload_host', dest='upload_host',
-                        default='demo-upload.cytomine.be', help="The Cytomine upload host")
-    parser.add_argument('--cytomine_id_project', dest='id_project', required=False,
-                        help="The project from which we want the images (optional)")
-    parser.add_argument('--filepath', dest='filepath',
-                        help="The filepath (on your file system) of the file you want to upload")
+    parser.add_argument('--cytomine_id_project', dest='id_project',
+                        help="The project from which we want the images")
+    parser.add_argument('--group_name', help="Name of the future image group", default="GROUP")
     params, other = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.host, public_key=params.public_key, private_key=params.private_key) as cytomine:
+        image_instances = ImageInstanceCollection().fetch_with_filter("project", params.id_project)
+        print(image_instances)
 
-        # Check that the file exists on your file system
-        if not os.path.exists(params.filepath):
-            raise ValueError("The file you want to upload does not exist")
+        # This script will create an image group from image instances in the specified project.
+        group = ImageGroup(name=params.group_name, id_project=params.id_project).save()
 
-        # Check that the given project exists
-        if params.id_project:
-            project = Project().fetch(params.id_project)
-            if not project:
-                raise ValueError("Project not found")
+        # It adds the 3 first images of the project into the image group as example
+        for image in image_instances[:3]:
+            print("Image ID: {} | Width: {} | Height: {} | Filename: {}".format(
+                image.id, image.width, image.height, image.filename))
 
-        # To upload the image, we need to know the ID of your Cytomine storage.
-        storages = StorageCollection().fetch()
-        my_storage = next(filter(lambda storage: storage.user == cytomine.current_user.id, storages))
-        if not my_storage:
-            raise ValueError("Storage not found")
+            igii = ImageGroupImageInstance(group.id, image.id).save()
+            print(igii)
 
-        uploaded_file = cytomine.upload_image(upload_host=params.upload_host,
-                                              filename=params.filepath,
-                                              id_storage=my_storage.id,
-                                              id_project=params.id_project)
-
-        print(uploaded_file)
+        # We list all image groups in the project
+        image_groups = ImageGroupCollection().fetch_with_filter("project", params.id_project)
+        for image_group in image_groups:
+            print("Group {} has name {} and following images: ".format(image_group.id, image_group.name))
+            for image in ImageInstanceCollection().fetch_with_filter("imagegroup", image_group.id):
+                print(" * {}".format(image.filename))

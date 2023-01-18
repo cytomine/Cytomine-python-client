@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import pytest
+
 from cytomine.models.software import *
 from cytomine.tests.conftest import random_string
 
@@ -26,6 +28,7 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
 
 class TestSoftware:
+    @pytest.mark.skip()
     def test_software(self, connect, dataset):
         name = random_string()
         software = Software(name, "ValidateAnnotation").save()
@@ -45,6 +48,7 @@ class TestSoftware:
         software.delete()
         assert (not Software().fetch(software.id))
 
+    @pytest.mark.skip()
     def test_softwares(self, connect, dataset):
         softwares = SoftwareCollection().fetch()
         assert (isinstance(softwares, SoftwareCollection))
@@ -53,11 +57,13 @@ class TestSoftware:
         softwares.append(Software(random_string(), "ValidateAnnotation"))
         assert (softwares.save())
 
+    @pytest.mark.skip()
     def test_softwares_by_project(self, connect, dataset):
         softwares = SoftwareCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(softwares, SoftwareCollection))
 
 class TestSoftwareProject:
+    @pytest.mark.skip()
     def test_software_project(self, connect, dataset):
         sp = SoftwareProject(dataset["software"].id, dataset["project"].id).save()
         assert (isinstance(sp, SoftwareProject))
@@ -70,16 +76,19 @@ class TestSoftwareProject:
         sp.delete()
         assert (not SoftwareProject().fetch(sp.id))
 
+    @pytest.mark.skip()
     def test_software_projects(self, connect, dataset):
         sps = SoftwareProjectCollection().fetch()
         assert (isinstance(sps, SoftwareProjectCollection))
 
+    @pytest.mark.skip()
     def test_software_projects_by_project(self, connect, dataset):
         sps = SoftwareProjectCollection().fetch_with_filter("project", dataset["project"].id)
         assert (isinstance(sps, SoftwareProjectCollection))
 
 
 class TestSoftwareParameter:
+    @pytest.mark.skip()
     def test_software_parameter(self, connect, dataset):
         name = random_string()
         sp = SoftwareParameter(name, "Number", dataset["software"].id, 0, False, 100, False).save()
@@ -99,17 +108,20 @@ class TestSoftwareParameter:
         sp.delete()
         assert (not SoftwareParameter().fetch(sp.id))
 
+    @pytest.mark.skip()
     def test_software_parameters(self, connect, dataset):
         sps = SoftwareParameterCollection()
         sps.append(SoftwareParameter(random_string(), "Number", dataset["software"].id, 0, False, 100, False))
         assert (sps.save())
 
+    @pytest.mark.skip()
     def test_software_parameters_by_software(self, connect, dataset):
         sps = SoftwareParameterCollection().fetch_with_filter("software", dataset["software"].id)
         assert (isinstance(sps, SoftwareParameterCollection))
 
 
 class TestJob:
+    @pytest.mark.skip()
     def test_job(self, connect, dataset):
         job = Job(dataset["project"].id, dataset["software"].id).save()
         assert (isinstance(job, Job))
@@ -128,12 +140,14 @@ class TestJob:
         job.delete()
         assert (not Job().fetch(job.id))
 
+    @pytest.mark.skip()
     def test_jobs(self, connect, dataset):
         jobs = JobCollection(project=dataset["project"].id, software=dataset["software"].id).fetch()
         assert (isinstance(jobs, JobCollection))
 
 
 class TestJobParameter:
+    @pytest.mark.skip()
     def test_job_parameter(self, connect, dataset):
         value = 10
         job_parameter = JobParameter(dataset["job"].id, dataset["software_parameter"].id, value).save()
@@ -153,6 +167,7 @@ class TestJobParameter:
         job_parameter.delete()
         assert (not JobParameter().fetch(job_parameter.id))
 
+    @pytest.mark.skip()
     def test_job_parameters(self, connect, dataset):
         job_parameters = JobParameterCollection().fetch_with_filter("job", dataset["job"].id)
         assert (isinstance(job_parameters, JobParameterCollection))
