@@ -75,7 +75,7 @@ publish-python-package:
     - python setup.py sdist
     - |
       if [ $IS_OPEN_SOURCE_RELEASE_CANDIDATE = "true" ]; then
-        export TARGET_PYTHON_REPO=https://pypi.org/
+        export TARGET_PYTHON_REPO=https://upload.pypi.org/legacy/
         export TWINE_USERNAME=$PYPI_USERNAME
         export TWINE_PASSWORD=$PYPI_PASSWORD
       else
