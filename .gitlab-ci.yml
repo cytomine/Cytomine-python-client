@@ -19,12 +19,21 @@ workflow:
   rules:
     # - if: $CI_COMMIT_REF_PROTECTED != "true"
     #   when: never
-    - if: $CI_COMMIT_TAG != null && $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+    # only publish package if tag is a pypi compatible version (see long regex) 
+    # open-source if tag is in simple semver format 
+    - if: $CI_COMMIT_TAG != null && $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]?$/
       variables:
+        PUBLISH_PYTHON_PACKAGE: "true"
         IS_OPEN_SOURCE_RELEASE_CANDIDATE: "true"
-    - if: $CI_COMMIT_TAG == null || $CI_COMMIT_REF_NAME !~ /^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+    - if: $CI_COMMIT_TAG != null && $CI_COMMIT_TAG =~ /^v?([1-9][0-9]*!)?(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$/
       variables:
+        PUBLISH_PYTHON_PACKAGE: "true"
         IS_OPEN_SOURCE_RELEASE_CANDIDATE: "false"
+    - if: $CI_COMMIT_TAG == null || $CI_COMMIT_TAG !~ /^v?([1-9][0-9]*!)?(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?(\.post(0|[1-9][0-9]*))?(\.dev(0|[1-9][0-9]*))?$/
+      variables:
+        PUBLISH_PYTHON_PACKAGE: "false"
+        IS_OPEN_SOURCE_RELEASE_CANDIDATE: "false"
+
 
 make-version-name:
   stage: prepare
@@ -73,7 +82,7 @@ publish-python-package:
   image: python:3.8-slim-bullseye
   stage: publish
   rules:
-    - if: $CI_COMMIT_TAG 
+    - if: $PUBLISH_PYTHON_PACKAGE == "true"
   needs:
     - job: make-version-name
       artifacts: true
@@ -85,8 +94,7 @@ publish-python-package:
       artifacts: false
   script:
     - pip install twine
-    - export PYPI_COMPATIBLE_VERSION=$(echo $CM_VERSION | sed 's/v//')
-    - sed -i -- "s/version='x.x.x'/version='$PYPI_COMPATIBLE_VERSION'/g" setup.py
+    - sed -i -- "s/version='x.x.x'/version='$CM_VERSION'/g" setup.py
     - python setup.py sdist
     - |
       if [ $IS_OPEN_SOURCE_RELEASE_CANDIDATE = "true" ]; then
@@ -98,4 +106,4 @@ publish-python-package:
         export TWINE_USERNAME=gitlab-ci-token
         export TWINE_PASSWORD=$CI_JOB_TOKEN
       fi
-    - twine upload dist/cytomine-python-client-$PYPI_COMPATIBLE_VERSION.tar.gz --repository-url $TARGET_PYTHON_REPO
+    - twine upload dist/cytomine-python-client-$CM_VERSION.tar.gz --repository-url $TARGET_PYTHON_REPO
