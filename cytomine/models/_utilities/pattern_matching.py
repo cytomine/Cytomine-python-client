@@ -27,7 +27,7 @@ def resolve_pattern(pattern, attr_source):
     resolved: iterable
         The list of resolved patterns
     """
-    matches = re.findall("{([^\}]+)}", pattern)
+    matches = re.findall(r"{([^\}]+)}", pattern)
     attr_dict = {match: getattr(attr_source, match, "_") for match in matches}
 
     # remaining attributes to fill in the pattern
