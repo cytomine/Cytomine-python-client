@@ -54,11 +54,6 @@ make-version-name:
     reports:
       junit: ci/tests-reports/pytest_unit.xml
 
-run-pytest-python3.6:
-  <<: *run-pytest-generic
-  variables:
-    PY_VERSION: "3.6"
-
 run-pytest-python3.7:
   <<: *run-pytest-generic
   variables:
@@ -73,11 +68,6 @@ run-pytest-python3.9:
   <<: *run-pytest-generic
   variables:
     PY_VERSION: "3.9"
-
-run-pytest-python3.10:
-  <<: *run-pytest-generic
-  variables:
-    PY_VERSION: "3.10"
 
 publish-python-package:
   image: python:3.8-slim-bullseye
