@@ -11,6 +11,10 @@ stages:
 # - PYPI_USERNAME: pypi username for package upload
 # - PYPI_PASSWORD: pypi password for package upload
 
+default:
+  tags:
+    - docker
+
 workflow:
   rules:
     # - if: $CI_COMMIT_REF_PROTECTED != "true"
