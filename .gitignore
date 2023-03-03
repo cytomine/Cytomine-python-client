@@ -108,5 +108,7 @@ venv.bak/
 .mypy_cache/
 
 .idea/
+.vscode/
 *.iml
 .pytest_cache/
+ci/
