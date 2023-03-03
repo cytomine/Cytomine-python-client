@@ -1,0 +1,106 @@
+stages:
+  - prepare
+  - test
+  - build
+  - publish
+
+# variable to register in project:
+# - DOCKERHUB_URL: url of dockerhub (e.g. docker.io)
+# - DOCKERHUB_USER: cytomine username on dockerhub
+# - DOCKERHUB_PASSWORD: cytomine password on dockerhub
+# - PYPI_USERNAME: pypi username for package upload
+# - PYPI_PASSWORD: pypi password for package upload
+
+workflow:
+  rules:
+    # - if: $CI_COMMIT_REF_PROTECTED != "true"
+    #   when: never
+    - if: $CI_COMMIT_TAG != null && $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+      variables:
+        IS_OPEN_SOURCE_RELEASE_CANDIDATE: "true"
+    - if: $CI_COMMIT_TAG == null || $CI_COMMIT_REF_NAME !~ /^v[0-9]+\.[0-9]+\.[0-9]+(-.*)?$/
+      variables:
+        IS_OPEN_SOURCE_RELEASE_CANDIDATE: "false"
+
+make-version-name:
+  stage: prepare
+  # regex check does not work with /bin/sh because of parenthesis so we need /bin/bash here
+  image: bash:5.2.15-alpine3.16
+  script:
+    - if [[ "$CI_COMMIT_REF_NAME" =~ ^refs/tags/ ]] then
+        echo "CM_VERSION=$CI_COMMIT_TAG" > .env;
+      else
+        echo "CM_VERSION=$CI_COMMIT_SHORT_SHA-$(date '+%Y%m%d%H%M%S')-SNAPSHOT" > .env;
+      fi
+    - cat .env
+  artifacts:
+    reports:
+      dotenv: .env
+
+.run-pytest-generic: &run-pytest-generic
+  stage: test
+  image: python:$PY_VERSION-slim-bullseye
+  script:
+    - pip install -r requirements.txt
+    - pip install pytest
+    # Only run unit tests
+    # TODO run integration tests (need to spawn a clean cytomine for each run-pytest*)
+    - pytest cytomine/tests/test_pattern_matching.py --junit-xml=ci/test-reports/pytest_unit.xml
+  artifacts:
+    reports:
+      junit: ci/tests-reports/pytest_unit.xml
+
+run-pytest-python3.6: *run-pytest-generic
+  variables:
+    PY_VERSION: 3.6
+
+run-pytest-python3.7: *run-pytest-generic
+  variables:
+    PY_VERSION: 3.7
+
+run-pytest-python3.8: *run-pytest-generic
+  variables:
+    PY_VERSION: 3.8
+
+run-pytest-python3.9: *run-pytest-generic
+  variables:
+    PY_VERSION: 3.9
+
+run-pytest-python3.10: *run-pytest-generic
+  variables:
+    PY_VERSION: 3.10
+
+publish-python-package:
+  image: python:3.8-slim-bullseye
+  stage: publish
+  rules:
+    if: $CI_COMMIT_TAG 
+  needs:
+    - job: make-version-name
+      artifacts: true
+    - job: build-python-package
+      artifacts: true
+    - job: run-pytest-python3.6
+      artifacts: false
+    - job: run-pytest-python3.7
+      artifacts: false
+    - job: run-pytest-python3.8
+      artifacts: false
+    - job: run-pytest-python3.9
+      artifacts: false
+    - job: run-pytest-python3.10
+      artifacts: false
+  script:
+    - export PYPI_COMPATIBLE_VERSION=$(echo $CM_VERSION | sed 's/v//')
+    - sed -i -- "s/version='x.x.x'/version='$PYPI_COMPATIBLE_VERSION'" setup.py
+    - python setup.py sdist
+    - if [ $IS_OPEN_SOURCE_RELEASE_CANDIDATE = "true" ]; then
+        export TARGET_PYTHON_REPO=https://pypi.org/
+        export TWINE_USERNAME=$PYPI_USERNAME
+        export TWINE_PASSWORD=$PYPI_PASSWORD
+      else
+        export TARGET_PYTHON_REPO=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
+        export TWINE_USERNAME=gitlab-ci-token
+        export TWINE_PASSWORD=$CI_JOB_TOKEN
+      fi
+    - twine upload dist/cytomine-python-client-$PYPI_COMPATIBLE_VERSION.tar.gz --repository-url $TARGET_PYTHON_REPO
