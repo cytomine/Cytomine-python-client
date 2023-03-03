@@ -77,15 +77,11 @@ publish-python-package:
   needs:
     - job: make-version-name
       artifacts: true
-    - job: run-pytest-python3.6
-      artifacts: false
     - job: run-pytest-python3.7
       artifacts: false
     - job: run-pytest-python3.8
       artifacts: false
     - job: run-pytest-python3.9
-      artifacts: false
-    - job: run-pytest-python3.10
       artifacts: false
   script:
     - export PYPI_COMPATIBLE_VERSION=$(echo $CM_VERSION | sed 's/v//')
