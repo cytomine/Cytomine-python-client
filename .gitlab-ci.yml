@@ -49,7 +49,7 @@ make-version-name:
     - pip install pytest
     # Only run unit tests
     # TODO run integration tests (need to spawn a clean cytomine for each run-pytest*)
-    - pytest cytomine/tests/test_pattern_matching.py --junit-xml=ci/test-reports/pytest_unit.xml
+    - pytest tests/test_pattern_matching.py --junit-xml=ci/test-reports/pytest_unit.xml
   artifacts:
     reports:
       junit: ci/tests-reports/pytest_unit.xml
