@@ -84,6 +84,7 @@ publish-python-package:
     - job: run-pytest-python3.9
       artifacts: false
   script:
+    - pip install twine
     - export PYPI_COMPATIBLE_VERSION=$(echo $CM_VERSION | sed 's/v//')
     - sed -i -- "s/version='x.x.x'/version='$PYPI_COMPATIBLE_VERSION'/g" setup.py
     - python setup.py sdist
