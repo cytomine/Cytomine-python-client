@@ -106,4 +106,4 @@ publish-python-package:
         export TWINE_USERNAME=gitlab-ci-token
         export TWINE_PASSWORD=$CI_JOB_TOKEN
       fi
-    - twine upload dist/cytomine-python-client-$CM_VERSION.tar.gz --repository-url $TARGET_PYTHON_REPO
+    - twine upload dist/cytomine-python-client-*.tar.gz --repository-url $TARGET_PYTHON_REPO
