@@ -87,7 +87,8 @@ publish-python-package:
     - export PYPI_COMPATIBLE_VERSION=$(echo $CM_VERSION | sed 's/v//')
     - sed -i -- "s/version='x.x.x'/version='$PYPI_COMPATIBLE_VERSION'/g" setup.py
     - python setup.py sdist
-    - if [ $IS_OPEN_SOURCE_RELEASE_CANDIDATE = "true" ]; then
+    - |
+      if [ $IS_OPEN_SOURCE_RELEASE_CANDIDATE = "true" ]; then
         export TARGET_PYTHON_REPO=https://pypi.org/
         export TWINE_USERNAME=$PYPI_USERNAME
         export TWINE_PASSWORD=$PYPI_PASSWORD
