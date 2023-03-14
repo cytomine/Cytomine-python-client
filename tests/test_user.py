@@ -20,7 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from cytomine.models.user import *
-from cytomine.tests.conftest import random_string
+from tests.conftest import random_string
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
 
