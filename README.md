@@ -9,7 +9,7 @@ When using our software, we kindly ask you to cite our website url and related p
 
 Cytomine (http://doc.cytomine.org) client and utilities in Python.
 
-Cytomine client contains functions to import/export data (projects, ontologies, images, users, annotations, softwares, ...) from/to Cytomine core server based on the RESTful API.
+Cytomine client contains functions to import/export data (projects, ontologies, images, users, annotations, softwares, ... ) from/to Cytomine core server based on the RESTful API.
 
 Cytomine utilities contains various functions including ones to access whole slide images (tiles,...) and basic image processing tools.
 
