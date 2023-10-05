@@ -9,38 +9,44 @@
 
 The main access point to Cytomine data is its REST API. This client is a Python package that can be imported in an application and allows to import/export data from Cytomine-Core and Cytomine-IMS using RESTful web services e.g. to generate annotation (spatial) statistics, create regions of interest (e.g. tumor masks), add metadata to images/annotations, apply algorithms on image tiles, ...
 
-See [documentation](http://doc.cytomine.be/display/ALGODOC/%5BDOC%5D+Data+access) for more details.
+See [documentation](https://doc.uliege.cytomine.org/dev-guide/clients/python/usage) for more details.
 
 ## Requirements
+
 * Python 2.7 | 3.5+
 
 ## Install
 
-**To install *official* release of Cytomine-python-client, see @cytomine. Follow this guide to install forked version by ULiege.** 
+**To install *official* release of Cytomine-python-client, see [@cytomine](https://github.com/cytomine/Cytomine-python-client). Follow this guide to install forked version by ULiege.**
 
 ### Automatic installation
+
 To retrieve package using `pip`:
+```bash
+pip install --extra-index-url=https://packagecloud.io/cytomine-uliege/Cytomine-python-client/pypi/simple cytomine-python-client
+```
 
-    pip install --extra-index-url=https://packagecloud.io/cytomine-uliege/Cytomine-python-client/pypi/simple cytomine-python-client
-    
 or, to add the extra index permanently to your `pip` configuration:
-
-    curl -s https://packagecloud.io/install/repositories/cytomine-uliege/Cytomine-python-client/script.python.sh | bash
-    pip install cytomine-python-client
+```bash
+curl -s https://packagecloud.io/install/repositories/cytomine-uliege/Cytomine-python-client/script.python.sh | bash
+pip install cytomine-python-client
+```
 
 See [package repository](https://packagecloud.io/cytomine-uliege/Cytomine-python-client) for details.
 
 ### Manual installation
+
 To download and install manually the package in a Python env, run (here for version 2.7.3):
 
-    wget https://github.com/Cytomine-ULiege/Cytomine-python-client/releases/download/v2.7.3/Cytomine-Python-Client-2.7.3.zip 
-    unzip Cytomine-Python-Client-2.7.3.zip 
-    cd Cytomine-Python-Client-2.7.3
-    pip install .
-
-For more details and manual installation with Miniconda, see [manual installation procedure](http://doc.cytomine.be/display/ALGODOC/Data+access+using+Python+client#DataaccessusingPythonclient-Installation).
+```bash
+wget https://github.com/Cytomine-ULiege/Cytomine-python-client/releases/download/v2.7.3/Cytomine-Python-Client-2.7.3.zip 
+unzip Cytomine-Python-Client-2.7.3.zip
+cd Cytomine-Python-Client-2.7.3
+pip install .
+```
 
 ### In a Docker container
+
 To ease developpement of new Cytomine software, the Cytomine-python-client package is available in Docker containers:
 * [cytomineuliege/software-python3-base](https://hub.docker.com/r/cytomineuliege/software-python3-base/) provides a Python 3.5 environment with client already installed.
 * [cytomineuliege/software-python2-base](https://hub.docker.com/r/cytomineuliege/software-python2-base/) provides a Python 2.7 environment with client already installed.
@@ -53,7 +59,7 @@ See [official python Docker image](https://hub.docker.com/_/python/) for more de
 
 ## Usage
 
-See [detailed usage documentation](http://doc.cytomine.be/display/ALGODOC/Data+access+using+Python+client#DataaccessusingPythonclient-Usage).
+See [detailed usage documentation](https://doc.uliege.cytomine.org/dev-guide/clients/python/usage).
 
 ### Basic example
 Three parameters are required to connect:
@@ -62,28 +68,31 @@ Three parameters are required to connect:
 * `PRIVATE_KEY`: Your cytomine private key. 
 
 First, the connection object has to be initialized.   
-    
-    from cytomine import Cytomine
-    host = "demo.cytomine.be"
-    public_key = "XXX" # check your own keys from your account page in the web interface
-    private_key = "XXX"
-    
-    cytomine = Cytomine.connect(host, public_key, private_key)
-    
-  
+```python
+from cytomine import Cytomine
+
+host = "demo.cytomine.be"
+public_key = "XXX" # check your own keys from your account page in the web interface
+private_key = "XXX"
+
+cytomine = Cytomine.connect(host, public_key, private_key)
+```
 
 The next sample code should print “Hello {username}” where {username} is replaced by your Cytomine username and print the list of available projects.
+```python
+from cytomine.models import ProjectCollection
 
-    from cytomine.models import ProjectCollection
-    print("Hello {}".format(cytomine.current_user))
-    projects = ProjectCollection().fetch()
-    print(projects)
-    for project in projects:
-        print(project)
-        
+print("Hello {}".format(cytomine.current_user))
+projects = ProjectCollection().fetch()
+print(projects)
+for project in projects:
+    print(project)
+```
+
 ### Other examples
+
 * [Scripts in examples directory](https://github.com/Cytomine-ULiege/Cytomine-python-client/tree/master/examples)
-* [Documentation by examples](http://doc.cytomine.be/display/ALGODOC/Data+access+using+Python+client#DataaccessusingPythonclient-Usage)
+* [Documentation by examples](https://doc.uliege.cytomine.org/dev-guide/clients/python/usage)
 
 ## References
 When using our software, we kindly ask you to cite our website url and related publications in all your work (publications, studies, oral presentations,...). In particular, we recommend to cite (Marée et al., Bioinformatics 2016) paper, and to use our logo when appropriate. See our license files for additional details.
