@@ -16,7 +16,7 @@ idna==3.2
     # via requests
 msgpack==1.0.2
     # via cachecontrol
-numpy==1.21.2
+numpy==1.22.0
     # via
     #   Cytomine-Python-Client (setup.py)
     #   opencv-python-headless
