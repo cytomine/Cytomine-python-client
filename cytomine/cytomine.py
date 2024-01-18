@@ -692,47 +692,29 @@ class Cytomine(object):
 
     def _process_upload_response(self, response_data):
         from .models.storage import UploadedFile
-        from .models.image import AbstractImage, AbstractSliceCollection, AbstractSlice, ImageInstance, \
-            ImageInstanceCollection, AbstractImageCollection
+        from .models.image import AbstractImage, ImageInstance, ImageInstanceCollection
 
         self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
 
-        if "uploadFile" in response_data:
-            # backwards compatibility
-            uf = UploadedFile().populate(response_data["uploadFile"])
+        uf = UploadedFile().populate(response_data["uploadedFile"])
 
-            uf.images = AbstractImageCollection()
-            if "images" in response_data:
-                for image in response_data["images"]:
-                    if "attr" in image:
-                        uf.images.append(AbstractImage().populate(image["attr"]))
+        uf.images = []
+        if "images" in response_data:
+            for image in response_data["images"]:
+                data = dict()
 
-            return uf
-        else:
-            uf = UploadedFile().populate(response_data["uploadedFile"])
+                if "imageInstances" in image:
+                    image_instances = ImageInstanceCollection()
+                    for image_instance in image["imageInstances"]:
+                        image_instances.append(ImageInstance().populate(image_instance))
+                    data["imageInstances"] = image_instances
 
-            uf.images = []
-            if "images" in response_data:
-                for image in response_data["images"]:
-                    data = dict()
+                if "image" in image:
+                    data["abstractImage"] = AbstractImage().populate(image["image"])
 
-                    if "slices" in image:
-                        abstract_slices = AbstractSliceCollection()
-                        for abstract_slice in image["slices"]:
-                            abstract_slices.append(AbstractSlice().populate(abstract_slice))
-                        data["abstractSlices"] = abstract_slices
+                uf.images.append(data)
 
-                    if "imageInstances" in image:
-                        image_instances = ImageInstanceCollection()
-                        for image_instance in image["imageInstances"]:
-                            image_instances.append(ImageInstance().populate(image_instance))
-                        data["imageInstances"] = image_instances
-
-                    if "image" in image:
-                        data["abstractImage"] = AbstractImage().populate(image["image"])
-                    uf.images.append(data)
-
-            return uf
+        return uf
 
     """
     Following methods are deprecated methods, only temporary here for backwards compatibility.
