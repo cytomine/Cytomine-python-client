@@ -19,4 +19,3 @@ __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain
 __copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 
 from .geometry import *
-from .reader import *
