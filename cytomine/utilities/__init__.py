@@ -18,4 +18,3 @@ __author__ = "Rubens Ulysse <urubens@uliege.be>"
 __contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
 __copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 
-from .geometry import *
