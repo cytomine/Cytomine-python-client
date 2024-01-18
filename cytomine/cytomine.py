@@ -447,12 +447,12 @@ class Cytomine(object):
 
     def get_model(self, model, query_parameters=None):
         response = self._get(model.uri(), query_parameters)
-        
+
         if response.status_code == requests.codes.ok:
             response_json = response.json()
             model = model.populate(response_json)
             self._log_response(response, model)
-            
+
         if not response.status_code == requests.codes.ok:
             self._log_response(response, model.uri())
             model = False
@@ -655,19 +655,13 @@ class Cytomine(object):
         else:
             return True
 
-    def upload_image(self, upload_host, filename, id_storage, id_project=None,
-                     properties=None, sync=False, protocol=None):
-        if not protocol:
-            protocol = self._protocol
-        upload_host, protocol = self._parse_url(upload_host, protocol)
-        upload_host = "{}://{}".format(protocol, upload_host)
+    def upload_image(self, filename, id_storage, id_project=None,
+                     properties=None, sync=False):
+        upload_host = self._base_url(with_base_path=False)
 
-        cytomine_core = "{}://{}".format(self._protocol, self._host)
         query_parameters = {
             "idStorage": id_storage,  # backwards compatibility
             "storage": id_storage,
-            "cytomine": cytomine_core,  # backwards compatibility
-            "core": cytomine_core,
             "sync": sync
         }
 
@@ -680,7 +674,7 @@ class Cytomine(object):
             query_parameters["values"] = ','.join(list(properties.values()))
 
         m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
-        response = self._session.post("{}/upload".format(upload_host),
+        response = self._session.post(f"{upload_host}/upload",
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
                                           upload_host, ""),
@@ -690,7 +684,7 @@ class Cytomine(object):
 
         if response.status_code == requests.codes.ok:
             uf = self._process_upload_response(response.json()[0])
-            self._logger.info("Image uploaded successfully to {}".format(upload_host))
+            self._logger.info("Image uploaded successfully")
             return uf
         else:
             self._logger.error("Error during image upload.")
