@@ -690,68 +690,6 @@ class Cytomine(object):
             self._logger.error("Error during image upload.")
             return False
 
-    def upload_crop(self, ims_host, filename, id_annot, id_storage,
-                id_project=None, sync=False, protocol=None):
-        """
-        Upload the crop associated with an annotation as a new image.
-
-        Parameters
-        ----------
-        ims_host: str
-            Cytomine IMS host, with or without the protocol
-        filename: str
-            Filename to give to the newly created image
-        id_annot: int
-            Identifier of the annotation to crop
-        id_storage: int
-            Identifier of the storage to use to upload the new image
-        id_project: int, optional
-            Identifier of a project in which the new image should be added
-        sync: bool, optional
-            True:   the server will answer once the uploaded file is
-                    deployed (response will include the created image)
-            False (default): the server will answer as soon as it receives the file
-        protocol: str ("http", "http://", "https", "https://")
-            The default protocol - used only if the host value does not specify one
-
-        Return
-        ------
-        uf: UploadedFile
-            The uploaded file. Its images attribute is populated with the collection of created abstract images.
-        """
-
-        if not protocol:
-            protocol = self._protocol
-        ims_host, protocol = self._parse_url(ims_host, protocol)
-        ims_host = "{}://{}".format(protocol, ims_host)
-
-        query_parameters = {
-            "annotation" : id_annot,
-            "storage": id_storage,
-            "cytomine": "{}://{}".format(self._protocol, self._host),
-            "name": filename,
-            "sync": sync
-        }
-
-        if id_project:
-            query_parameters["project"] = id_project
-
-        response = self._session.post("{}/uploadCrop".format(ims_host),
-                                      auth=CytomineAuth(
-                                          self._public_key,
-                                          self._private_key,
-                                          ims_host, ""),
-                                      headers=self._headers(),
-                                      params=query_parameters)
-
-        if response.status_code == requests.codes.ok:
-            uf = self._process_upload_response(response.json())
-            self._logger.info("Image crop uploaded successfully to {}".format(ims_host))
-            return uf
-        else:
-            self._logger.error("Error during crop upload. Response: %s", response)
-            return False
-
     def _process_upload_response(self, response_data):
         from .models.storage import UploadedFile
         from .models.image import AbstractImage, AbstractSliceCollection, AbstractSlice, ImageInstance, \
