@@ -1,0 +1,27 @@
+Cytomine-Python-Client
+Copyright (c) 2010-2024
+
+Maintained by:
+Cytomine Corporation SA
+https://cytomine.com
+info@cytomine.com
+
+Authors and contributors:
+* University of Liege
+    * Ulysse Rubens
+    * Romain Mormont
+    * Raphaël Marée
+    * Ba Thien Le
+* Cytomine SCRLFS
+    * Renaud Hoyoux
+    * Grégoire Vincke
+    * Elodie Burtin
+* Cytomine Corporation SA
+    * Renaud Hoyoux
+    * Grégoire Vincke
+    * Chloé Marchal
+    * Romain Mormont
+    * Ulysse Rubens
+    * Juliette Ponnet
+* Other contributors from Cytomine community mentioned in git log.
+

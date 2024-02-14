@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2020. Authors: see NOTICE file.
+# * Copyright (c) 2009-2024. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 import sys
 from argparse import ArgumentParser
 
-__author__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
 
 if __name__ == '__main__':
     from cytomine import Cytomine

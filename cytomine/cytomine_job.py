@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2022. Authors: see NOTICE file.
+# * Copyright (c) 2009-2024. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -26,10 +26,6 @@ from cytomine.cytomine import Cytomine, _cytomine_parameter_name_synonyms
 from cytomine.models.project import Project
 from cytomine.models.software import Software, Job, JobParameter, SoftwareParameterCollection
 from cytomine.models.user import User
-
-__author__ = "Begon Jean-Michel <jm.begon@gmail.com>"
-__contributors = ["Mormont Romain <romainmormont@gmail.com", "Rubens Ulysse <urubens@uliege.be>"]
-__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 
 
 def _inferred_number_type(v):

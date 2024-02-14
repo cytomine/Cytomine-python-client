@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2022. Authors: see NOTICE file.
+# * Copyright (c) 2009-2024. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import os
 from cytomine import Cytomine
 from cytomine.models import StorageCollection, Project
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")
@@ -44,8 +43,6 @@ if __name__ == '__main__':
                         help="The Cytomine public key")
     parser.add_argument('--cytomine_private_key', dest='private_key',
                         help="The Cytomine private key")
-    parser.add_argument('--cytomine_upload_host', dest='upload_host',
-                        default='demo-upload.cytomine.be', help="The Cytomine upload host")
     parser.add_argument('--cytomine_id_project', dest='id_project', required=False,
                         help="The project from which we want the images (optional)")
     parser.add_argument('--filepath', dest='filepath',
@@ -70,8 +67,7 @@ if __name__ == '__main__':
         if not my_storage:
             raise ValueError("Storage not found")
 
-        uploaded_file = cytomine.upload_image(upload_host=params.upload_host,
-                                              filename=params.filepath,
+        uploaded_file = cytomine.upload_image(filename=params.filepath,
                                               id_storage=my_storage.id,
                                               id_project=params.id_project)
 
