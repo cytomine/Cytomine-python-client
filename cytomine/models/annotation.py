@@ -140,53 +140,6 @@ class Annotation(Model):
 
         return True
 
-    def profile(self):
-        if self.id is None:
-            raise ValueError("Cannot review an annotation with no ID.")
-
-        data = Cytomine.get_instance().get("{}/{}/profile.json".format(self.callback_identifier, self.id))
-        return data['collection'] if "collection" in data else data
-
-    def profile_projections(self, axis=None, csv=False, csv_dest_pattern="projections-annotation-{id}.csv"):
-        """
-        Get profile projections (min, max, average) for the given annotation.
-
-        Parameters
-        ----------
-        axis The axis along which the projections (min, max, average) are performed. By default last axis is used.
-        To project along spatial X, Y axes, use special value "xy" or "spatial".
-        csv True to return result in a CSV file.
-        csv_dest_pattern The CSV destination pattern.
-
-        """
-        if self.id is None:
-            raise ValueError("Cannot review an annotation with no ID.")
-
-        uri = "{}/{}/profile/projections.{}".format(self.callback_identifier, self.id, "csv" if csv else "json")
-        if csv:
-            pattern = re.compile("{(.*?)}")
-            destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), csv_dest_pattern)
-
-            return Cytomine.get_instance().download_file(uri, destination, payload={"axis": axis})
-
-        data = Cytomine.get_instance().get(uri, {"axis": axis})
-        return data['collection'] if "collection" in data else data
-
-    def profile_projection(self, projection='max',  dest_pattern="{id}.png", override=True):
-        if self.id is None:
-            raise ValueError("Cannot review an annotation with no ID.")
-
-        def dump_url_fn(model, file_path, **kwargs):
-            extension = os.path.basename(file_path).split(".")[-1]
-            return "{}/{}/profile/{}-projection.{}".format(self.callback_identifier, model.id, projection, extension)
-
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override)
-
-        if len(files) == 0:
-            return False
-
-        return True
-
 
 class AnnotationCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
