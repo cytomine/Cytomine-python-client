@@ -187,43 +187,6 @@ class Annotation(Model):
 
         return True
 
-    """
-    Deprecated functions. Still here for backwards compatibility.
-    """
-    get_annotation_crop_url = None
-    get_annotation_crop_tiled_translated = None
-    get_annotation_alpha_crop_url = None
-    get_annotation_mask_url = None
-    # def get_annotation_crop_tiled_translated(self,minx,maxx,miny,maxy,id_image,image_height,tile_size,translate):
-    #     #original annotation bounding box width & height
-    #     w_width=maxx-minx
-    #     w_height=maxy-miny
-    #     if translate:
-    #         #maximum shift is predefined, it is determined by half of the size of the object such
-    # that at least half is still included
-    #         translate_x = random.randrange(-w_width/2, w_width/2)
-    #         translate_y = random.randrange(-w_height/2, w_height/2)
-    #         print "translate_x: %d translate_y: %d" %(translate_x,translate_y)
-    #         minx = minx + translate_x
-    #         maxx = maxx + translate_x
-    #         miny = miny + translate_y
-    #         maxy = maxy + translate_y
-    #
-    #     #we construct new coordinates (for dimension(s) < tile_size) so that we finally have image dimensions
-    #  at least of tile_size
-    #     #e.g. tile_size=512, if annotation 400x689 it becomes 512x689, if annotation 234x123 it becomes 512x512
-    #     if w_width < tile_size:
-    #         displace_x = tile_size - w_width
-    #         minx = minx - displace_x/2
-    #         maxx = minx + tile_size
-    #     if w_height < tile_size:
-    #         displace_y = tile_size - w_height
-    #         miny = miny - displace_y/2
-    #         maxy = miny + tile_size
-    #     windowURL = "imageinstance/%d/window-%d-%d-%d-%d.jpg" %(id_image,minx,image_height-maxy,maxx-minx,maxy-miny)
-    #
-    #     return windowURL
-
 
 class AnnotationCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
