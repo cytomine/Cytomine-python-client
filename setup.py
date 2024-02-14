@@ -40,7 +40,6 @@ setup(
     ],
     install_requires=['requests-toolbelt>=0.8.0',
                       'CacheControl>=0.12.10',
-                      'numpy>=1.15.4',
                       'Shapely>=1.6.4',
                       'six>=1.11.0',
                       'future>=0.17.1',
