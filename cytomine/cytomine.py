@@ -673,7 +673,8 @@ class Cytomine(object):
             query_parameters["keys"] = ','.join(list(properties.keys()))
             query_parameters["values"] = ','.join(list(properties.values()))
 
-        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
+        basename = os.path.basename(filename)
+        m = MultipartEncoder(fields={"files[]": (basename, open(filename, 'rb'))})
         response = self._session.post(f"{upload_host}/upload",
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
