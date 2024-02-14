@@ -447,12 +447,12 @@ class Cytomine(object):
 
     def get_model(self, model, query_parameters=None):
         response = self._get(model.uri(), query_parameters)
-        
+
         if response.status_code == requests.codes.ok:
             response_json = response.json()
             model = model.populate(response_json)
             self._log_response(response, model)
-            
+
         if not response.status_code == requests.codes.ok:
             self._log_response(response, model.uri())
             model = False
@@ -679,8 +679,9 @@ class Cytomine(object):
             query_parameters["keys"] = ','.join(list(properties.keys()))
             query_parameters["values"] = ','.join(list(properties.values()))
 
-        m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
-        response = self._session.post("{}/upload".format(upload_host),
+        basename = os.path.basename(filename)
+        m = MultipartEncoder(fields={"files[]": (basename, open(filename, 'rb'))})
+        response = self._session.post(f"{upload_host}/upload",
                                       auth=CytomineAuth(
                                           self._public_key, self._private_key,
                                           upload_host, ""),
