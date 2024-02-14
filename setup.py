@@ -21,7 +21,6 @@ from io import open
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
 
-pillow_version_constraint = ',<7.0.0' if sys.version_info.major < 3 else ''
 
 setup(
     name='cytomine-python-client',
@@ -46,8 +45,6 @@ setup(
                       'Shapely>=1.6.4',
                       'six>=1.11.0',
                       'future>=0.17.1',
-                      'opencv-python-headless>=3.4.3',
-                      'Pillow>=5.3.0{}'.format(pillow_version_constraint),
                       'requests>=2.27.1',
                       'urllib3>=1.25.2'],
     setup_requires=['pytest-runner'],
