@@ -28,7 +28,6 @@ import os
 from cytomine import Cytomine
 from cytomine.models import StorageCollection, Project
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")

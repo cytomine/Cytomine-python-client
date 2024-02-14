@@ -43,10 +43,6 @@ from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 from requests_toolbelt.utils import dump
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>", "Burtin Elodie <elodie.burtin@cytomine.coop"]
-__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
-
 
 def _cytomine_parameter_name_synonyms(name, prefix="--"):
     """For a given parameter name, returns all the possible usual synonym (and the parameter itself). Optionally, the

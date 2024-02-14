@@ -22,7 +22,7 @@ from __future__ import unicode_literals
 from cytomine.models.software import *
 from tests.conftest import random_string
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 class TestSoftware:

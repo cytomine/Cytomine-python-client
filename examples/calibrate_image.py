@@ -45,10 +45,6 @@
 # *         if URL = http://demo.cytomine.local/#/project/10359/image/10372 then your image instance id = 10372
 # * 
 # -----------------------------------------------------------------------------------------------------------
-__author__ = "Burtin Elodie <elodie.burtin@cytomine.coop> and Grégoire Vincke <gregoire.vincke@cytomine.coop>"
-__maintainer__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
-__status__ = "Production"
-__copyright__ = "Apache 2 license. Made by Cytomine SCRLFS, Belgium, https://cytomine.coop/"
 __version__ = "1.0.0"
 # -----------------------------------------------------------------------------------------------------------
 # Import of all python necessary modules, including the Cytomine Python client

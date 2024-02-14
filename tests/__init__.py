@@ -18,7 +18,3 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
-__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"

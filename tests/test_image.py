@@ -24,7 +24,7 @@ from tests.conftest import random_string
 
 import pytest
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 class TestAbstractImage:

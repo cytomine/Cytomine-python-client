@@ -28,7 +28,7 @@ from shapely.geometry import Point, box
 from cytomine import Cytomine
 from cytomine.models import AnnotationCollection
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")

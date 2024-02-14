@@ -24,7 +24,7 @@ import os
 from cytomine.models.property import *
 from tests.conftest import random_string
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 class TestProperty:

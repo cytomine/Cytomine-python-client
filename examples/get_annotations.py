@@ -31,7 +31,7 @@ from shapely.affinity import affine_transform
 from cytomine import Cytomine
 from cytomine.models import AnnotationCollection, ImageInstanceCollection
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 def get_by_id(haystack, needle):

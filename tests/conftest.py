@@ -30,7 +30,7 @@ from cytomine.models.software import Software, SoftwareParameter, Job
 from cytomine.models.user import User, Group
 from cytomine.models.track import Track
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 import pytest

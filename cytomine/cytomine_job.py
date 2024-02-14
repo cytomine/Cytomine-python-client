@@ -27,10 +27,6 @@ from cytomine.models.project import Project
 from cytomine.models.software import Software, Job, JobParameter, SoftwareParameterCollection
 from cytomine.models.user import User
 
-__author__ = "Begon Jean-Michel <jm.begon@gmail.com>"
-__contributors = ["Mormont Romain <romainmormont@gmail.com", "Rubens Ulysse <urubens@uliege.be>"]
-__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
-
 
 def _inferred_number_type(v):
     """Return the inferred type for the given string. The string must contain either an interger or a float.

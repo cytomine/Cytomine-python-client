@@ -26,7 +26,7 @@ from argparse import ArgumentParser
 from cytomine import Cytomine
 from cytomine.models import Property, Project, Annotation, ImageInstance
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")

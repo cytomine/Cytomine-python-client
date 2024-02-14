@@ -24,7 +24,7 @@ import json
 
 from cytomine.models import Software, SoftwareParameter, SoftwareCollection, SoftwareParameterCollection
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 def _format_type(type):

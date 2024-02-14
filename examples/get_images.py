@@ -27,7 +27,7 @@ from argparse import ArgumentParser
 from cytomine import Cytomine
 from cytomine.models.image import ImageInstanceCollection
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 # This example script allows you to get the list of images (metadata) in a given project.
 # If a download path is provided, it downloads all original images like they have been uploaded to Cytomine.

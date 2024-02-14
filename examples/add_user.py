@@ -23,7 +23,7 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")

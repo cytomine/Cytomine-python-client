@@ -20,10 +20,6 @@
 # * using the Cytomine Python client (https://github.com/cytomine/Cytomine-python-client).
 # *
 # -----------------------------------------------------------------------------------------------------------
-__author__ = "Grégoire Vincke <gregoire.vincke@cytomine.coop> and Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
-__maintainer__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
-__status__ = "Production"
-__copyright__ = "Apache 2 license. Made by Cytomine SCRLFS, Belgium, https://cytomine.coop/"
 __version__ = "1.0.1"
 # -----------------------------------------------------------------------------------------------------------
 # Import of all python necessary modules, including the Cytomine Python client

@@ -24,7 +24,7 @@ import pytest
 from cytomine.models.social import *
 from tests.conftest import random_string
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 class TestPosition:

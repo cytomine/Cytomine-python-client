@@ -21,7 +21,6 @@
 import sys
 from argparse import ArgumentParser
 
-__author__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
 
 if __name__ == '__main__':
     from cytomine import Cytomine
