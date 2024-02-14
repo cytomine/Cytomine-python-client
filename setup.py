@@ -32,7 +32,6 @@ setup(
     url='https://www.cytomine.org',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -53,5 +52,5 @@ setup(
     },
     test_suite='cytomine.tests',
     license='LICENSE',
-    data_files=[('', ['LICENSE', 'requirements.txt', 'requirements-py2.7.txt'])]
+    data_files=[('', ['LICENSE', 'requirements.txt'])]
 )
