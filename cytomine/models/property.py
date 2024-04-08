@@ -43,10 +43,7 @@ class Property(DomainModel):
     @obj.setter
     def obj(self, value):
         self._object = value
-        if isinstance(value, Annotation):
-            self.domainClassName = "annotation"
-        else:
-            self.domainClassName = value.class_
+        self.domainClassName = value.class_
         self.domainIdent = value.id
 
     def uri(self):
