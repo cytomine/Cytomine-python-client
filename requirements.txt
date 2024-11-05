@@ -27,7 +27,7 @@ shapely==1.7.1
     # via cytomine-python-client (setup.py)
 six==1.16.0
     # via cytomine-python-client (setup.py)
-urllib3==1.26.6
+urllib3==1.26.19
     # via
     #   cytomine-python-client (setup.py)
     #   requests
