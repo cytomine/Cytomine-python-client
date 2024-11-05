@@ -29,6 +29,7 @@ class CytomineUser:
     def __init__(self):
         self.username = None
         self.algo = False
+        self.origin = None
 
     def keys(self):
         # Only works if you are superadmin.
@@ -37,13 +38,16 @@ class CytomineUser:
 
 
 class User(Model, CytomineUser):
-    def __init__(self, username=None, firstname=None, lastname=None, email=None, password=None, **attributes):
+    def __init__(self, username=None, firstname=None, lastname=None, email=None, password=None, language=None,
+                 is_developer=None, **attributes):
         super(User, self).__init__()
         self.username = username
         self.firstname = firstname
         self.lastname = lastname
         self.email = email
         self.password = password
+        self.language = language
+        self.isDeveloper = is_developer
         self.user = None
         self.admin = None
         self.guest = None

@@ -1,0 +1,37 @@
+---
+changelog:
+  categories:
+    - title: ✅ Added
+      labels:
+        - docs
+        - feature
+    - title: 🔁 Changed
+      labels:
+        - chore
+        - dependencies
+        - enhancement
+        - perf
+        - refactor
+        - style
+    - title: 🛑 Deprecated
+      labels:
+        - deprecated
+    - title: 🔧 Fixed
+      labels:
+        - bug
+    - title: 🗑️ Removed
+      labels:
+        - removed
+    - title: 🛡️ Security
+      labels:
+        - security
+    - title: 🧪 Test
+      labels:
+        - test
+  exclude:
+    labels:
+      - duplicate
+      - good first issue
+      - invalid
+      - question
+      - wontfix

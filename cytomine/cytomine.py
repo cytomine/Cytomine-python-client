@@ -355,7 +355,7 @@ class Cytomine(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        pass
+        self._session.close()
 
     @staticmethod
     def get_instance():
