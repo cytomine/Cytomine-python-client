@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2020. Authors: see NOTICE file.
+# * Copyright (c) 2009-2024. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -20,10 +20,6 @@
 # * using the Cytomine Python client (https://github.com/cytomine/Cytomine-python-client).
 # *
 # -----------------------------------------------------------------------------------------------------------
-__author__ = "Grégoire Vincke <gregoire.vincke@cytomine.coop> and Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
-__maintainer__ = "Renaud Hoyoux <renaud.hoyoux@cytomine.coop>"
-__status__ = "Production"
-__copyright__ = "Apache 2 license. Made by Cytomine SCRLFS, Belgium, https://cytomine.coop/"
 __version__ = "1.0.1"
 # -----------------------------------------------------------------------------------------------------------
 # Import of all python necessary modules, including the Cytomine Python client

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# * Copyright (c) 2009-2022. Authors: see NOTICE file.
+# * Copyright (c) 2009-2024. Authors: see NOTICE file.
 # *
 # * Licensed under the Apache License, Version 2.0 (the "License");
 # * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ from shapely.affinity import affine_transform
 from cytomine import Cytomine
 from cytomine.models import AnnotationCollection, ImageInstanceCollection
 
-__author__ = "Rubens Ulysse <urubens@uliege.be>"
+
 
 
 def get_by_id(haystack, needle):
