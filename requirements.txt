@@ -10,7 +10,7 @@ certifi==2022.12.7
     # via requests
 charset-normalizer==2.0.12
     # via requests
-future==0.18.2
+future==0.18.3
     # via cytomine-python-client (setup.py)
 idna==3.2
     # via requests
