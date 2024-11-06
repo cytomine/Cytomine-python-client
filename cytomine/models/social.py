@@ -135,7 +135,10 @@ class ProjectConnection(Model):
         raise NotImplementedError("Cannot fetch a ProjectConnection by client.")
     
     def __str__(self):
-        return "[{}] {}: [user] {}, [project] {}".format(self.callback_identifier, self.id, self.user, self.project)
+        return (
+            f"[{self.callback_identifier}] {self.id}: "
+            f"[user] {self.user}, [project] {self.project}"
+        )
 
 class ProjectConnectionCollection(Collection):
     def __init__(self, project, user, filters=None, max=0, offset=0, **parameters):
@@ -183,7 +186,10 @@ class ImageConsultation(Model):
         raise NotImplementedError("Cannot fetch a ImageConsultation by client.")
     
     def __str__(self):
-        return "[{}] {}: [user] {}, [image] {}".format(self.callback_identifier, self.id, self.user, self.image)
+        return (
+            f"[{self.callback_identifier}] {self.id}: "
+            f"[user] {self.user}, [image] {self.image}"
+        )
 
 class ImageConsultationCollection(Collection):
     def __init__(self, project, user, filters=None, max=0, offset=0, **parameters):
@@ -194,7 +200,7 @@ class ImageConsultationCollection(Collection):
         self.set_parameters(parameters)
 
     def uri(self):
-        return f'project/{self.project}/user/{self.user}/imageconsultation.json'
+        return f"project/{self.project}/user/{self.user}/imageconsultation.json"
 
     def save(self, *args, **kwargs):
         raise NotImplementedError("Cannot save a ImageConsultation collection by client.")

@@ -48,7 +48,7 @@ class Property(DomainModel):
 
     def uri(self):
         if self._by_key and self.domainClassName and self.domainIdent and self.key:
-            uri = "domain/{}/{}/key/{}/property.json".format(self.domainClassName, self.domainIdent, self.key)
+            uri = f"domain/{self.domainClassName}/{self.domainIdent}/key/{self.key}/property.json"
         else:
             uri = super(Property, self).uri()
 
@@ -71,9 +71,10 @@ class Property(DomainModel):
         return model
 
     def __str__(self):
-        return "[{}] {} : {} ({}) - Key: {} - Value {}".format(self.callback_identifier, self.id, self.domainClassName,
-                                                               self.domainIdent, self.key, self.value)
-
+        return (
+            f"[{self.callback_identifier}] {self.id} : {self.domainClassName} ({self.domainIdent}) "
+            f"- Key: {self.key} - Value {self.value}"
+        )
 
 class PropertyCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
@@ -117,9 +118,9 @@ class AttachedFile(DomainModel):
 
     def uri(self):
         if self.is_new():
-            return "{}.json".format(self.callback_identifier)
-        else:
-            return "{}/{}.json".format(self.callback_identifier, self.id)
+            return f"{self.callback_identifier}.json"
+
+        return f"{self.callback_identifier}/{self.id}.json"
 
     def save(self):
         return self.upload()
@@ -153,8 +154,11 @@ class AttachedFile(DomainModel):
         pattern = re.compile("{(.*?)}")
         destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), destination)
 
-        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
-                                                     destination, override)
+        return Cytomine.get_instance().download_file(
+            f"{self.callback_identifier}/{self.id}/download",
+            destination,
+            override
+        )
 
 
 class AttachedFileCollection(DomainCollection):
@@ -171,7 +175,7 @@ class Description(DomainModel):
         self.populate(attributes)
 
     def uri(self):
-        return "domain/{}/{}/{}.json".format(self._object.class_, self._object.id, self.callback_identifier)
+        return f"domain/{self._object.class_}/{self._object.id}/{self.callback_identifier}.json"
 
     def fetch(self, id=None):
         if id is not None:
@@ -202,7 +206,7 @@ class TagDomainAssociation(DomainModel):
 
     def uri(self):
         if self.id:
-            uri = "tag_domain_association/{}.json".format(self.id)
+            uri = f"tag_domain_association/{self.id}.json"
         elif self.domainClassName and self.domainIdent:
             uri = super(TagDomainAssociation, self).uri()
 

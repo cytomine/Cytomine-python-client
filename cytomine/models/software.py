@@ -55,7 +55,7 @@ class Software(Model):
     def upload(self, file_path=None):
         return Cytomine.get_instance().upload_file(
             self, file_path, query_parameters={"name": self.name, "softwareVersion": self.softwareVersion},
-            uri="{}/upload".format(self.callback_identifier)
+            uri="f{self.callback_identifier}/upload"
         )
 
 
@@ -193,7 +193,7 @@ class Job(Model):
         if self.is_new():
             raise ValueError("Cannot execute job if no ID was provided.")
         response = Cytomine.get_instance().post(
-            uri="{}/{}/execute.json".format(self.callback_identifier, self.id),
+            uri=f"{self.callback_identifier}/{self.id}/execute.json",
             data=self.to_json(), query_parameters={id: self.id}
         )
         self.populate(response)
@@ -209,12 +209,10 @@ class Job(Model):
 
     def update(self, id=None, **attributes):
         Cytomine.get_instance().log(
-            "Job (id:{job_id}) status update: \"{statusComment}\" (status: {status}, progress: {progress}%)".format(
-                job_id=self.id,
-                statusComment=attributes.get("statusComment", self.statusComment),
-                status=_HUMAN_READABLE_JOB_STATUS[attributes.get("status", self.status)],
-                progress=attributes.get("progress", self.progress)
-            )
+            f"Job (id:{self.id}) status update: "
+            f"\"{attributes.get('statusComment', self.statusComment)}\" "
+            f"(status: {_HUMAN_READABLE_JOB_STATUS[attributes.get('status', self.status)]}, "
+            f"progress: {attributes.get('progress', self.progress)}%)"
         )
         return super(Job, self).update(id=id, **attributes)
 
@@ -287,8 +285,11 @@ class JobData(Model):
     def upload(self, filename):
         if self.is_new():
             raise ValueError("Cannot upload file if not existing ID.")
-        return Cytomine.get_instance().upload_file(self, filename,
-                                                   uri="{}/{}/upload".format(self.callback_identifier, self.id))
+        return Cytomine.get_instance().upload_file(
+            self,
+            filename,
+            uri=f"{self.callback_identifier}/{self.id}/upload",
+        )
 
     def download(self, destination="{filename}", override=False):
         if self.is_new():
@@ -298,8 +299,11 @@ class JobData(Model):
         pattern = re.compile("{(.*?)}")
         destination = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), destination)
 
-        return Cytomine.get_instance().download_file("{}/{}/download".format(self.callback_identifier, self.id),
-                                                     destination, override)
+        return Cytomine.get_instance().download_file(
+            f"{self.callback_identifier}/{self.id}/download",
+            destination,
+            override,
+        )
 
 
 class JobDataCollection(Collection):
@@ -359,4 +363,3 @@ class ProcessingServerCollection(Collection):
     @property
     def callback_identifier(self):
         return "processing_server"
-

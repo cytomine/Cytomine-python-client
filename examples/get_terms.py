@@ -55,5 +55,4 @@ if __name__ == '__main__':
 
         terms = TermCollection().fetch_with_filter("project", params.id_project)
         for term in terms:
-            print("Term ID: {} | Name: {} | Color: {}".format(term.id, term.name, term.color))
-
+            print(f"Term ID: {term.id} | Name: {term.name} | Color: {term.color}")

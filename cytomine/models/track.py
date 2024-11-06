@@ -50,7 +50,7 @@ class AnnotationTrack(Model):
         self.populate(attributes)
 
     def uri(self):
-        return "annotationtrack/{}/{}.json".format(self.annotationIdent, self.track)
+        return f"annotationtrack/{self.annotationIdent}/{self.track}.json"
 
     def fetch(self, id_annotation=None, id_track=None):
         self.id = -1
@@ -72,4 +72,7 @@ class AnnotationTrack(Model):
         raise NotImplementedError("Cannot update a annotation-track.")
 
     def __str__(self):
-        return "[{}] Annotation {} - Track {}".format(self.callback_identifier, self.annotationIdent, self.track)
+        return (
+            f"[{self.callback_identifier}] Annotation {self.annotationIdent} "
+            f"- Track {self.track}"
+        )

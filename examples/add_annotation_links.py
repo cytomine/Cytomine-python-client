@@ -89,8 +89,11 @@ if __name__ == '__main__':
             # n_links will be 2 as it contains links al1->annotation_group and al2->annotation_group
             linked_annot_ids = [al['annotation'] for al in annot.annotationLink]
 
-            print("Annotation {} in image {} has {} links (annotations: {})"
-                  .format(annot.id, annot.image, n_links, linked_annot_ids))
+            print(
+                f"Annotation {annot.id} in image {annot.image} | "
+                f"has {n_links} links | "
+                f"(annotations: {linked_annot_ids})"
+            )
 
         # ---------------
         # How to speed up the process when we have more data ?

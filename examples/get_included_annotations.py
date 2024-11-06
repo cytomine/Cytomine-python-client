@@ -63,5 +63,7 @@ if __name__ == '__main__':
             included_annotations.term = params.id_object_term
             included_annotations.annotation = roi_annotation.id
             included_annotations.fetch()
-            print("Number of annotations of term {} included in ROI {}: {}".format(
-                params.id_object_term, roi_annotation.id, len(included_annotations)))
+            print(
+                f"Number of annotations of term {params.id_object_term} included "
+                f"in ROI {roi_annotation.id}: {len(included_annotations)}"
+            )

@@ -39,10 +39,11 @@ def get_annotations(projects, images=None, terms=None,
     if projects is None or len(projects) == 0:
         raise ValueError("You should select at least one project to select annotation(s) from.")
     if reviewed not in {REVIEWED_EXCLUDE, REVIEWED_ONLY, REVIEWED_INCLUDE}:
-        raise ValueError("Unknown value '{}' for reviewed annotation selection. ".format(reviewed) +
-                         "Expects one of : EXCLUDE ({}) or INCLUDE ({}) or ONLY ({}).".format(
-                            REVIEWED_EXCLUDE, REVIEWED_INCLUDE, REVIEWED_ONLY
-                         ))
+        raise ValueError(
+            f"Unknown value '{reviewed}' for reviewed annotation selection. "
+            f"Expects one of: EXCLUDE ({REVIEWED_EXCLUDE}) or "
+            f"INCLUDE ({REVIEWED_INCLUDE}) or ONLY ({REVIEWED_ONLY})."
+        )
 
     annotations = AnnotationCollection()
     for id_project in projects:

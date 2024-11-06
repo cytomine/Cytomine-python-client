@@ -94,9 +94,9 @@ class Model(object):
 
     def uri(self):
         if self.is_new():
-            return "{}.json".format(self.callback_identifier)
-        else:
-            return "{}/{}.json".format(self.callback_identifier, self.id)
+            return f"{self.callback_identifier}.json"
+
+        return f"{self.callback_identifier}/{self.id}.json"
 
     @property
     def query_parameters(self):
@@ -107,7 +107,7 @@ class Model(object):
         return self.__class__.__name__.lower()
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.name)
+        return f"[{self.callback_identifier}] {self.id} : {self.name}"
 
 
 class DomainModel(Model):
@@ -123,11 +123,15 @@ class DomainModel(Model):
 
     def uri(self):
         if self.is_new():
-            return "domain/{}/{}/{}.json".format(self.domainClassName, self.domainIdent,
-                                                 self.callback_identifier)
-        else:
-            return "domain/{}/{}/{}/{}.json".format(self.domainClassName, self.domainIdent,
-                                                    self.callback_identifier, self.id)
+            return (
+                f"domain/{self.domainClassName}/{self.domainIdent}/"
+                f"{self.callback_identifier}.json"
+            )
+
+        return (
+            f"domain/{self.domainClassName}/{self.domainIdent}/"
+            f"{self.callback_identifier}/{self.id}.json"
+        )
 
     @property
     def obj(self):

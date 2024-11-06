@@ -55,15 +55,17 @@ class Project(Model):
 
     def add_user(self, id_user, admin=False):
         if admin:
-            return Cytomine.get_instance().post("project/{}/user/{}/admin.json".format(self.id, id_user))
-        else:
-            return Cytomine.get_instance().post("project/{}/user/{}.json".format(self.id, id_user))
+            return Cytomine.get_instance().post(
+                f"project/{self.id}/user/{id_user}/admin.json"
+            )
+
+        return Cytomine.get_instance().post(f"project/{self.id}/user/{id_user}.json")
 
     def delete_user(self, id_user, admin=False):
         if admin:
-            return Cytomine.get_instance().delete("project/{}/user/{}/admin.json".format(self.id, id_user))
-        else:
-            return Cytomine.get_instance().delete("project/{}/user/{}.json".format(self.id, id_user))
+            return Cytomine.get_instance().delete(f"project/{self.id}/user/{id_user}/admin.json")
+
+        return Cytomine.get_instance().delete(f"project/{self.id}/user/{id_user}.json")
 
 
 class ProjectCollection(Collection):

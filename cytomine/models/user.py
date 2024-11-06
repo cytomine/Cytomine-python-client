@@ -34,7 +34,7 @@ class CytomineUser:
     def keys(self):
         # Only works if you are superadmin.
         if hasattr(self, "id") and self.id:
-            return Cytomine.get_instance().get("user/{}/keys.json".format(self.id))
+            return Cytomine.get_instance().get(f"user/{self.id}/keys.json")
 
 
 class User(Model, CytomineUser):
@@ -54,7 +54,7 @@ class User(Model, CytomineUser):
         self.populate(attributes)
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.username)
+        return f"[{self.callback_identifier}] {self.id} : {self.username}"
 
 
 class CurrentUser(User):
@@ -68,14 +68,15 @@ class CurrentUser(User):
         return "user/current.json"
 
     def keys(self):
-        return Cytomine.get_instance().get("userkey/{}/keys.json".format(self.publicKey))
+        return Cytomine.get_instance().get(f"userkey/{self.publicKey}/keys.json")
 
     def signature(self):
         return Cytomine.get_instance().get("signature.json")
 
     def __str__(self):
-        return "[{}] CURRENT USER - {} : {}".format(self.callback_identifier, self.id, self.username)
-
+        return (
+            f"[{self.callback_identifier}] CURRENT USER - {self.id} : {self.username}"
+        )
 
 class UserCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
@@ -153,9 +154,9 @@ class UserGroup(Model):
 
     def uri(self):
         if self.is_new():
-            return "user/{}/group.json".format(self.user)
-        else:
-            return "user/{}/group/{}.json".format(self.user, self.group)
+            return f"user/{self.user}/group.json"
+
+        return f"user/{self.user}/group/{self.group}.json"
 
     def fetch(self, id_user=None, id_group=None):
         self.id = -1
@@ -177,7 +178,10 @@ class UserGroup(Model):
         raise NotImplementedError("Cannot update a user-group.")
 
     def __str__(self):
-        return "[{}] {} : User {} - Group {}".format(self.callback_identifier, self.id, self.user, self.group)
+        return (
+            f"[{self.callback_identifier}] {self.id} : "
+            f"User {self.user} - Group {self.group}"
+        )
 
 
 class UserGroupCollection(Collection):
@@ -206,7 +210,7 @@ class Role(Model):
         raise NotImplementedError("Cannot update a role by client.")
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.authority)
+        return f"[{self.callback_identifier}] {self.id} : {self.authority}"
 
 
 class RoleCollection(Collection):
@@ -229,9 +233,9 @@ class UserRole(Model):
 
     def uri(self):
         if self.is_new():
-            return "user/{}/role.json".format(self.user)
-        else:
-            return "user/{}/role/{}.json".format(self.user, self.role)
+            return f"user/{self.user}/role.json"
+
+        return f"user/{self.user}/role/{self.role}.json"
 
     def fetch(self, id_user=None, id_role=None):
         self.id = -1
@@ -253,7 +257,10 @@ class UserRole(Model):
         raise NotImplementedError("Cannot update a user-role.")
 
     def __str__(self):
-        return "[{}] {} : User {} - Role {}".format(self.callback_identifier, self.id, self.user, self.role)
+        return (
+            f"[{self.callback_identifier}] {self.id} : "
+            f"User {self.user} - Role {self.role}"
+        )
 
 
 class UserRoleCollection(Collection):

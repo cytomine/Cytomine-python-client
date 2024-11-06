@@ -60,15 +60,18 @@ if __name__ == '__main__':
 
         # It adds the 3 first images of the project into the image group as example
         for image in image_instances[:3]:
-            print("Image ID: {} | Width: {} | Height: {} | Filename: {}".format(
-                image.id, image.width, image.height, image.filename))
-
+            print(
+                f"Image ID: {image.id} | "
+                f"Width: {image.width} | "
+                f"Height: {image.height} | "
+                f"Filename: {image.filename}"
+            )
             igii = ImageGroupImageInstance(group.id, image.id).save()
             print(igii)
 
         # We list all image groups in the project
         image_groups = ImageGroupCollection().fetch_with_filter("project", params.id_project)
         for image_group in image_groups:
-            print("Group {} has name {} and following images: ".format(image_group.id, image_group.name))
+            print(f"Group {image_group.id} has name {image_group.name} and following images: ")
             for image in ImageInstanceCollection().fetch_with_filter("imagegroup", image_group.id):
-                print(" * {}".format(image.filename))
+                print(f" * {image.filename}")

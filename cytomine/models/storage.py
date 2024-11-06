@@ -83,7 +83,7 @@ class UploadedFile(Model):
         self.populate(attributes)
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
+        return f"[{self.callback_identifier}] {self.id} : {self.filename}"
 
 
 class UploadedFileCollection(Collection):

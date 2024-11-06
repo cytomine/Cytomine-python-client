@@ -63,7 +63,9 @@ class AbstractImage(Model):
     @deprecated
     def image_servers(self):
         if not self._image_servers:
-            data = Cytomine.get_instance().get("{}/{}/imageservers.json".format(self.callback_identifier, self.id))
+            data = Cytomine.get_instance().get(
+                f"{self.callback_identifier}/{self.id}/imageservers.json"
+            )
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
 
@@ -88,13 +90,13 @@ class AbstractImage(Model):
             raise ValueError("Cannot dump an annotation with no ID.")
 
         def dump_url_fn(model, file_path, **kwargs):
-            return "{}/{}/download".format(model.callback_identifier, model.id)
+            return f"{model.callback_identifier}/{model.id}/download"
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, check_extension=False)
         return len(files) > 0
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.originalFilename)
+        return f"[{self.callback_identifier}] {self.id} : {self.originalFilename}"
 
 
 class AbstractImageCollection(Collection):
@@ -184,7 +186,7 @@ class ImageInstance(Model):
     @deprecated
     def image_servers(self):
         if not self._image_servers:
-            data = Cytomine.get_instance().get("abstractimage/{}/imageservers.json".format(self.baseImage))
+            data = Cytomine.get_instance().get(f"abstractimage/{self.baseImage}/imageservers.json")
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
 
@@ -193,7 +195,7 @@ class ImageInstance(Model):
             raise ValueError("Cannot get the reference slice of an image with no ID.")
 
         if not self._reference_slice:
-            data = Cytomine.get_instance().get("imageinstance/{}/sliceinstance/reference.json".format(self.id))
+            data = Cytomine.get_instance().get(f"imageinstance/{self.id}/sliceinstance/reference.json")
             self._reference_slice = SliceInstance().populate(data) if data else False
 
         return self._reference_slice
@@ -243,7 +245,7 @@ class ImageInstance(Model):
 
         def dump_url_fn(model, file_path, **kwargs):
             extension = os.path.basename(file_path).split(".")[-1]
-            return "{}/{}/thumb.{}".format(model.callback_identifier, model.id, extension)
+            return f"{model.callback_identifier}/{model.id}/thumb.{extension}"
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
@@ -276,13 +278,13 @@ class ImageInstance(Model):
             raise ValueError("Cannot download image with no ID.")
 
         def dump_url_fn(model, file_path, **kwargs):
-            return "{}/{}/download".format(model.callback_identifier, model.id)
+            return f"{model.callback_identifier}/{model.id}/download"
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, check_extension=False)
         return len(files) > 0
 
     def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.instanceFilename)
+        return f"[{self.callback_identifier}] {self.id} : {self.instanceFilename}"
 
     def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
                bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, projection=None,
@@ -386,10 +388,14 @@ class ImageInstance(Model):
             "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
         }
 
-        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
+        file_path = os.path.join(destination, f"{filename}.{extension}")
 
-        return Cytomine.get_instance().download_file("{}/{}/window-{}-{}-{}-{}.{}".format(
-            self.callback_identifier, self.id, x, y, w, h, extension), file_path, override, parameters)
+        return Cytomine.get_instance().download_file(
+            f"{self.callback_identifier}/{self.id}/window-{x}-{y}-{w}-{h}.{extension}",
+            file_path,
+            override,
+            parameters
+        )
 
 
 class ImageInstanceCollection(Collection):
@@ -466,7 +472,7 @@ class SliceInstance(Model):
 
         def dump_url_fn(model, file_path, **kwargs):
             extension = os.path.basename(file_path).split(".")[-1]
-            return "{}/{}/thumb.{}".format(model.callback_identifier, model.id, extension)
+            return f"{model.callback_identifier}/{model.id}/thumb.{extension}"
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
@@ -576,10 +582,14 @@ class SliceInstance(Model):
             "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
         }
 
-        file_path = os.path.join(destination, "{}.{}".format(filename, extension))
+        file_path = os.path.join(destination, f"{filename}.{extension}")
 
-        return Cytomine.get_instance().download_file("{}/{}/window-{}-{}-{}-{}.{}".format(
-            self.callback_identifier, self.id, x, y, w, h, extension), file_path, override, parameters)
+        return Cytomine.get_instance().download_file(
+            f"{self.callback_identifier}/{self.id}/window-{x}-{y}-{w}-{h}.{extension}",
+            file_path,
+            override,
+            parameters
+        )
 
 
 class SliceInstanceCollection(Collection):

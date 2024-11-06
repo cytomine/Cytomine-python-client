@@ -49,7 +49,7 @@ class Annotation(Model):
         self.populate(attributes)
 
     def __str__(self):
-        return "[{}] {}".format(self.callback_identifier, self.id)
+        return f"[{self.callback_identifier}] {self.id}"
 
     def review(self, id_terms=None):
         if self.id is None:
@@ -58,7 +58,10 @@ class Annotation(Model):
         if not id_terms:
             id_terms = []
         data = {"id": self.id, "terms": id_terms}
-        return Cytomine.get_instance().post("{}/{}/review.json".format(self.callback_identifier, self.id), data)
+        return Cytomine.get_instance().post(
+            f"{self.callback_identifier}/{self.id}/review.json",
+            data,
+        )
 
     def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
              zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None,
@@ -128,7 +131,13 @@ class Annotation(Model):
                 image = "mask"
             else:
                 image = "crop"
-            return model.cropURL.replace("crop.png", "{}.{}".format(image, extension)).replace("crop.jpg", "{}.{}".format(image, extension))
+            return model.cropURL.replace(
+                "crop.png",
+                f"{image}.{extension}"
+            ).replace(
+                "crop.jpg",
+                f"{image}.{extension}"
+            )
 
         files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
 
@@ -247,8 +256,10 @@ class AnnotationCollection(Collection):
             n_annots = len(self)
             ratio = 100 * count_fail / float(n_annots)
             logger.info(
-                "Failed to download crops for {}/{} annotations ({:3.2f} %).".format(count_fail, n_annots, ratio))
-            logger.debug("Annotation with crop download failure: {}".format(failed))
+                f"Failed to download crops for {count_fail}/{n_annots} "
+                f"annotations ({ratio:3.2f} %)."
+            )
+            logger.debug("Annotation with crop download failure: %s", failed)
 
         collection = AnnotationCollection()
         collection.extend([an for _, an in results if not isinstance(an, bool) or an])
@@ -264,7 +275,7 @@ class AnnotationTerm(Model):
         self.populate(attributes)
 
     def uri(self):
-        return "annotation/{}/term/{}.json".format(self.userannotation, self.term)
+        return f"annotation/{self.userannotation}/term/{self.term}.json"
 
     def fetch(self, id_annotation=None, id_term=None):
         self.id = -1
@@ -286,7 +297,10 @@ class AnnotationTerm(Model):
         raise NotImplementedError("Cannot update a annotation-term.")
 
     def __str__(self):
-        return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.userannotation, self.term)
+        return (
+            f"[{self.callback_identifier}] Annotation {self.userannotation} "
+            f"- Term {self.term}"
+        )
 
 
 class AlgoAnnotationTerm(Model):
@@ -301,7 +315,7 @@ class AlgoAnnotationTerm(Model):
         self.populate(attributes)
 
     def uri(self):
-        return "annotation/{}/term/{}.json".format(self.annotation, self.term)
+        return f"annotation/{self.annotation}/term/{self.term}.json"
 
     def fetch(self, id_annotation=None, id_term=None):
         self.id = -1
@@ -323,7 +337,7 @@ class AlgoAnnotationTerm(Model):
         raise NotImplementedError("Cannot update a annotation-term.")
 
     def __str__(self):
-        return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.annotation, self.term)
+        return f"[{self.callback_identifier}] Annotation {self.annotation} - Term {self.term}"
 
 
 class AnnotationFilter(Model):
@@ -358,8 +372,10 @@ class AnnotationGroup(Model):
         if self.id is None:
             raise ValueError("Cannot merge an annotaiton group with no ID.")
 
-        return Cytomine.get_instance().post("annotationgroup/{}/annotationgroup/{}/merge.json".format(
-            self.id, id_other_annotation_group))
+        return Cytomine.get_instance().post(
+            f"annotationgroup/{self.id}/annotationgroup/"
+            f"{id_other_annotation_group}/merge.json"
+        )
 
 
 class AnnotationGroupCollection(Collection):
@@ -379,9 +395,9 @@ class AnnotationLink(Model):
 
     def uri(self):
         if self.is_new():
-            return "{}.json".format(self.callback_identifier)
-        else:
-            return "annotationgroup/{}/annotation/{}.json".format(self.group, self.annotationIdent)
+            return f"{self.callback_identifier}.json"
+
+        return f"annotationgroup/{self.group}/annotation/{self.annotationIdent}.json"
 
     def fetch(self, id_annotation=None, id_annotation_group=None):
         self.id = -1
@@ -403,9 +419,10 @@ class AnnotationLink(Model):
         raise NotImplementedError("Cannot update an annotation link.")
 
     def __str__(self):
-        return "[{}] Annotation {} - Annotation group {}".format(self.callback_identifier, self.annotationIdent,
-                                                                 self.group)
-
+        return (
+            f"[{self.callback_identifier}] Annotation {self.annotationIdent} "
+            f"- Annotation group {self.group}"
+        )
 
 class AnnotationLinkCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):

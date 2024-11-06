@@ -87,13 +87,18 @@ class CytomineAuth(requests.auth.AuthBase):
 
     def __call__(self, r):
         content_type = r.headers.get("content-type", "")
-        token = "{}\n\n{}\n{}\n{}{}".format(r.method, content_type, r.headers['date'],
-                                            self.base_path, r.url.replace(self.base_url, ""))
+        token = (
+            f"{r.method}\n\n"
+            f"{content_type}\n"
+            f"{r.headers['date']}\n"
+            f"{self.base_path}"
+            f"{r.url.replace(self.base_url, '')}"
+        )
 
         signature = base64.b64encode(hmac.new(bytes(self.private_key, 'utf-8'),
                                               token.encode('utf-8'), hashlib.sha1).digest())
 
-        authorization = "CYTOMINE {}:{}".format(self.public_key, signature.decode('utf-8'))
+        authorization = f"CYTOMINE {self.public_key}:{signature.decode('utf-8')}"
         r.headers['authorization'] = authorization
         return r
 
@@ -106,8 +111,11 @@ def deprecated(func):
     @functools.wraps(func)
     def new_func(*args, **kwargs):
         warnings.simplefilter('always', DeprecationWarning)  # turn off filter
-        warnings.warn("Call to deprecated function {}.".format(func.__name__), category=DeprecationWarning,
-                      stacklevel=2)
+        warnings.warn(
+            f"Call to deprecated function {func.__name__}.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
         warnings.simplefilter('default', DeprecationWarning)  # reset filter
         return func(*args, **kwargs)
 
@@ -343,7 +351,7 @@ class Cytomine(object):
     def _start(self):
         self._session = requests.session()
         if self._use_cache:
-            self._session.mount('{}://'.format(self._protocol), CacheControlAdapter())
+            self._session.mount(f"{self._protocol}://", CacheControlAdapter())
 
         Cytomine.__instance = self
         self.wait_to_accept_connection()
@@ -381,7 +389,7 @@ class Cytomine(object):
         self.set_current_user()
 
     def _base_url(self, with_base_path=True):
-        url = "{}://{}".format(self._protocol, self._host)
+        url = f"{self._protocol}://{self._host}"
         if with_base_path:
             url += self._base_path
         return url
@@ -403,15 +411,21 @@ class Cytomine(object):
 
     def _log_response(self, response, message):
         try:
-            msg = "[{}] {} | {} {}".format(response.request.method, message, response.status_code, response.reason)
+            msg = (
+                f"[{response.request.method}] {message} | "
+                f"{response.status_code} {response.reason}"
+            )
             if response.status_code == requests.codes.ok or response.status_code >= requests.codes.server_error:
                 self.log(msg)
             elif response.status_code == 301 or response.status_code == 302:
                 redirected_url = response.headers['Location']
                 raise URLRedirectionException(response.status_code, redirected_url)
             else:
-                self.log("{} ({})".format(msg, read_response_message(response, key="errors")), level=logging.ERROR)
-            self._logger.debug("DUMP:\n{}".format(dump.dump_all(response).decode("utf-8")))
+                self.log(
+                    f"{msg} ({read_response_message(response, key='errors')})",
+                    level=logging.ERROR,
+                )
+            self._logger.debug("DUMP:\n%s", dump.dump_all(response).decode("utf-8"))
         except (UnicodeDecodeError, JSONDecodeError) as e:
             self._logger.debug("DUMP:\nImpossible to decode.")
         except URLRedirectionException as e:
@@ -425,14 +439,18 @@ class Cytomine(object):
         return self._logger
 
     def _get(self, uri, query_parameters, with_base_path=True):
-        return self._session.get("{}{}".format(self._base_url(with_base_path), uri),
-                                 allow_redirects=False,
-                                 auth=CytomineAuth(
-                                     self._public_key, self._private_key,
-                                     self._base_url(), self._base_path),
-                                 headers=self._headers(),
-                                 params=query_parameters)
-
+        return self._session.get(
+            f"{self._base_url(with_base_path)}{uri}",
+            allow_redirects=False,
+            auth=CytomineAuth(
+                self._public_key,
+                self._private_key,
+                self._base_url(),
+                self._base_path,
+            ),
+            headers=self._headers(),
+            params=query_parameters,
+        )
     def get(self, uri, query_parameters=None):
         response = self._get(uri, query_parameters)
         self._log_response(response, uri)
@@ -467,13 +485,18 @@ class Cytomine(object):
         return collection
 
     def _put(self, uri, data=None, query_parameters=None):
-        return self._session.put("{}{}".format(self._base_url(), uri),
-                                 auth=CytomineAuth(
-                                     self._public_key, self._private_key,
-                                     self._base_url(), self._base_path),
-                                 headers=self._headers(content_type='application/json'),
-                                 params=query_parameters,
-                                 data=data)
+        return self._session.put(
+            f"{self._base_url()}{uri}",
+            auth=CytomineAuth(
+                self._public_key,
+                self._private_key,
+                self._base_url(),
+                self._base_path,
+            ),
+            headers=self._headers(content_type="application/json"),
+            params=query_parameters,
+            data=data,
+        )
 
     def put(self, uri, data=None, query_paramters=None):
         response = self._put(uri, data=data, query_parameters=query_paramters)
@@ -498,12 +521,17 @@ class Cytomine(object):
         return model
 
     def _delete(self, uri, query_parameters=None):
-        return self._session.delete("{}{}".format(self._base_url(), uri),
-                                    auth=CytomineAuth(
-                                        self._public_key, self._private_key,
-                                        self._base_url(), self._base_path),
-                                    headers=self._headers(content_type='application/json'),
-                                    params=query_parameters)
+        return self._session.delete(
+            f"{self._base_url()}{uri}",
+            auth=CytomineAuth(
+                self._public_key,
+                self._private_key,
+                self._base_url(),
+                self._base_path,
+            ),
+            headers=self._headers(content_type="application/json"),
+            params=query_parameters,
+        )
 
     def delete(self, uri, query_parameters=None):
         response = self._delete(uri, query_parameters)
@@ -522,13 +550,18 @@ class Cytomine(object):
         return False
 
     def _post(self, uri, data=None, query_parameters=None, with_base_path=True):
-        return self._session.post("{}{}".format(self._base_url(with_base_path), uri),
-                                  auth=CytomineAuth(
-                                      self._public_key, self._private_key,
-                                      self._base_url(), self._base_path),
-                                  headers=self._headers(content_type='application/json'),
-                                  params=query_parameters,
-                                  data=data)
+        return self._session.post(
+            f"{self._base_url(with_base_path)}{uri}",
+            auth=CytomineAuth(
+                self._public_key,
+                self._private_key,
+                self._base_url(),
+                self._base_path,
+            ),
+            headers=self._headers(content_type="application/json"),
+            params=query_parameters,
+            data=data,
+        )
 
     def post(self, uri, data=None, query_parameters=None):
         response = self._post(uri, data=data, query_parameters=query_parameters)
@@ -607,26 +640,31 @@ class Cytomine(object):
             uri = model.uri()
 
         m = MultipartEncoder(fields={"files[]": (filename, open(filename, 'rb'))})
-        response = self._session.post("{}{}".format(self._base_url(), uri),
-                                      auth=CytomineAuth(
-                                          self._public_key, self._private_key,
-                                          self._base_url(), self._base_path),
-                                      headers=self._headers(content_type=m.content_type),
-                                      params=query_parameters,
-                                      data=m)
+        response = self._session.post(
+            f"{self._base_url()}{uri}",
+            auth=CytomineAuth(
+                self._public_key,
+                self._private_key,
+                self._base_url(),
+                self._base_path,
+            ),
+            headers=self._headers(content_type=m.content_type),
+            params=query_parameters,
+            data=m,
+        )
 
         if response.status_code == requests.codes.ok:
             model = model.populate(response.json())  # [model.callback_identifier.lower()])
-            self._logger.info("File uploaded successfully to {}".format(uri))
+            self._logger.info("File uploaded successfully to %s", uri)
         else:
             model = False
-            self._logger.error("Error during file uploading to {}".format(uri))
+            self._logger.error("Error during file uploading to %s",uri)
 
         return model
 
     def download_file(self, url, destination, override=False, payload=None):
         if not url.startswith("http"):
-            url = "{}{}".format(self._base_url(), url)
+            url = f"{self._base_url()}{url}"
 
         if override or not os.path.exists(destination):
             response = self._session.get(url,
@@ -646,7 +684,11 @@ class Cytomine(object):
                 shutil.copyfileobj(response.raw, f)
 
                 parameters = str(dict(filter(lambda item: item[1] is not None, payload.items()))) if payload else {}
-                self._logger.info("File downloaded successfully from {} with parameters {}".format(url, parameters))
+                self._logger.info(
+                    "File downloaded successfully from %s with parameters %s",
+                    url,
+                    parameters,
+                )
             return True
         else:
             return True

@@ -144,10 +144,10 @@ class Collection(MutableSequence):
                 raise CollectionPartialUploadException("Some items could not be uploaded", created=added, failed=failed)
             return True
         else:
-            raise ValueError("Invalid value '{}' for chunk parameter.".format(chunk))
+            raise ValueError(f"Invalid value '{chunk}' for chunk parameter.")
 
     def to_json(self, **dump_parameters):
-        return "[{}]".format(",".join([d.to_json(**dump_parameters) for d in self._data]))
+        return f"[{','.join([d.to_json(**dump_parameters) for d in self._data])}]"
 
     def populate(self, attributes, append_mode=False):
         data = [self._model().populate(instance) for instance in attributes["collection"]]
@@ -199,12 +199,17 @@ class Collection(MutableSequence):
             if len(self.filters) > 1:
                 raise ValueError("More than 1 filter not allowed by default.")
 
-            uri = "/".join(["{}/{}".format(key, value) for key, value in six.iteritems(self.filters)
-                            if key in self._allowed_filters])
+            uri = "/".join(
+                [
+                    f"{key}/{value}"
+                    for key, value in six.iteritems(self.filters)
+                    if key in self._allowed_filters
+                ]
+            )
             if len(uri) > 0:
                 uri += "/"
 
-        return "{}{}.json".format(uri, self.callback_identifier)
+        return f"{uri}{self.callback_identifier}.json"
 
     def find_by_attribute(self, attr, value):
         """Retrieve the first item of which the item.attr matches 'value'
@@ -223,7 +228,7 @@ class Collection(MutableSequence):
         return next(iter([i for i in self if hasattr(i, attr) and getattr(i, attr) == value]), None)
 
     def __str__(self):
-        return "[{} collection] {} objects".format(self.callback_identifier, len(self))
+        return f"[{self.callback_identifier} collection] {len(self)} objects"
 
     # Collection
     def __len__(self):
@@ -234,8 +239,10 @@ class Collection(MutableSequence):
 
     def __setitem__(self, index, value):
         if not isinstance(value, self._model):
-            raise TypeError("Value of type {} not allowed in {}.".format(value.__class__.__name__,
-                                                                         self.__class__.__name__))
+            raise TypeError(
+                f"Value of type {value.__class__.__name__} "
+                f"not allowed in {self.__class__.__name__}."
+            )
         self._data[index] = value
 
     def __delitem__(self, index):
@@ -243,8 +250,10 @@ class Collection(MutableSequence):
 
     def insert(self, index, value):
         if not isinstance(value, self._model):
-            raise TypeError("Value of type {} not allowed in {}.".format(value.__class__.__name__,
-                                                                         self.__class__.__name__))
+            raise TypeError(
+                f"Value of type {value.__class__.__name__} "
+                f"not allowed in {self.__class__.__name__}."
+            )
         self._data.insert(index, value)
 
     def __iadd__(self, other):
@@ -285,8 +294,10 @@ class DomainCollection(Collection):
         self._obj = object
 
     def uri(self, without_filters=False):
-        return "domain/{}/{}/{}".format(self._domainClassName, self._domainIdent,
-                                        super(DomainCollection, self).uri(without_filters))
+        return (
+            f"domain/{self._domainClassName}/{self._domainIdent}/"
+            f"{super(DomainCollection, self).uri(without_filters)}"
+        )
 
     def populate(self, attributes, append_mode=False):
         data = [self._model(self._object).populate(instance) for instance in attributes["collection"]]

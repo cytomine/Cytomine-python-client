@@ -79,10 +79,10 @@ def read_descriptor(filename, schema_version="cytomine-0.1", delete_missing=Fals
 
         for parameter_descriptor in descriptor["inputs"]:
             if "id" not in parameter_descriptor.keys():
-                raise ValueError("No id for parameter: {}".format(parameter_descriptor))
+                raise ValueError(f"No id for parameter: {parameter_descriptor}")
 
             if "type" not in parameter_descriptor.keys():
-                raise ValueError("No type for parameter: {}".format(parameter_descriptor))
+                raise ValueError(f"No type for parameter: {parameter_descriptor}")
 
             if "name" not in parameter_descriptor.keys():
                 parameter_descriptor["name"] = "@id"

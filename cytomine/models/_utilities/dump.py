@@ -67,7 +67,7 @@ def generic_image_dump(dest_pattern, model, url_fn, override=True, check_extensi
 
         if destination:
             makedirs(destination, exist_ok=True)
-        files_to_download.append(os.path.join(destination, "{}.{}".format(filename, extension)))
+        files_to_download.append(os.path.join(destination, f"{filename}.{extension}"))
 
     if len(files_to_download) == 0:
         raise ValueError("Couldn't generate a dump path.")

@@ -82,12 +82,12 @@ if __name__ == '__main__':
             # Get the annotation geometry as a Shapely object (https://shapely.readthedocs.io/en/latest/manual.html)
             geometry = wkt.loads(annotation.location)
             bbox = geometry.bounds  # See https://shapely.readthedocs.io/en/latest/manual.html#object.bounds
-            print("ID: {} | Image: {} | Project: {} | Terms: {} | Area: {} | Perimeter: {} | Bbox: {}".format(
-                annotation.id,
-                annot_image.originalFilename,
-                project.name,
-                [t.name for t in annot_terms],
-                annotation.area,
-                annotation.perimeter,
-                bbox
-            ))
+            print(
+                f"ID: {annotation.id} | "
+                f"Image: {annot_image.originalFilename} | "
+                f"Project: {project.name} | "
+                f"Terms: {[t.name for t in annot_terms]} | "
+                f"Area: {annotation.area} | "
+                f"Perimeter: {annotation.perimeter} | "
+                f"Bbox: {bbox}"
+            )

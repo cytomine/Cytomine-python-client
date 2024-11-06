@@ -75,7 +75,7 @@ def _to_bool(v):
         elif lv in {"1", "true", "yes"}:
             return True
         else:
-            raise ValueError("unexpected value '{}' for a boolean".format(v))
+            raise ValueError(f"unexpected value '{v}' for a boolean")
     else:
         return bool(v)
 
@@ -416,8 +416,9 @@ class CytomineJobProgressMonitor(object):
     def __iter__(self):
         for i, v in enumerate(self._iterable):
             self._cytomine_logger.update(
-                "{} ({}/{}).".format(self._comment_prefix, i + 1, len(self)),
-                current=i, total=len(self)
+                f"{self._comment_prefix} ({i + 1}/{len(self)}).",
+                current=i,
+                total=len(self),
             )
             yield v
 

@@ -125,6 +125,9 @@ def setup_classify(args, logger, root_path=None, image_folder="images", set_fold
         n_workers=args.n_jobs
     )
 
-    logger.abs_update(progress=100, statusComment="Downloaded crops for {} annotation(s).".format(len(downloaded)))
+    logger.abs_update(
+        progress=100,
+        statusComment=f"Downloaded crops for {len(downloaded)} annotation(s)."
+    )
 
     return base_path, downloaded

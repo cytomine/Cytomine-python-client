@@ -54,7 +54,7 @@ class ImageGroupImageInstance(Model):
         self.populate(attributes)
 
     def uri(self):
-        return "imagegroup/{}/imageinstance/{}.json".format(self.group, self.image)
+        return f"imagegroup/{self.group}/imageinstance/{self.image}.json"
 
     def fetch(self, id_image_group=None, id_image_instance=None):
         self.id = -1
@@ -76,7 +76,10 @@ class ImageGroupImageInstance(Model):
         raise NotImplementedError("Cannot update a image group-image instance relation.")
 
     def __str__(self):
-        return "[{}] {} : Group {} - Image {} ".format(self.callback_identifier, self.id, self.group, self.image)
+        return (
+            f"[{self.callback_identifier}] {self.id} : Group {self.group} "
+            f"- Image {self.image}"
+        )
 
 
 class ImageGroupImageInstanceCollection(Collection):
@@ -84,4 +87,3 @@ class ImageGroupImageInstanceCollection(Collection):
         super(ImageGroupImageInstanceCollection, self).__init__(ImageGroupImageInstance, filters, max, offset)
         self._allowed_filters = ["imagegroup", "imageinstance"]
         self.set_parameters(parameters)
-

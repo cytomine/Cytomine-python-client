@@ -74,8 +74,8 @@ class RelationTerm(Model):
     def uri(self):
         if not self.id:
             return "relation/parent/term.json"
-        else:
-            return "relation/parent/term1/{}/term2/{}.json".format(self.term1, self.term2)
+
+        return f"relation/parent/term1/{self.term1}/term2/{self.term2}.json"
 
     def fetch(self, id_term1=None, id_term2=None):
         self.id = -1
@@ -97,4 +97,7 @@ class RelationTerm(Model):
         raise NotImplementedError("Cannot update a relation-term.")
 
     def __str__(self):
-        return "[{}] {} : parent {} - child {}".format(self.callback_identifier, self.id, self.term1, self.term2)
+        return (
+            f"[{self.callback_identifier}] {self.id} : "
+            f"parent {self.term1} - child {self.term2}"
+        )

@@ -82,7 +82,7 @@ The next sample code should print “Hello {username}” where {username} is rep
 ```python
 from cytomine.models import ProjectCollection
 
-print("Hello {}".format(cytomine.current_user))
+print(f"Hello {cytomine.current_user}")
 projects = ProjectCollection().fetch()
 print(projects)
 for project in projects:
