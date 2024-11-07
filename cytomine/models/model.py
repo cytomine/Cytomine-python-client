@@ -21,7 +21,7 @@ import six
 from cytomine.cytomine import Cytomine
 
 
-class Model(object):
+class Model:
     def __init__(self, **attributes):
         # In some cases, a model can have some request parameters.
         self._query_parameters = {}

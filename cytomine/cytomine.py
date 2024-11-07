@@ -129,7 +129,8 @@ class URLRedirectionException(BaseException):
         self.message = f"HTTP return code : {status_code}. URL was redirected to {url}."
         super().__init__(self.message)
 
-class Cytomine(object):
+
+class Cytomine:
     __instance = None
 
     def __init__(self, host, public_key, private_key, verbose=None,
