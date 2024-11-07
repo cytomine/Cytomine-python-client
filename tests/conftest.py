@@ -14,25 +14,26 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+import logging
+import random
+import string
+
+import pytest
 
 from cytomine.cytomine import Cytomine
-from cytomine.models.storage import Storage, UploadedFile
 from cytomine.models.annotation import Annotation
-from cytomine.models.image import AbstractImage, ImageInstance, AbstractSlice, ImageServerCollection
+from cytomine.models.image import (
+    AbstractImage,
+    AbstractSlice,
+    ImageInstance,
+    ImageServerCollection,
+)
 from cytomine.models.ontology import Ontology, Term
 from cytomine.models.project import Project
 from cytomine.models.property import Tag
-from cytomine.models.user import User
+from cytomine.models.storage import Storage, UploadedFile
 from cytomine.models.track import Track
-
-import pytest
-import string
-import random
-import logging
+from cytomine.models.user import User
 
 
 def random_string(length=10):

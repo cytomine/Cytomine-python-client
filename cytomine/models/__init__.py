@@ -51,10 +51,7 @@ from .ontology import (
     Term,
     TermCollection,
 )
-from .project import (
-    Project,
-    ProjectCollection,
-)
+from .project import Project, ProjectCollection
 from .property import (
     AttachedFile,
     AttachedFileCollection,

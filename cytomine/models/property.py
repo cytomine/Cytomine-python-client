@@ -14,18 +14,12 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import re
-
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.annotation import Annotation
 from cytomine.models.collection import Collection, DomainCollection
-from cytomine.models.model import Model, DomainModel
+from cytomine.models.model import DomainModel, Model
 
 
 class Property(DomainModel):

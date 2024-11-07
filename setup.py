@@ -42,7 +42,6 @@ setup(
                       'CacheControl>=0.12.10',
                       'Shapely>=1.6.4',
                       'six>=1.11.0',
-                      'future>=0.17.1',
                       'requests>=2.27.1',
                       'urllib3>=1.25.2'],
     setup_requires=['pytest-runner'],

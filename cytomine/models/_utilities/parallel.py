@@ -22,8 +22,8 @@ try:
 except ImportError:
     import Queue as queue
 
-from threading import Thread
 from multiprocessing import cpu_count
+from threading import Thread
 
 
 def is_false(v):

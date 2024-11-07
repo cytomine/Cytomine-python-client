@@ -14,31 +14,26 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
     # Python 2
     JSONDecodeError = ValueError
 
-import logging
 import base64
+import functools
 import hashlib
 import hmac
-import sys
+import logging
 import os
-import requests
 import shutil
-import warnings
-import functools
+import sys
 import time
-from time import strftime, gmtime
-from future.builtins import bytes
+import warnings
 from argparse import ArgumentParser
+from time import gmtime, strftime
+
+import requests
 from cachecontrol import CacheControlAdapter
 from requests_toolbelt import MultipartEncoder
 from requests_toolbelt.utils import dump
@@ -729,8 +724,12 @@ class Cytomine(object):
             return False
 
     def _process_upload_response(self, response_data):
+        from .models.image import (
+            AbstractImage,
+            ImageInstance,
+            ImageInstanceCollection,
+        )
         from .models.storage import UploadedFile
-        from .models.image import AbstractImage, ImageInstance, ImageInstanceCollection
 
         self._logger.debug("Entering _process_upload_response(response_data=%s)", response_data)
 

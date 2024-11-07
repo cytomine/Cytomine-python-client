@@ -50,8 +50,10 @@ __version__ = "1.0.0"
 # Import of all python necessary modules, including the Cytomine Python client
 import logging
 from argparse import ArgumentParser
+
 from cytomine import Cytomine
-from cytomine.models import ImageInstance, AbstractImage
+from cytomine.models import AbstractImage, ImageInstance
+
 # -----------------------------------------------------------------------------------------------------------
 # Parsing all the arguments from the command line
 if __name__ == '__main__':

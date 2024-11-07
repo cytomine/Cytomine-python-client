@@ -14,19 +14,17 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging
 import sys
 from argparse import ArgumentParser
 
 from cytomine import Cytomine
-from cytomine.models import ImageInstance, Tag, TagDomainAssociation, TagDomainAssociationCollection
-
-
+from cytomine.models import (
+    ImageInstance,
+    Tag,
+    TagDomainAssociation,
+    TagDomainAssociationCollection,
+)
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")

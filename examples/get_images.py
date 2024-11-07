@@ -14,11 +14,6 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging
 import os
 import sys
@@ -26,8 +21,6 @@ from argparse import ArgumentParser
 
 from cytomine import Cytomine
 from cytomine.models.image import ImageInstanceCollection
-
-
 
 # This example script allows you to get the list of images (metadata) in a given project.
 # If a download path is provided, it downloads all original images like they have been uploaded to Cytomine.

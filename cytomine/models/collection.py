@@ -14,25 +14,22 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-
 # Importing collections.abc objects from collections is deprecated
 # since python 3.3. 
 from sys import version_info
+
 if version_info.major < 3 or \
         (version_info.major == 3 and version_info.minor < 3):
     from collections import MutableSequence
 else:
     from collections.abc import MutableSequence
 
-import six
 import copy
 
+import six
+
 from cytomine.cytomine import Cytomine
+
 from ._utilities.parallel import generic_chunk_parallel
 
 

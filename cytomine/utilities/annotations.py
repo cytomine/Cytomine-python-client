@@ -1,6 +1,5 @@
 from cytomine.models import AnnotationCollection
 
-
 REVIEWED_INCLUDE = 1
 REVIEWED_ONLY = 2
 REVIEWED_EXCLUDE = 0
