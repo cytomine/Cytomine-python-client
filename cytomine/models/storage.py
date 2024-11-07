@@ -26,7 +26,7 @@ from cytomine.models.model import Model
 
 class Storage(Model):
     def __init__(self, name=None, id_user=None, **attributes):
-        super(Storage, self).__init__()
+        super().__init__()
         self.name = name
         self.user = id_user
         self.populate(attributes)
@@ -34,7 +34,7 @@ class Storage(Model):
 
 class StorageCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(StorageCollection, self).__init__(Storage, filters, max, offset)
+        super().__init__(Storage, filters, max, offset)
         self._allowed_filters = [None]
 
         self.all = None
@@ -66,7 +66,7 @@ class UploadedFile(Model):
 
     def __init__(self, original_filename=None, filename=None, size=None, ext=None, content_type=None,
                  id_projects=None, id_storage=None, id_user=None, id_image_server=None, status=None, id_parent=None, **attributes):
-        super(UploadedFile, self).__init__()
+        super().__init__()
         self.originalFilename = original_filename
         self.filename = filename
         self.path = None
@@ -88,7 +88,7 @@ class UploadedFile(Model):
 
 class UploadedFileCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(UploadedFileCollection, self).__init__(UploadedFile, filters, max, offset)
+        super().__init__(UploadedFile, filters, max, offset)
         self._allowed_filters = [None]
 
         self.all = None

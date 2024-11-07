@@ -27,7 +27,7 @@ from cytomine.models.model import Model
 
 class Track(Model):
     def __init__(self, name=None, id_image=None, color=None, **attributes):
-        super(Track, self).__init__()
+        super().__init__()
         self.name = name
         self.image = id_image
         self.color = color
@@ -36,14 +36,14 @@ class Track(Model):
 
 class TrackCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(TrackCollection, self).__init__(Track, filters, max, offset)
+        super().__init__(Track, filters, max, offset)
         self._allowed_filters = ["project", "imageinstance"]
         self.set_parameters(parameters)
 
 
 class AnnotationTrack(Model):
     def __init__(self, annotation_class_name=None, id_annotation=None, id_track=None, **attributes):
-        super(AnnotationTrack, self).__init__()
+        super().__init__()
         self.annotationClassName = annotation_class_name
         self.annotationIdent = id_annotation
         self.track = id_track

@@ -137,7 +137,7 @@ class CytomineJob(Cytomine):
         the parameters names)
     """
     def __init__(self, host, public_key, private_key, software_id, project_id, parameters=None, **kwargs):
-        super(CytomineJob, self).__init__(host, public_key, private_key, **kwargs)
+        super().__init__(host, public_key, private_key, **kwargs)
         self._job = None
         self._project = Project().fetch(project_id)
         self._software = Software().fetch(software_id)

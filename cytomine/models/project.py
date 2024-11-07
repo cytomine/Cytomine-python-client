@@ -28,7 +28,7 @@ from cytomine.models.model import Model
 
 class Project(Model):
     def __init__(self, name=None, id_ontology=None, **attributes):
-        super(Project, self).__init__()
+        super().__init__()
         self.name = name
         self.ontology = id_ontology
         self.ontologyName = None
@@ -70,7 +70,7 @@ class Project(Model):
 
 class ProjectCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ProjectCollection, self).__init__(Project, filters, max, offset)
+        super().__init__(Project, filters, max, offset)
         self._allowed_filters = [None, "user", "software", "ontology"]
         self.set_parameters(parameters)
 
@@ -80,13 +80,13 @@ class ProjectCollection(Collection):
 
 class Discipline(Model):
     def __init__(self, name=None, **attributes):
-        super(Discipline, self).__init__()
+        super().__init__()
         self.name = name
         self.populate(attributes)
 
 
 class DisciplineCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(DisciplineCollection, self).__init__(Discipline, filters, max, offset)
+        super().__init__(Discipline, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)

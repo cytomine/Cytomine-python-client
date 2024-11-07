@@ -31,7 +31,7 @@ from ._utilities import generic_image_dump
 
 class AbstractImage(Model):
     def __init__(self, filename=None, id_uploaded_file=None, **attributes):
-        super(AbstractImage, self).__init__()
+        super().__init__()
         self.originalFilename = filename
         self.uploadedFile = id_uploaded_file
         self.width = None
@@ -101,14 +101,14 @@ class AbstractImage(Model):
 
 class AbstractImageCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AbstractImageCollection, self).__init__(AbstractImage, filters, max, offset)
+        super().__init__(AbstractImage, filters, max, offset)
         self._allowed_filters = [None]  # "project"]
         self.set_parameters(parameters)
 
 
 class ImageServer(Model):
     def __init__(self, name=None, url=None, available=False, base_path=None, **attributes):
-        super(ImageServer, self).__init__()
+        super().__init__()
         self.name = name
         self.url = url
         self.available = available
@@ -117,7 +117,7 @@ class ImageServer(Model):
 
 class ImageServerCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ImageServerCollection, self).__init__(ImageServer, filters, max, offset)
+        super().__init__(ImageServer, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
@@ -125,7 +125,7 @@ class ImageServerCollection(Collection):
 class AbstractSlice(Model):
     def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None,
                  **attributes):
-        super(AbstractSlice, self).__init__()
+        super().__init__()
         self.image = id_image
         self.uploadedFile = id_uploaded_file
         self.mime = mime
@@ -139,14 +139,14 @@ class AbstractSlice(Model):
 
 class AbstractSliceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AbstractSliceCollection, self).__init__(AbstractSlice, filters, max, offset)
+        super().__init__(AbstractSlice, filters, max, offset)
         self._allowed_filters = ["abstractimage", "uploadedfile"]
         self.set_parameters(parameters)
 
 
 class ImageInstance(Model):
     def __init__(self, id_abstract_image=None, id_project=None, **attributes):
-        super(ImageInstance, self).__init__()
+        super().__init__()
         self.baseImage = id_abstract_image
         self.project = id_project
         self.user = None
@@ -400,7 +400,7 @@ class ImageInstance(Model):
 
 class ImageInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ImageInstanceCollection, self).__init__(ImageInstance, filters, max, offset)
+        super().__init__(ImageInstance, filters, max, offset)
         self._allowed_filters = ["project", "imagegroup"]  # "user"
         self.set_parameters(parameters)
 
@@ -410,7 +410,7 @@ class ImageInstanceCollection(Collection):
 
 class SliceInstance(Model):
     def __init__(self, id_project=None, id_image=None, id_base_slice=None, **attributes):
-        super(SliceInstance, self).__init__()
+        super().__init__()
         self.project = id_project
         self.image = id_image
         self.baseSlice = id_base_slice
@@ -594,6 +594,6 @@ class SliceInstance(Model):
 
 class SliceInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(SliceInstanceCollection, self).__init__(SliceInstance, filters, max, offset)
+        super().__init__(SliceInstance, filters, max, offset)
         self._allowed_filters = ["imageinstance"]
         self.set_parameters(parameters)

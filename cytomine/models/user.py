@@ -40,7 +40,7 @@ class CytomineUser:
 class User(Model, CytomineUser):
     def __init__(self, username=None, firstname=None, lastname=None, email=None, password=None, language=None,
                  is_developer=None, **attributes):
-        super(User, self).__init__()
+        super().__init__()
         self.username = username
         self.firstname = firstname
         self.lastname = lastname
@@ -59,7 +59,7 @@ class User(Model, CytomineUser):
 
 class CurrentUser(User):
     def __init__(self):
-        super(CurrentUser, self).__init__()
+        super().__init__()
         self.id = 0
         self.publicKey = None
         self.privateKey = None
@@ -80,7 +80,7 @@ class CurrentUser(User):
 
 class UserCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(UserCollection, self).__init__(User, filters, max, offset)
+        super().__init__(User, filters, max, offset)
         self._allowed_filters = [None, "project", "ontology"]
 
         self.admin = None # Only works with project filter
@@ -91,7 +91,7 @@ class UserCollection(Collection):
         self.set_parameters(parameters)
 
     def uri(self, without_filters=False):
-        uri = super(UserCollection, self).uri(without_filters)
+        uri = super().uri(without_filters)
         if "project" in self.filters and self.admin:
             uri = uri.replace("user", "admin")
         return uri
@@ -99,7 +99,7 @@ class UserCollection(Collection):
 
 class UserJob(Model, CytomineUser):
     def __init__(self):
-        super(UserJob, self).__init__()
+        super().__init__()
         self.algo = True
         self.humanUsername = None
         self.publicKey = None
@@ -117,7 +117,7 @@ class UserJob(Model, CytomineUser):
 
 class UserJobCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(UserJobCollection, self).__init__(UserJob, filters, max, offset)
+        super().__init__(UserJob, filters, max, offset)
         self._allowed_filters = ["project"]
 
         self.image = None
@@ -131,7 +131,7 @@ class UserJobCollection(Collection):
 
 class Group(Model):
     def __init__(self, name=None, gid=None, **attributes):
-        super(Group, self).__init__()
+        super().__init__()
         self.name = name
         self.gid = gid
         self.populate(attributes)
@@ -139,7 +139,7 @@ class Group(Model):
 
 class GroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(GroupCollection, self).__init__(Group, filters, max, offset)
+        super().__init__(Group, filters, max, offset)
         self._allowed_filters = [None]
         self.withUser = None
         self.set_parameters(parameters)
@@ -147,7 +147,7 @@ class GroupCollection(Collection):
 
 class UserGroup(Model):
     def __init__(self, id_user=None, id_group=None, **attributes):
-        super(UserGroup, self).__init__()
+        super().__init__()
         self.user = id_user
         self.group = id_group
         self.populate(attributes)
@@ -186,7 +186,7 @@ class UserGroup(Model):
 
 class UserGroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(UserGroupCollection, self).__init__(UserGroup, filters, max, offset)
+        super().__init__(UserGroup, filters, max, offset)
         self._allowed_filters = ["user"]
         self.set_parameters(parameters)
 
@@ -197,7 +197,7 @@ class UserGroupCollection(Collection):
 
 class Role(Model):
     def __init__(self):
-        super(Role, self).__init__()
+        super().__init__()
         self.authority = None
 
     def save(self, *args, **kwargs):
@@ -215,13 +215,13 @@ class Role(Model):
 
 class RoleCollection(Collection):
     def __init__(self):
-        super(RoleCollection, self).__init__(Role)
+        super().__init__(Role)
         self._allowed_filters = [None]
 
 
 class UserRole(Model):
     def __init__(self, id_user=None, id_role=None, **attributes):
-        super(UserRole, self).__init__()
+        super().__init__()
         self.user = id_user
         self.role = id_role
         self.authority = None
@@ -265,7 +265,7 @@ class UserRole(Model):
 
 class UserRoleCollection(Collection):
     def __init__(self, filters=None):
-        super(UserRoleCollection, self).__init__(UserRole, filters)
+        super().__init__(UserRole, filters)
         self._allowed_filters = ["user"]
 
     @property

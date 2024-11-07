@@ -31,7 +31,7 @@ from cytomine.models.model import Model
 
 class Software(Model):
     def __init__(self, name=None, result_name=None, **attributes):
-        super(Software, self).__init__()
+        super().__init__()
         self.name = name
         self.resultName = result_name
         self.softwareUserRepository = None
@@ -61,14 +61,14 @@ class Software(Model):
 
 class SoftwareCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(SoftwareCollection, self).__init__(Software, filters, max, offset)
+        super().__init__(Software, filters, max, offset)
         self._allowed_filters = [None, "project"]
         self.set_parameters(parameters)
 
 
 class SoftwareProject(Model):
     def __init__(self, id_software=None, id_project=None, **attributes):
-        super(SoftwareProject, self).__init__()
+        super().__init__()
         self.software = id_software
         self.project = id_project
         self.name = None
@@ -81,7 +81,7 @@ class SoftwareProject(Model):
 
 class SoftwareProjectCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(SoftwareProjectCollection, self).__init__(SoftwareProject, filters, max, offset)
+        super().__init__(SoftwareProject, filters, max, offset)
         self._allowed_filters = [None, "project"]
         self.set_parameters(parameters)
 
@@ -91,7 +91,7 @@ class SoftwareParameter(Model):
                  required=None, index=None, set_by_server=None, uri=None, uri_sort_attribut=None,
                  uri_print_attribut=None, server_parameter=None, human_name=None, value_key=None,
                  command_line_flag=None, **attributes):
-        super(SoftwareParameter, self).__init__()
+        super().__init__()
         self.name = name
         self.type = type
         self.software = id_software
@@ -115,7 +115,7 @@ class SoftwareParameter(Model):
 
 class SoftwareParameterCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(SoftwareParameterCollection, self).__init__(SoftwareParameter, filters, max, offset)
+        super().__init__(SoftwareParameter, filters, max, offset)
         self._allowed_filters = ["software"]
         self.set_parameters(parameters)
 
@@ -126,7 +126,7 @@ class SoftwareParameterCollection(Collection):
 
 class SoftwareParameterConstraint(Model):
     def __init__(self, parameter_constraint_id=None, software_parameter_id=None, value=None, **attributes):
-        super(SoftwareParameterConstraint, self).__init__()
+        super().__init__()
         self.parameterConstraint = parameter_constraint_id
         self.softwareParameter = software_parameter_id
         self.value = value
@@ -139,7 +139,7 @@ class SoftwareParameterConstraint(Model):
 
 class SoftwareParameterConstraintCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(SoftwareParameterConstraintCollection, self).__init__(SoftwareParameterConstraint, filters, max, offset)
+        super().__init__(SoftwareParameterConstraint, filters, max, offset)
         self._allowed_filters = ["softwareparameter"]
         self.set_parameters(parameters)
 
@@ -173,7 +173,7 @@ class Job(Model):
     KILLED = 8
 
     def __init__(self, project_id=None, software_id=None, **attributes):
-        super(Job, self).__init__()
+        super().__init__()
         self.algoType = None
         self.progress = None
         self.status = None
@@ -214,12 +214,12 @@ class Job(Model):
             f"(status: {_HUMAN_READABLE_JOB_STATUS[attributes.get('status', self.status)]}, "
             f"progress: {attributes.get('progress', self.progress)}%)"
         )
-        return super(Job, self).update(id=id, **attributes)
+        return super().update(id=id, **attributes)
 
 
 class JobCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(JobCollection, self).__init__(Job, filters, max, offset)
+        super().__init__(Job, filters, max, offset)
         self._allowed_filters = [None]
 
         self.project = None
@@ -234,7 +234,7 @@ class JobCollection(Collection):
 
 class JobParameter(Model):
     def __init__(self, id_job=None, id_software_parameter=None, value=None, **attributes):
-        super(JobParameter, self).__init__()
+        super().__init__()
         self.job = id_job
         self.softwareParameter = id_software_parameter
         self.value = value
@@ -243,7 +243,7 @@ class JobParameter(Model):
 
 class JobParameterCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(JobParameterCollection, self).__init__(JobParameter, filters, max, offset)
+        super().__init__(JobParameter, filters, max, offset)
         self._allowed_filters = ["job"]
         self.set_parameters(parameters)
 
@@ -257,7 +257,7 @@ class JobParameterCollection(Collection):
 
 class JobTemplate(Model):
     def __init__(self, name=None, id_software=None, id_project=None, **attributes):
-        super(JobTemplate, self).__init__()
+        super().__init__()
         self.name = name
         self.software = id_software
         self.project = id_project
@@ -266,14 +266,14 @@ class JobTemplate(Model):
 
 class JobTemplateCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(JobTemplateCollection, self).__init__(JobTemplate, filters, max, offset)
+        super().__init__(JobTemplate, filters, max, offset)
         self._allowed_filters = ["project"]
         self.set_parameters(parameters)
 
 
 class JobData(Model):
     def __init__(self, id_job=None, key=None, filename=None, **attributes):
-        super(JobData, self).__init__()
+        super().__init__()
         self.job = id_job
         self.key = key
         self.filename = filename
@@ -308,14 +308,14 @@ class JobData(Model):
 
 class JobDataCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(JobDataCollection, self).__init__(JobData, filters, max, offset)
+        super().__init__(JobData, filters, max, offset)
         self._allowed_filters = ["job"]
         self.set_parameters(parameters)
 
 
 class SoftwareUserRepository(Model):
     def __init__(self, provider=None, username=None, docker_username=None, prefix=None, **attributes):
-        super(SoftwareUserRepository, self).__init__()
+        super().__init__()
         self.provider = provider
         self.username = username
         self.dockerUsername = docker_username
@@ -329,7 +329,7 @@ class SoftwareUserRepository(Model):
 
 class SoftwareUserRepositoryCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(SoftwareUserRepositoryCollection, self).__init__(SoftwareUserRepository, filters, max, offset)
+        super().__init__(SoftwareUserRepository, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
@@ -337,7 +337,7 @@ class SoftwareUserRepositoryCollection(Collection):
 class ProcessingServer(Model):
     def __init__(self, name=None, host=None, username=None, port=None, type=None, processing_method_name=None,
                  persistent_directory=None, working_directory=None, index=None, **attributes):
-        super(ProcessingServer, self).__init__()
+        super().__init__()
         self.name = name
         self.host = host
         self.username = username
@@ -356,7 +356,7 @@ class ProcessingServer(Model):
 
 class ProcessingServerCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ProcessingServerCollection, self).__init__(ProcessingServer, filters, max, offset)
+        super().__init__(ProcessingServer, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 

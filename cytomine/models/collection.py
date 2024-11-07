@@ -50,7 +50,7 @@ class CollectionPartialUploadException(Exception):
         failed: Collection
             A Cytomine collection (same type as the one saved) containing the objects that couldn't be saved.
         """
-        super(CollectionPartialUploadException, self).__init__(desc)
+        super().__init__(desc)
         self._created = created
         self._failed = failed
 
@@ -284,7 +284,7 @@ class Collection(MutableSequence):
 
 class DomainCollection(Collection):
     def __init__(self, model, object, filters=None, max=0, offset=0):
-        super(DomainCollection, self).__init__(model, filters, max, offset)
+        super().__init__(model, filters, max, offset)
 
         if object.is_new():
             raise ValueError("The object must be fetched or saved before.")
@@ -296,7 +296,7 @@ class DomainCollection(Collection):
     def uri(self, without_filters=False):
         return (
             f"domain/{self._domainClassName}/{self._domainIdent}/"
-            f"{super(DomainCollection, self).uri(without_filters)}"
+            f"{super().uri(without_filters)}"
         )
 
     def populate(self, attributes, append_mode=False):

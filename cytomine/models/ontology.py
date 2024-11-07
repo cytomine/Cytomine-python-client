@@ -28,7 +28,7 @@ from cytomine.models.model import Model
 
 class Ontology(Model):
     def __init__(self, name=None, **attributes):
-        super(Ontology, self).__init__()
+        super().__init__()
         self.name = name
         self.user = None
         self.title = None
@@ -42,14 +42,14 @@ class Ontology(Model):
 
 class OntologyCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(OntologyCollection, self).__init__(Ontology, filters, max, offset)
+        super().__init__(Ontology, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 
 class Term(Model):
     def __init__(self, name=None, id_ontology=None, color=None, id_parent=None, **attributes):
-        super(Term, self).__init__()
+        super().__init__()
         self.name = name
         self.ontology = id_ontology
         self.parent = id_parent
@@ -59,14 +59,14 @@ class Term(Model):
 
 class TermCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(TermCollection, self).__init__(Term, filters, max, offset)
+        super().__init__(Term, filters, max, offset)
         self._allowed_filters = [None, "project", "ontology", "annotation"]
         self.set_parameters(parameters)
 
 
 class RelationTerm(Model):
     def __init__(self, id_term1=None, id_term2=None, **attributes):
-        super(RelationTerm, self).__init__()
+        super().__init__()
         self.term1 = id_term1
         self.term2 = id_term2
         self.populate(attributes)

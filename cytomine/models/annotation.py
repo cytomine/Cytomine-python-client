@@ -32,7 +32,7 @@ from ._utilities import generic_image_dump, generic_download, is_false
 class Annotation(Model):
     def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, id_slice=None,
                  **attributes):
-        super(Annotation, self).__init__()
+        super().__init__()
         self.location = location
         self.image = id_image
         self.slice = id_slice
@@ -152,7 +152,7 @@ class Annotation(Model):
 
 class AnnotationCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationCollection, self).__init__(Annotation, filters, max, offset)
+        super().__init__(Annotation, filters, max, offset)
         self._allowed_filters = [None]
 
         self.showBasic = True
@@ -209,7 +209,7 @@ class AnnotationCollection(Collection):
     def uri(self, without_filters=False):
         if self.included:
             self.add_filter("imageinstance", self.image)
-        uri = super(AnnotationCollection, self).uri(without_filters)
+        uri = super().uri(without_filters)
         if self.included:
             return uri.replace(".json", "/included.json")
 
@@ -268,7 +268,7 @@ class AnnotationCollection(Collection):
 
 class AnnotationTerm(Model):
     def __init__(self, id_annotation=None, id_term=None, **attributes):
-        super(AnnotationTerm, self).__init__()
+        super().__init__()
         self.userannotation = id_annotation
         self.term = id_term
         self.user = None
@@ -305,7 +305,7 @@ class AnnotationTerm(Model):
 
 class AlgoAnnotationTerm(Model):
     def __init__(self, id_annotation=None, id_term=None, id_expected_term=None, rate=1.0, **attributes):
-        super(AlgoAnnotationTerm, self).__init__()
+        super().__init__()
         self.annotation = id_annotation
         self.annotationIdent = id_annotation
         self.term = id_term
@@ -342,7 +342,7 @@ class AlgoAnnotationTerm(Model):
 
 class AnnotationFilter(Model):
     def __init__(self, name=None, users=None, terms=None, **attributes):
-        super(AnnotationFilter, self).__init__()
+        super().__init__()
         self.name = name
         self.users = users
         self.terms = terms
@@ -351,7 +351,7 @@ class AnnotationFilter(Model):
 
 class AnnotationFilterCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationFilterCollection, self).__init__(AnnotationFilter, filters, max, offset)
+        super().__init__(AnnotationFilter, filters, max, offset)
         self._allowed_filters = [None]
         self.project = None
         self.set_parameters(parameters)
@@ -362,7 +362,7 @@ class AnnotationFilterCollection(Collection):
 
 class AnnotationGroup(Model):
     def __init__(self, id_project=None, id_image_group=None, type="SAME_OBJECT", **attributes):
-        super(AnnotationGroup, self).__init__()
+        super().__init__()
         self.project = id_project
         self.imageGroup = id_image_group
         self.type = type
@@ -380,14 +380,14 @@ class AnnotationGroup(Model):
 
 class AnnotationGroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationGroupCollection, self).__init__(AnnotationGroup, filters, max, offset)
+        super().__init__(AnnotationGroup, filters, max, offset)
         self._allowed_filters = ["project", "imagegroup"]
         self.set_parameters(parameters)
 
 
 class AnnotationLink(Model):
     def __init__(self, annotation_class_name=None, id_annotation=None, id_annotation_group=None, **attributes):
-        super(AnnotationLink, self).__init__()
+        super().__init__()
         self.annotationClassName = annotation_class_name
         self.annotationIdent = id_annotation
         self.group = id_annotation_group
@@ -426,6 +426,6 @@ class AnnotationLink(Model):
 
 class AnnotationLinkCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationLinkCollection, self).__init__(AnnotationLink, filters, max, offset)
+        super().__init__(AnnotationLink, filters, max, offset)
         self._allowed_filters = ["annotationgroup", "annotation"]
         self.set_parameters(parameters)

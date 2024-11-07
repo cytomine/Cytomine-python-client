@@ -112,7 +112,7 @@ class Model(object):
 
 class DomainModel(Model):
     def __init__(self, object, **attributes):
-        super(DomainModel, self).__init__(**attributes)
+        super().__init__(**attributes)
 
         if object.is_new():
             raise ValueError("The object must be fetched or saved before.")

@@ -26,7 +26,7 @@ from cytomine.models.model import Model
 
 class Position(Model):
     def __init__(self):
-        super(Position, self).__init__()
+        super().__init__()
         self.user = None
         self.image = None
         self.slice = None
@@ -50,7 +50,7 @@ class Position(Model):
 
 class PositionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(PositionCollection, self).__init__(Position, filters, max, offset)
+        super().__init__(Position, filters, max, offset)
         self._allowed_filters = ["imageinstance", "sliceinstance"]
 
         self.user = None
@@ -66,7 +66,7 @@ class PositionCollection(Collection):
 
 class AnnotationAction(Model):
     def __init__(self):
-        super(AnnotationAction, self).__init__()
+        super().__init__()
         self.user = None
         self.image = None
         self.slice = None
@@ -92,7 +92,7 @@ class AnnotationAction(Model):
 
 class AnnotationActionCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationActionCollection, self).__init__(AnnotationAction, filters, max, offset)
+        super().__init__(AnnotationAction, filters, max, offset)
         self._allowed_filters = ["imageinstance"]
 
         self.user = None
@@ -106,7 +106,7 @@ class AnnotationActionCollection(Collection):
 
 class ProjectConnection(Model):
     def __init__(self, project=None, user=None, **attributes):
-        super(ProjectConnection, self).__init__()
+        super().__init__()
         self.project = project
         self.user = user
         self.countViewedImages = None
@@ -142,7 +142,7 @@ class ProjectConnection(Model):
 
 class ProjectConnectionCollection(Collection):
     def __init__(self, project, user, filters=None, max=0, offset=0, **parameters):
-        super(ProjectConnectionCollection, self).__init__(ProjectConnection, filters, max, offset)
+        super().__init__(ProjectConnection, filters, max, offset)
         self._allowed_filters = [None]
         self.project = project
         self.user = user
@@ -156,7 +156,7 @@ class ProjectConnectionCollection(Collection):
 
 class ImageConsultation(Model):
     def __init__(self, image=None, user=None, **attributes):
-        super(ImageConsultation, self).__init__()
+        super().__init__()
         self.project = None
         self.user = user
         self.image = image
@@ -193,7 +193,7 @@ class ImageConsultation(Model):
 
 class ImageConsultationCollection(Collection):
     def __init__(self, project, user, filters=None, max=0, offset=0, **parameters):
-        super(ImageConsultationCollection, self).__init__(ImageConsultation, filters, max, offset)
+        super().__init__(ImageConsultation, filters, max, offset)
         self._allowed_filters = [None]
         self.project = project
         self.user = user

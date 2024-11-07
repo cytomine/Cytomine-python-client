@@ -33,7 +33,7 @@ from cytomine.models.model import Model
 
 class ImageGroup(Model):
     def __init__(self, name=None, id_project=None, **attributes):
-        super(ImageGroup, self).__init__()
+        super().__init__()
         self.name = name
         self.project = id_project
         self.populate(attributes)
@@ -41,14 +41,14 @@ class ImageGroup(Model):
 
 class ImageGroupCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ImageGroupCollection, self).__init__(ImageGroup, filters, max, offset)
+        super().__init__(ImageGroup, filters, max, offset)
         self._allowed_filters = ["project"]
         self.set_parameters(parameters)
 
 
 class ImageGroupImageInstance(Model):
     def __init__(self, id_image_group=None, id_image_instance=None, **attributes):
-        super(ImageGroupImageInstance, self).__init__()
+        super().__init__()
         self.group = id_image_group
         self.image = id_image_instance
         self.populate(attributes)
@@ -84,6 +84,6 @@ class ImageGroupImageInstance(Model):
 
 class ImageGroupImageInstanceCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(ImageGroupImageInstanceCollection, self).__init__(ImageGroupImageInstance, filters, max, offset)
+        super().__init__(ImageGroupImageInstance, filters, max, offset)
         self._allowed_filters = ["imagegroup", "imageinstance"]
         self.set_parameters(parameters)

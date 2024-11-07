@@ -30,7 +30,7 @@ from cytomine.models.model import Model, DomainModel
 
 class Property(DomainModel):
     def __init__(self, object, key=None, value=None, **attributes):
-        super(Property, self).__init__(object)
+        super().__init__(object)
         self.key = key
         self.value = value
         self.populate(attributes)
@@ -50,7 +50,7 @@ class Property(DomainModel):
         if self._by_key and self.domainClassName and self.domainIdent and self.key:
             uri = f"domain/{self.domainClassName}/{self.domainIdent}/key/{self.key}/property.json"
         else:
-            uri = super(Property, self).uri()
+            uri = super().uri()
 
         if self.domainClassName == "annotation":
             uri = uri.replace("domain/", "")
@@ -78,12 +78,12 @@ class Property(DomainModel):
 
 class PropertyCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
-        super(PropertyCollection, self).__init__(Property, object, filters, max, offset)
+        super().__init__(Property, object, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
     def uri(self, without_filters=False):
-        uri = super(PropertyCollection, self).uri(without_filters)
+        uri = super().uri(without_filters)
         if self._domainClassName == "annotation":
             uri = uri.replace("domain/", "")
         return uri
@@ -110,7 +110,7 @@ class PropertyCollection(DomainCollection):
 
 class AttachedFile(DomainModel):
     def __init__(self, object, filename=None, file=None, **attributes):
-        super(AttachedFile, self).__init__(object)
+        super().__init__(object)
         self.filename = filename
         self.file = file
         self.url = None
@@ -163,14 +163,14 @@ class AttachedFile(DomainModel):
 
 class AttachedFileCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
-        super(AttachedFileCollection, self).__init__(AttachedFile, object, filters, max, offset)
+        super().__init__(AttachedFile, object, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 
 class Description(DomainModel):
     def __init__(self, object, data=None, **attributes):
-        super(Description, self).__init__(object)
+        super().__init__(object)
         self.data = data
         self.populate(attributes)
 
@@ -186,21 +186,21 @@ class Description(DomainModel):
 
 class Tag(Model):
     def __init__(self, name=None, **attributes):
-        super(Tag, self).__init__()
+        super().__init__()
         self.name = name
         self.populate(attributes)
 
 
 class TagCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(TagCollection, self).__init__(Tag, filters, max, offset)
+        super().__init__(Tag, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 
 class TagDomainAssociation(DomainModel):
     def __init__(self, object, tag=None, **attributes):
-        super(TagDomainAssociation, self).__init__(object)
+        super().__init__(object)
         self.tag = tag
         self.populate(attributes)
 
@@ -208,7 +208,7 @@ class TagDomainAssociation(DomainModel):
         if self.id:
             uri = f"tag_domain_association/{self.id}.json"
         elif self.domainClassName and self.domainIdent:
-            uri = super(TagDomainAssociation, self).uri()
+            uri = super().uri()
 
         return uri
 
@@ -219,7 +219,7 @@ class TagDomainAssociation(DomainModel):
 
 class TagDomainAssociationCollection(DomainCollection):
     def __init__(self, object, filters=None, max=0, offset=0, **parameters):
-        super(TagDomainAssociationCollection, self).__init__(TagDomainAssociation, object, filters, max, offset)
+        super().__init__(TagDomainAssociation, object, filters, max, offset)
         self._allowed_filters = [None]
         self.set_parameters(parameters)
 
