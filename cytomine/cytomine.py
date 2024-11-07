@@ -67,7 +67,6 @@ def _cytomine_parameter_name_synonyms(name, prefix="--"):
         ["public_key", "publicKey", "cytomine_public_key"],
         ["private_key", "privateKey", "cytomine_private_key"],
         ["base_path", "basePath", "cytomine_base_path"],
-        ["id_software", "cytomine_software_id", "cytomine_id_software", "idSoftware", "software_id"],
         ["id_project", "cytomine_project_id", "cytomine_id_project", "idProject", "project_id"]
     ]
     synonyms_dict = {params[i]: params[:i] + params[(i + 1):] for params in synonyms for i in range(len(params))}

@@ -15,24 +15,76 @@
 # * limitations under the License.
 
 
-from .model import Model, DomainModel
+from .annotation import (
+    Annotation,
+    AnnotationCollection,
+    AnnotationGroup,
+    AnnotationGroupCollection,
+    AnnotationLink,
+    AnnotationLinkCollection,
+    AnnotationTerm,
+)
 from .collection import Collection, DomainCollection
-from .annotation import Annotation, AnnotationCollection, AnnotationTerm, AlgoAnnotationTerm, AnnotationGroup, \
-    AnnotationGroupCollection, AnnotationLink, AnnotationLinkCollection
-from .image import AbstractImage, AbstractImageCollection, AbstractSlice, AbstractSliceCollection,\
-    ImageInstance, ImageInstanceCollection, SliceInstance, SliceInstanceCollection, \
-    ImageServer, ImageServerCollection
-from .imagegroup import ImageGroup, ImageGroupCollection, ImageGroupImageInstance, ImageGroupImageInstanceCollection
-from .ontology import Ontology, OntologyCollection, Term, TermCollection, RelationTerm
-from .project import Project, ProjectCollection, Discipline, DisciplineCollection
-from .property import Property, PropertyCollection, AttachedFile, AttachedFileCollection, Description, \
-    Tag, TagCollection, TagDomainAssociation, TagDomainAssociationCollection
-from .track import Track, TrackCollection, AnnotationTrack
-from .social import AnnotationAction, AnnotationActionCollection, Position, PositionCollection
-from .software import Software, SoftwareCollection, SoftwareParameter, SoftwareParameterCollection, \
-    SoftwareProject, SoftwareProjectCollection, Job, JobCollection, JobParameter, \
-    JobParameterCollection, JobTemplate, JobData, SoftwareUserRepository, SoftwareUserRepositoryCollection, \
-    ProcessingServer, ProcessingServerCollection, SoftwareParameterConstraint, SoftwareParameterConstraintCollection
-from .storage import Storage, StorageCollection, UploadedFile, UploadedFileCollection
-from .user import User, CurrentUser, UserJob, UserCollection, UserJobCollection, \
-    Group, GroupCollection, UserGroup, UserGroupCollection, Role, RoleCollection, UserRole, UserRoleCollection
+from .image import (
+    AbstractImage,
+    AbstractImageCollection,
+    AbstractSlice,
+    AbstractSliceCollection,
+    ImageInstance,
+    ImageInstanceCollection,
+    ImageServer,
+    ImageServerCollection,
+    SliceInstance,
+    SliceInstanceCollection,
+)
+from .imagegroup import (
+    ImageGroup,
+    ImageGroupCollection,
+    ImageGroupImageInstance,
+    ImageGroupImageInstanceCollection,
+)
+from .model import DomainModel, Model
+from .ontology import (
+    Ontology,
+    OntologyCollection,
+    RelationTerm,
+    Term,
+    TermCollection,
+)
+from .project import (
+    Project,
+    ProjectCollection,
+)
+from .property import (
+    AttachedFile,
+    AttachedFileCollection,
+    Description,
+    Property,
+    PropertyCollection,
+    Tag,
+    TagCollection,
+    TagDomainAssociation,
+    TagDomainAssociationCollection,
+)
+from .social import (
+    AnnotationAction,
+    AnnotationActionCollection,
+    Position,
+    PositionCollection,
+)
+from .storage import (
+    Storage,
+    StorageCollection,
+    UploadedFile,
+    UploadedFileCollection,
+)
+from .track import AnnotationTrack, Track, TrackCollection
+from .user import (
+    CurrentUser,
+    Role,
+    RoleCollection,
+    User,
+    UserCollection,
+    UserRole,
+    UserRoleCollection,
+)

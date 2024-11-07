@@ -174,7 +174,6 @@ class AnnotationCollection(Collection):
 
         self.project = None
 
-        self.job = None
         self.user = None
         self.users = None
 
@@ -188,7 +187,6 @@ class AnnotationCollection(Collection):
         self.terms = None
         self.suggestedTerm = None
         self.userForTermAlgo = None
-        self.jobForTermAlgo = None
 
         self.track = None
         self.tracks = None

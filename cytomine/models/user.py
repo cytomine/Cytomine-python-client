@@ -85,7 +85,6 @@ class UserCollection(Collection):
 
         self.admin = None # Only works with project filter
         self.online = None
-        self.showJob = None
         self.publicKey = None
 
         self.set_parameters(parameters)
@@ -95,104 +94,6 @@ class UserCollection(Collection):
         if "project" in self.filters and self.admin:
             uri = uri.replace("user", "admin")
         return uri
-
-
-class UserJob(Model, CytomineUser):
-    def __init__(self):
-        super().__init__()
-        self.algo = True
-        self.humanUsername = None
-        self.publicKey = None
-        self.privateKey = None
-        self.job = None
-        self.software = None
-        self.project = None
-        self.publicKey = None
-        self.privateKey = None
-
-    @property
-    def callback_identifier(self):
-        return "userJob"
-
-
-class UserJobCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super().__init__(UserJob, filters, max, offset)
-        self._allowed_filters = ["project"]
-
-        self.image = None
-        self.tree = None
-
-        self.set_parameters(parameters)
-
-    def save(self, *args, **kwargs):
-        raise NotImplementedError("Cannot save a userjob collection by client.")
-
-
-class Group(Model):
-    def __init__(self, name=None, gid=None, **attributes):
-        super().__init__()
-        self.name = name
-        self.gid = gid
-        self.populate(attributes)
-
-
-class GroupCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super().__init__(Group, filters, max, offset)
-        self._allowed_filters = [None]
-        self.withUser = None
-        self.set_parameters(parameters)
-
-
-class UserGroup(Model):
-    def __init__(self, id_user=None, id_group=None, **attributes):
-        super().__init__()
-        self.user = id_user
-        self.group = id_group
-        self.populate(attributes)
-
-    def uri(self):
-        if self.is_new():
-            return f"user/{self.user}/group.json"
-
-        return f"user/{self.user}/group/{self.group}.json"
-
-    def fetch(self, id_user=None, id_group=None):
-        self.id = -1
-
-        if self.user is None and id_user is None:
-            raise ValueError("Cannot fetch a model with no user ID.")
-        elif self.group is None and id_group is None:
-            raise ValueError("Cannot fetch a model with no group ID.")
-
-        if id_user is not None:
-            self.user = id_user
-
-        if id_group is not None:
-            self.group = id_group
-
-        return Cytomine.get_instance().get_model(self, self.query_parameters)
-
-    def update(self, *args, **kwargs):
-        raise NotImplementedError("Cannot update a user-group.")
-
-    def __str__(self):
-        return (
-            f"[{self.callback_identifier}] {self.id} : "
-            f"User {self.user} - Group {self.group}"
-        )
-
-
-class UserGroupCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super().__init__(UserGroup, filters, max, offset)
-        self._allowed_filters = ["user"]
-        self.set_parameters(parameters)
-
-    @property
-    def callback_identifier(self):
-        return "group"
 
 
 class Role(Model):

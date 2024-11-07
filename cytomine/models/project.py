@@ -32,13 +32,10 @@ class Project(Model):
         self.name = name
         self.ontology = id_ontology
         self.ontologyName = None
-        self.discipline = None
         self.blindMode = None
-        self.disciplineName = None
         self.numberOfSlides = None
         self.numberOfImages = None
         self.numberOfAnnotations = None
-        self.numberOfJobAnnotations = None
         self.retrievalProjects = None
         self.numberOfReviewedAnnotations = None
         self.retrievalDisable = None
@@ -71,22 +68,8 @@ class Project(Model):
 class ProjectCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super().__init__(Project, filters, max, offset)
-        self._allowed_filters = [None, "user", "software", "ontology"]
+        self._allowed_filters = [None, "user", "ontology"]
         self.set_parameters(parameters)
 
     def save(self, *args, **kwargs):
         raise NotImplementedError("Cannot save a project collection by client.")
-
-
-class Discipline(Model):
-    def __init__(self, name=None, **attributes):
-        super().__init__()
-        self.name = name
-        self.populate(attributes)
-
-
-class DisciplineCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super().__init__(Discipline, filters, max, offset)
-        self._allowed_filters = [None]
-        self.set_parameters(parameters)

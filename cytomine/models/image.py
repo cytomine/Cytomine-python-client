@@ -176,7 +176,6 @@ class ImageInstance(Model):
         self.thumb = None
         self.preview = None
         self.numberOfAnnotations = None
-        self.numberOfJobAnnotations = None
         self.numberOfReviewedAnnotations = None
         self.reviewed = None
         self.populate(attributes)

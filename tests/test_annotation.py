@@ -33,8 +33,12 @@ from tests.conftest import random_string
 class TestAnnotation:
     def test_annotation(self, connect, dataset):
         location = "POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))"
-        annotation = Annotation(location, dataset["image_instance"].id, 
-                                [dataset["term1"].id]).save()
+        annotation = Annotation(
+            location,
+            dataset["image_instance"].id,
+            [dataset["term1"].id],
+        ).save()
+
         assert (isinstance(annotation, Annotation))
         assert (annotation.location == location)
 
