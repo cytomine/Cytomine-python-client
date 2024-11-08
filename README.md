@@ -13,7 +13,7 @@ See [documentation](https://doc.uliege.cytomine.org/dev-guide/clients/python/usa
 
 ## Requirements
 
-* Python 2.7 | 3.5+
+* Python 3.5+
 
 ## Install
 
@@ -49,7 +49,6 @@ pip install .
 
 To ease developpement of new Cytomine software, the Cytomine-python-client package is available in Docker containers:
 * [cytomineuliege/software-python3-base](https://hub.docker.com/r/cytomineuliege/software-python3-base/) provides a Python 3.5 environment with client already installed.
-* [cytomineuliege/software-python2-base](https://hub.docker.com/r/cytomineuliege/software-python2-base/) provides a Python 2.7 environment with client already installed.
 
 These Docker images are tagged with the Python client version number. Two image variants are given for each client version:
 * `cytomineuliege/software-pythonX-base:<version>` is the defacto image. If you are unsure about what your needs are, you probably want to use this one.
