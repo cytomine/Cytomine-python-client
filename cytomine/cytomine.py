@@ -14,16 +14,11 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    # Python 2
-    JSONDecodeError = ValueError
-
 import base64
 import functools
 import hashlib
 import hmac
+import http.client as http_client
 import logging
 import os
 import shutil
@@ -31,6 +26,7 @@ import sys
 import time
 import warnings
 from argparse import ArgumentParser
+from json.decoder import JSONDecodeError
 from time import gmtime, strftime
 
 import requests
@@ -199,12 +195,6 @@ class Cytomine:
         self._logger.setLevel(log_level)
 
         if log_level == logging.DEBUG:
-            try:
-                import http.client as http_client
-            except ImportError:
-                # Python 2
-                import httplib as http_client
-
             http_client.HTTPConnection.debuglevel = 1
             requests_log = logging.getLogger("urllib3")
             requests_log.setLevel(logging.DEBUG)
