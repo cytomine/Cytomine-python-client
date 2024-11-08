@@ -5,9 +5,14 @@ REVIEWED_ONLY = 2
 REVIEWED_EXCLUDE = 0
 
 
-def get_annotations(projects, images=None, terms=None,
-                    users=None, reviewed=REVIEWED_EXCLUDE,
-                    **collection_params):
+def get_annotations(
+    projects,
+    images=None,
+    terms=None,
+    users=None,
+    reviewed=REVIEWED_EXCLUDE,
+    **collection_params,
+):
     """Returns a list annotations filtered with the following criterion.
 
     Parameters
@@ -17,10 +22,12 @@ def get_annotations(projects, images=None, terms=None,
     images: iterable|None
         Identifiers of images in which annotation should be taken.
     terms: iterable|None
-        Identifiers of terms. If present, only annotations that have at least one of the listed terms will be taken.
+        Identifiers of terms. If present, only annotations that have at least one
+        of the listed terms will be taken.
         Otherwise, no filtering based on terms is applied.
     users: iterable|None
-        Identifiers of users. If present, only annotations that were created one of the the given users will be taken.
+        Identifiers of users. If present, only annotations that were created one
+        of the the given users will be taken.
         Otherwise, no filtering based on users is applied.
     reviewed: int
         One of the following values:
@@ -36,7 +43,9 @@ def get_annotations(projects, images=None, terms=None,
         The annotations resulting from the filtering
     """
     if projects is None or len(projects) == 0:
-        raise ValueError("You should select at least one project to select annotation(s) from.")
+        raise ValueError(
+            "You should select at least one project to select annotation(s) from."
+        )
     if reviewed not in {REVIEWED_EXCLUDE, REVIEWED_ONLY, REVIEWED_INCLUDE}:
         raise ValueError(
             f"Unknown value '{reviewed}' for reviewed annotation selection. "
@@ -48,14 +57,22 @@ def get_annotations(projects, images=None, terms=None,
     for id_project in projects:
         if reviewed != REVIEWED_ONLY:
             annotations += AnnotationCollection(
-                project=id_project, images=images, term=terms,
-                users=users, reviewed=False, **collection_params
+                project=id_project,
+                images=images,
+                term=terms,
+                users=users,
+                reviewed=False,
+                **collection_params,
             ).fetch()
 
         if reviewed != REVIEWED_EXCLUDE:
             annotations += AnnotationCollection(
-                project=id_project, images=images, term=terms,
-                users=users, reviewed=True, **collection_params
+                project=id_project,
+                images=images,
+                term=terms,
+                users=users,
+                reviewed=True,
+                **collection_params,
             ).fetch()
 
     return annotations

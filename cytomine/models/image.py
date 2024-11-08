@@ -14,6 +14,8 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+# pylint: disable=invalid-name,unused-argument
+
 import os
 import re
 
@@ -71,8 +73,8 @@ class AbstractImage(Model):
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
 
@@ -87,7 +89,9 @@ class AbstractImage(Model):
         def dump_url_fn(model, file_path, **kwargs):
             return f"{model.callback_identifier}/{model.id}/download"
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, check_extension=False)
+        files = generic_image_dump(
+            dest_pattern, self, dump_url_fn, override=override, check_extension=False
+        )
         return len(files) > 0
 
     def __str__(self):
@@ -102,7 +106,9 @@ class AbstractImageCollection(Collection):
 
 
 class ImageServer(Model):
-    def __init__(self, name=None, url=None, available=False, base_path=None, **attributes):
+    def __init__(
+        self, name=None, url=None, available=False, base_path=None, **attributes
+    ):
         super().__init__()
         self.name = name
         self.url = url
@@ -118,8 +124,16 @@ class ImageServerCollection(Collection):
 
 
 class AbstractSlice(Model):
-    def __init__(self, id_image=None, id_uploaded_file=None, mime=None, channel=None, z_stack=None, time=None,
-                 **attributes):
+    def __init__(
+        self,
+        id_image=None,
+        id_uploaded_file=None,
+        mime=None,
+        channel=None,
+        z_stack=None,
+        time=None,
+        **attributes,
+    ):
         super().__init__()
         self.image = id_image
         self.uploadedFile = id_uploaded_file
@@ -150,6 +164,9 @@ class ImageInstance(Model):
         self.path = None
         self.contentType = None
 
+        self.filename = None
+        self.filenames = None
+
         self.width = None
         self.height = None
         self.depth = None
@@ -177,10 +194,17 @@ class ImageInstance(Model):
         self._image_servers = None
         self._reference_slice = None
 
+        self.x = None
+        self.y = None
+        self.w = None
+        self.h = None
+
     @deprecated
     def image_servers(self):
         if not self._image_servers:
-            data = Cytomine.get_instance().get(f"abstractimage/{self.baseImage}/imageservers.json")
+            data = Cytomine.get_instance().get(
+                f"abstractimage/{self.baseImage}/imageservers.json"
+            )
             self._image_servers = data["imageServersURLs"]
         return self._image_servers
 
@@ -189,27 +213,40 @@ class ImageInstance(Model):
             raise ValueError("Cannot get the reference slice of an image with no ID.")
 
         if not self._reference_slice:
-            data = Cytomine.get_instance().get(f"imageinstance/{self.id}/sliceinstance/reference.json")
+            data = Cytomine.get_instance().get(
+                f"imageinstance/{self.id}/sliceinstance/reference.json"
+            )
             self._reference_slice = SliceInstance().populate(data) if data else False
 
         return self._reference_slice
 
-    def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
-             colormap=None, inverse=None):
+    def dump(
+        self,
+        dest_pattern="{id}.jpg",
+        override=True,
+        max_size=None,
+        bits=8,
+        contrast=None,
+        gamma=None,
+        colormap=None,
+        inverse=None,
+    ):
         """
         Download the *reference* slice image with optional image modifications.
 
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists. The extension must be jpg, png or tif.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
+            The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         max_size : int, tuple, optional
             Maximum size (width or height) of returned image. None to get original size.
         bits : int (8,16,32) or str ("max"), optional
-            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+            Bit depth (bit per channel) of returned image.
+            "max" returns the original image bit depth
         contrast : float, optional
             Optional contrast applied on returned image.
         gamma : float, optional
@@ -222,7 +259,8 @@ class ImageInstance(Model):
         Returns
         -------
         downloaded : bool
-            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            True if everything happens correctly, False otherwise.
+            As a side effect, object attribute "filename"
             is filled with downloaded file path.
         """
         if self.id is None:
@@ -234,14 +272,16 @@ class ImageInstance(Model):
             "gamma": gamma,
             "colormap": colormap,
             "inverse": inverse,
-            "bits": bits
+            "bits": bits,
         }
 
         def dump_url_fn(model, file_path, **kwargs):
             extension = os.path.basename(file_path).split(".")[-1]
             return f"{model.callback_identifier}/{model.id}/thumb.{extension}"
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
+        files = generic_image_dump(
+            dest_pattern, self, dump_url_fn, override=override, **parameters
+        )
 
         if len(files) == 0:
             return False
@@ -258,8 +298,8 @@ class ImageInstance(Model):
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
 
@@ -274,15 +314,34 @@ class ImageInstance(Model):
         def dump_url_fn(model, file_path, **kwargs):
             return f"{model.callback_identifier}/{model.id}/download"
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, check_extension=False)
+        files = generic_image_dump(
+            dest_pattern, self, dump_url_fn, override=override, check_extension=False
+        )
         return len(files) > 0
 
     def __str__(self):
         return f"[{self.callback_identifier}] {self.id} : {self.instanceFilename}"
 
-    def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
-               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, projection=None,
-               max_size=None, zoom=None):
+    def window(
+        self,
+        x,
+        y,
+        w,
+        h,
+        dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg",
+        override=True,
+        mask=None,
+        alpha=None,
+        bits=8,
+        annotations=None,
+        terms=None,
+        users=None,
+        reviewed=None,
+        complete=True,
+        projection=None,
+        max_size=None,
+        zoom=None,
+    ):
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -297,26 +356,31 @@ class ImageInstance(Model):
         h : int
             The window height
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         mask : bool, optional
-            True if a binary mask based on given annotations must be returned, False otherwise.
+            True if a binary mask based on given annotations must be returned,
+            False otherwise.
         alpha : bool, optional
-            True if image background (outside annotations) must be transparent, False otherwise.
+            True if image background (outside annotations) must be transparent,
+            False otherwise.
         bits : int (8/16/32), optional
             Optional output bit depth of returned images
         annotations : list of int, optional
-            If mask=True or alpha=True, annotation identifiers that must be taken into account for masking
+            If mask or alpha is True, annotation ids that must be taken into account for masking
         terms : list of int, optional
-            If mask=True or alpha=True, term identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
+            If mask or alpha is True, term ids that must be taken into account for masking.
+            Ignored if 'annotations' is used.
         users : list of int, optional
-            If mask=True or alpha=True, user identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
+            If mask or alpha is True, user ids that must be taken into account for masking.
+            Ignored if 'annotations' is used.
         reviewed : bool, optional
-            If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking. Ignored if 'annotations' is used.
+            If mask or alpha is True, specify if only reviewed annotations are used for masking.
+            Ignored if 'annotations' is used.
         complete : bool, optional. Default: True
-            If mask=True or alpha=True, use the annotations without simplification for masking
+            If mask or alpha is True, use the annotations without simplification for masking
         projection: string, optional
             For 3D image with a profile, get the given projection (min, max, average)
         max_size : int, optional
@@ -334,7 +398,11 @@ class ImageInstance(Model):
         self.w = w
         self.h = h
         pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        dest_pattern = re.sub(
+            pattern,
+            lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")),
+            dest_pattern,
+        )
         del self.x
         del self.y
         del self.w
@@ -369,7 +437,9 @@ class ImageInstance(Model):
         # ===
 
         parameters = {
-            "annotations": ",".join(str(item) for item in annotations) if annotations else None,
+            "annotations": (
+                ",".join(str(item) for item in annotations) if annotations else None
+            ),
             "terms": ",".join(str(item) for item in terms) if terms else None,
             "users": ",".join(str(item) for item in users) if users else None,
             "reviewed": reviewed,
@@ -388,7 +458,7 @@ class ImageInstance(Model):
             f"{self.callback_identifier}/{self.id}/window-{x}-{y}-{w}-{h}.{extension}",
             file_path,
             override,
-            parameters
+            parameters,
         )
 
 
@@ -403,7 +473,9 @@ class ImageInstanceCollection(Collection):
 
 
 class SliceInstance(Model):
-    def __init__(self, id_project=None, id_image=None, id_base_slice=None, **attributes):
+    def __init__(
+        self, id_project=None, id_image=None, id_base_slice=None, **attributes
+    ):
         super().__init__()
         self.project = id_project
         self.image = id_image
@@ -419,24 +491,40 @@ class SliceInstance(Model):
         self.filename = None  # Used to store local filename after dump on disk.
         self.filenames = None  # Used to store local filenames after dump on disk.
 
+        self.x = None
+        self.y = None
+        self.w = None
+        self.h = None
+
         self.populate(attributes)
 
-    def dump(self, dest_pattern="{id}.jpg", override=True, max_size=None, bits=8, contrast=None, gamma=None,
-             colormap=None, inverse=None):
+    def dump(
+        self,
+        dest_pattern="{id}.jpg",
+        override=True,
+        max_size=None,
+        bits=8,
+        contrast=None,
+        gamma=None,
+        colormap=None,
+        inverse=None,
+    ):
         """
         Download the slice image with optional image modifications.
 
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists. The extension must be jpg, png or tif.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
+            The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         max_size : int, tuple, optional
             Maximum size (width or height) of returned image. None to get original size.
         bits : int (8,16,32) or str ("max"), optional
-            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+            Bit depth (bit per channel) of returned image.
+            "max" returns the original image bit depth
         contrast : float, optional
             Optional contrast applied on returned image.
         gamma : float, optional
@@ -449,7 +537,8 @@ class SliceInstance(Model):
         Returns
         -------
         downloaded : bool
-            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            True if everything happens correctly, False otherwise.
+            As a side effect, object attribute "filename"
             is filled with downloaded file path.
         """
         if self.id is None:
@@ -461,14 +550,16 @@ class SliceInstance(Model):
             "gamma": gamma,
             "colormap": colormap,
             "inverse": inverse,
-            "bits": bits
+            "bits": bits,
         }
 
         def dump_url_fn(model, file_path, **kwargs):
             extension = os.path.basename(file_path).split(".")[-1]
             return f"{model.callback_identifier}/{model.id}/thumb.{extension}"
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
+        files = generic_image_dump(
+            dest_pattern, self, dump_url_fn, override=override, **parameters
+        )
 
         if len(files) == 0:
             return False
@@ -478,8 +569,25 @@ class SliceInstance(Model):
 
         return True
 
-    def window(self, x, y, w, h, dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg", override=True, mask=None, alpha=None,
-               bits=8, annotations=None, terms=None, users=None, reviewed=None, complete=True, max_size=None, zoom=None):
+    def window(
+        self,
+        x,
+        y,
+        w,
+        h,
+        dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg",
+        override=True,
+        mask=None,
+        alpha=None,
+        bits=8,
+        annotations=None,
+        terms=None,
+        users=None,
+        reviewed=None,
+        complete=True,
+        max_size=None,
+        zoom=None,
+    ):
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -494,8 +602,8 @@ class SliceInstance(Model):
         h : int
             The window height
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         mask : bool, optional
@@ -505,15 +613,18 @@ class SliceInstance(Model):
         bits : int (8/16/32), optional
             Optional output bit depth of returned images
         annotations : list of int, optional
-            If mask=True or alpha=True, annotation identifiers that must be taken into account for masking
+            If mask or alpha is True, annotation ids that must be taken into account for masking
         terms : list of int, optional
-            If mask=True or alpha=True, term identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
+            If mask or alpha is True, term ids that must be taken into account for masking.
+            Ignored if 'annotations' is used.
         users : list of int, optional
-            If mask=True or alpha=True, user identifiers that must be taken into account for masking. Ignored if 'annotations' is used.
+            If mask or alpha is True, user ids that must be taken into account for masking.
+            Ignored if 'annotations' is used.
         reviewed : bool, optional
-            If mask=True or alpha=True, indicate if only reviewed annotations mut be taken into account for masking. Ignored if 'annotations' is used.
+            If mask or alpha is True, only reviewed annotations should be used for masking.
+            Ignored if 'annotations' is used.
         complete : bool, optional. Default: True
-            If mask=True or alpha=True, use the annotations without simplification for masking
+            If mask or alpha is True, use the annotations without simplification for masking
         max_size : int, optional
             Maximum size (width or height) of returned image. None to get original size.
         zoom : int, optional
@@ -529,7 +640,11 @@ class SliceInstance(Model):
         self.w = w
         self.h = h
         pattern = re.compile("{(.*?)}")
-        dest_pattern = re.sub(pattern, lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")), dest_pattern)
+        dest_pattern = re.sub(
+            pattern,
+            lambda m: str(getattr(self, str(m.group(0))[1:-1], "_")),
+            dest_pattern,
+        )
         del self.x
         del self.y
         del self.w
@@ -564,7 +679,9 @@ class SliceInstance(Model):
         # ===
 
         parameters = {
-            "annotations": ",".join(str(item) for item in annotations) if annotations else None,
+            "annotations": (
+                ",".join(str(item) for item in annotations) if annotations else None
+            ),
             "terms": ",".join(str(item) for item in terms) if terms else None,
             "users": ",".join(str(item) for item in users) if users else None,
             "reviewed": reviewed,
@@ -582,7 +699,7 @@ class SliceInstance(Model):
             f"{self.callback_identifier}/{self.id}/window-{x}-{y}-{w}-{h}.{extension}",
             file_path,
             override,
-            parameters
+            parameters,
         )
 
 

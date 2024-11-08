@@ -14,6 +14,8 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+# pylint: disable=invalid-name
+
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
@@ -36,7 +38,13 @@ class TrackCollection(Collection):
 
 
 class AnnotationTrack(Model):
-    def __init__(self, annotation_class_name=None, id_annotation=None, id_track=None, **attributes):
+    def __init__(
+        self,
+        annotation_class_name=None,
+        id_annotation=None,
+        id_track=None,
+        **attributes,
+    ):
         super().__init__()
         self.annotationClassName = annotation_class_name
         self.annotationIdent = id_annotation
@@ -51,7 +59,8 @@ class AnnotationTrack(Model):
 
         if self.annotationIdent is None and id_annotation is None:
             raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.track is None and id_track is None:
+
+        if self.track is None and id_track is None:
             raise ValueError("Cannot fetch a model with no term ID.")
 
         if id_annotation is not None:

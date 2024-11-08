@@ -14,17 +14,10 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-# Importing collections.abc objects from collections is deprecated
-# since python 3.3. 
-from sys import version_info
-
-if version_info.major < 3 or \
-        (version_info.major == 3 and version_info.minor < 3):
-    from collections import MutableSequence
-else:
-    from collections.abc import MutableSequence
+# pylint: disable=invalid-name
 
 import copy
+from collections.abc import MutableSequence
 
 import six
 
@@ -34,7 +27,10 @@ from ._utilities.parallel import generic_chunk_parallel
 
 
 class CollectionPartialUploadException(Exception):
-    """To be thrown when a collection is saved but only a part of it was successfully done so."""
+    """To be thrown when a collection is saved but
+    only a part of it was successfully done so.
+    """
+
     def __init__(self, desc, created=None, failed=None):
         """
         Parameters
@@ -42,10 +38,11 @@ class CollectionPartialUploadException(Exception):
         desc: str
             Description of the exception
         created: Collection
-            A Cytomine collection (same type as the one saved) containing the successfully saved objects (with their
-            created ids).
+            A Cytomine collection (same type as the one saved) containing
+            the successfully saved objects (with their created ids).
         failed: Collection
-            A Cytomine collection (same type as the one saved) containing the objects that couldn't be saved.
+            A Cytomine collection (same type as the one saved) containing
+            the objects that couldn't be saved.
         """
         super().__init__(desc)
         self._created = created
@@ -78,7 +75,9 @@ class Collection(MutableSequence):
         if len(self._filters) == 0 and None not in self._allowed_filters:
             raise ValueError("This collection cannot be fetched without a filter.")
 
-        return Cytomine.get_instance().get_collection(self, self.parameters, append_mode)
+        return Cytomine.get_instance().get_collection(
+            self, self.parameters, append_mode
+        )
 
     def fetch(self, max=None):
         """
@@ -100,8 +99,8 @@ class Collection(MutableSequence):
                 n_pages += 1
 
             return self
-        else:
-            return self._fetch()
+
+        return self._fetch()
 
     def fetch_with_filter(self, key, value, max=None):
         self._filters[key] = value
@@ -125,29 +124,46 @@ class Collection(MutableSequence):
     def save(self, chunk=15, n_workers=0):
         """
         chunk: int|None
-             Maximum number of object to send at once in a single HTTP request. None for sending them all at once.
+            Maximum number of object to send at once in a single HTTP request.
+            None for sending them all at once.
         n_workers: int
-            Number of threads to use for sending chunked requests (ignored if chunk is None). Value 0 for using as many threads as cpus on the machine.
+            Number of threads to use for sending chunked requests (ignored if chunk is None).
+            Value 0 for using as many threads as cpus on the machine.
         """
         if chunk is None:
             return Cytomine.get_instance().post_collection(self)
-        elif isinstance(chunk, int):
+
+        if isinstance(chunk, int):
             upload_fn = self._upload_fn
-            results = generic_chunk_parallel(self, worker_fn=upload_fn, chunk_size=chunk, n_workers=n_workers)
-            added, failed = list(), list()
+            results = generic_chunk_parallel(
+                self,
+                worker_fn=upload_fn,
+                chunk_size=chunk,
+                n_workers=n_workers,
+            )
+
+            added, failed = [], []
             for (start, end), success in results:
                 (added if success else failed).extend(self[start:end])
+
             if len(added) != len(self):
-                raise CollectionPartialUploadException("Some items could not be uploaded", created=added, failed=failed)
+                raise CollectionPartialUploadException(
+                    "Some items could not be uploaded",
+                    created=added,
+                    failed=failed,
+                )
+
             return True
-        else:
-            raise ValueError(f"Invalid value '{chunk}' for chunk parameter.")
+
+        raise ValueError(f"Invalid value '{chunk}' for chunk parameter.")
 
     def to_json(self, **dump_parameters):
         return f"[{','.join([d.to_json(**dump_parameters) for d in self._data])}]"
 
     def populate(self, attributes, append_mode=False):
-        data = [self._model().populate(instance) for instance in attributes["collection"]]
+        data = [
+            self._model().populate(instance) for instance in attributes["collection"]
+        ]
         if append_mode:
             self._data += data
         else:
@@ -178,7 +194,7 @@ class Collection(MutableSequence):
 
     @property
     def parameters(self):
-        params = dict()
+        params = {}
         for k, v in six.iteritems(self.__dict__):
             if v is not None and not k.startswith("_"):
                 if isinstance(v, list):
@@ -222,7 +238,10 @@ class Collection(MutableSequence):
         item: object|None
             The object retrieved from the list, or None if not found.
         """
-        return next(iter([i for i in self if hasattr(i, attr) and getattr(i, attr) == value]), None)
+        return next(
+            iter([i for i in self if hasattr(i, attr) and getattr(i, attr) == value]),
+            None,
+        )
 
     def __str__(self):
         return f"[{self.callback_identifier} collection] {len(self)} objects"
@@ -263,7 +282,7 @@ class Collection(MutableSequence):
         if type(self) is not type(other):
             raise TypeError("Only two same Collection objects can be added together.")
         collection = copy.copy(self)
-        collection._data = list()
+        collection._data = []
         collection += self
         collection += other
         return collection
@@ -272,10 +291,11 @@ class Collection(MutableSequence):
         return self._data
 
     def filter(self, fn):
-        """Return another Collection instance containing only element of the current collection that the function
-        evaluates to true."""
+        """Return another Collection instance containing only element of
+        the current collection that the function evaluates to true.
+        """
         collection = copy.copy(self)
-        collection._data = list(filter(fn, self))
+        collection._data = list(filter(fn, self))  # pylint: disable=protected-access
         return collection
 
 
@@ -297,7 +317,10 @@ class DomainCollection(Collection):
         )
 
     def populate(self, attributes, append_mode=False):
-        data = [self._model(self._object).populate(instance) for instance in attributes["collection"]]
+        data = [
+            self._model(self._object).populate(instance)
+            for instance in attributes["collection"]
+        ]
         if append_mode:
             self._data += data
         else:

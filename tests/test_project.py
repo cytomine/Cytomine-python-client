@@ -14,7 +14,9 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from cytomine.models.project import *
+# pylint: disable=unused-argument
+
+from cytomine.models import Project, ProjectCollection
 from tests.conftest import random_string
 
 
@@ -22,30 +24,33 @@ class TestProject:
     def test_project(self, connect, dataset):
         name = random_string()
         project = Project(name, dataset["ontology"].id).save()
-        assert(isinstance(project, Project))
-        assert(project.name == name)
+        assert isinstance(project, Project)
+        assert project.name == name
 
         project = Project().fetch(project.id)
-        assert(isinstance(project, Project))
-        assert(project.name == name)
+        assert isinstance(project, Project)
+        assert project.name == name
 
         name = random_string()
         project.name = name
         project.update()
-        assert(isinstance(project, Project))
-        assert(project.name == name)
+        assert isinstance(project, Project)
+        assert project.name == name
 
         project.delete()
-        assert(not Project().fetch(project.id))
+        assert not Project().fetch(project.id)
 
     def test_projects(self, connect, dataset):
         projects = ProjectCollection().fetch()
-        assert(isinstance(projects, ProjectCollection))
-        
+        assert isinstance(projects, ProjectCollection)
+
     def test_projects_by_user(self, connect, dataset):
         projects = ProjectCollection().fetch_with_filter("user", dataset["user"].id)
-        assert(isinstance(projects, ProjectCollection))
-        
+        assert isinstance(projects, ProjectCollection)
+
     def test_projects_by_ontology(self, connect, dataset):
-        projects = ProjectCollection().fetch_with_filter("ontology", dataset["ontology"].id)
-        assert(isinstance(projects, ProjectCollection))
+        projects = ProjectCollection().fetch_with_filter(
+            "ontology",
+            dataset["ontology"].id,
+        )
+        assert isinstance(projects, ProjectCollection)

@@ -14,6 +14,8 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+# pylint: disable=invalid-name
+
 import os
 
 from cytomine.cytomine import Cytomine
@@ -24,8 +26,16 @@ from ._utilities import generic_download, generic_image_dump, is_false
 
 
 class Annotation(Model):
-    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, id_slice=None,
-                 **attributes):
+    def __init__(
+        self,
+        location=None,
+        id_image=None,
+        id_terms=None,
+        id_project=None,
+        id_tracks=None,
+        id_slice=None,
+        **attributes,
+    ):
         super().__init__()
         self.location = location
         self.image = id_image
@@ -39,6 +49,8 @@ class Annotation(Model):
         self.perimeter = None
         self.perimeterUnit = None
         self.cropURL = None
+        self.filename = None
+        self.filenames = None
 
         self.populate(attributes)
 
@@ -57,16 +69,30 @@ class Annotation(Model):
             data,
         )
 
-    def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
-             zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None,
-             complete=True):
+    def dump(
+        self,
+        dest_pattern="{id}.jpg",
+        override=True,
+        mask=False,
+        alpha=False,
+        bits=8,
+        zoom=None,
+        max_size=None,
+        increase_area=None,
+        contrast=None,
+        gamma=None,
+        colormap=None,
+        inverse=None,
+        complete=True,
+    ):
         """
         Download the annotation crop, with optional image modifications.
 
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute
             if it exists. The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
@@ -77,12 +103,13 @@ class Annotation(Model):
         zoom : int, optional
             Optional image zoom number
         bits : int (8,16,32) or str ("max"), optional
-            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+            Bit depth (bit per channel) of returned image.
+            "max" returns the original image bit depth
         max_size : int, optional
             Maximum size (width or height) of returned image. None to get original size.
         increase_area : float, optional
-            Increase the crop size. For example, an annotation whose bounding box size is (w,h) will have
-            a crop dimension of (w*increase_area, h*increase_area).
+            Increase the crop size. For example, an annotation whose bounding box size
+            is (w,h) will have a crop dimension of (w*increase_area, h*increase_area).
         contrast : float, optional
             Optional contrast applied on returned image.
         gamma : float, optional
@@ -97,7 +124,8 @@ class Annotation(Model):
         Returns
         -------
         downloaded : bool
-            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            True if everything happens correctly, False otherwise.
+            As a side effect, object attribute "filename"
             is filled with downloaded file path.
         """
         if self.id is None:
@@ -112,10 +140,10 @@ class Annotation(Model):
             "colormap": colormap,
             "inverse": inverse,
             "bits": bits,
-            "complete": complete
+            "complete": complete,
         }
 
-        def dump_url_fn(model, file_path, **kwargs):
+        def dump_url_fn(model, file_path, **kwargs):  # pylint: disable=unused-argument
             extension = os.path.basename(file_path).split(".")[-1]
             if mask and alpha:
                 image = "alphamask"
@@ -127,13 +155,19 @@ class Annotation(Model):
                 image = "crop"
             return model.cropURL.replace(
                 "crop.png",
-                f"{image}.{extension}"
+                f"{image}.{extension}",
             ).replace(
                 "crop.jpg",
-                f"{image}.{extension}"
+                f"{image}.{extension}",
             )
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
+        files = generic_image_dump(
+            dest_pattern,
+            self,
+            dump_url_fn,
+            override=override,
+            **parameters,
+        )
 
         if len(files) == 0:
             return False
@@ -155,7 +189,6 @@ class AnnotationCollection(Collection):
         self.showGIS = None
         self.showTerm = None
         self.showTrack = None
-        self.showAlgo = None
         self.showUser = None
         self.showImage = None
         self.showSlice = None
@@ -163,7 +196,6 @@ class AnnotationCollection(Collection):
         self.showLink = None
         self.reviewed = None
         self.noTerm = None
-        self.noAlgoTerm = None
         self.multipleTerm = None
 
         self.project = None
@@ -180,7 +212,6 @@ class AnnotationCollection(Collection):
         self.term = None
         self.terms = None
         self.suggestedTerm = None
-        self.userForTermAlgo = None
 
         self.track = None
         self.tracks = None
@@ -209,11 +240,12 @@ class AnnotationCollection(Collection):
 
     def dump_crops(self, dest_pattern, n_workers=0, override=True, **dump_params):
         """Download the crops of the annotations
+
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         n_workers: int
@@ -228,16 +260,22 @@ class AnnotationCollection(Collection):
         """
 
         def dump_crop(an):
-            if is_false(an.dump(dest_pattern=dest_pattern, override=override, **dump_params)):
+            if is_false(
+                an.dump(dest_pattern=dest_pattern, override=override, **dump_params)
+            ):
                 return False
-            else:
-                return an
 
-        results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
+            return an
+
+        results = generic_download(
+            self,
+            download_instance_fn=dump_crop,
+            n_workers=n_workers,
+        )
 
         # check errors
         count_fail = 0
-        failed = list()
+        failed = []
         for in_annot, out_annot in results:
             if is_false(out_annot):
                 count_fail += 1
@@ -274,7 +312,8 @@ class AnnotationTerm(Model):
 
         if self.userannotation is None and id_annotation is None:
             raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.term is None and id_term is None:
+
+        if self.term is None and id_term is None:
             raise ValueError("Cannot fetch a model with no term ID.")
 
         if id_annotation is not None:
@@ -295,43 +334,6 @@ class AnnotationTerm(Model):
         )
 
 
-class AlgoAnnotationTerm(Model):
-    def __init__(self, id_annotation=None, id_term=None, id_expected_term=None, rate=1.0, **attributes):
-        super().__init__()
-        self.annotation = id_annotation
-        self.annotationIdent = id_annotation
-        self.term = id_term
-        self.expectedTerm = id_expected_term
-        self.user = None
-        self.rate = rate
-        self.populate(attributes)
-
-    def uri(self):
-        return f"annotation/{self.annotation}/term/{self.term}.json"
-
-    def fetch(self, id_annotation=None, id_term=None):
-        self.id = -1
-
-        if self.annotation is None and id_annotation is None:
-            raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.term is None and id_term is None:
-            raise ValueError("Cannot fetch a model with no term ID.")
-
-        if id_annotation is not None:
-            self.annotation = id_annotation
-
-        if id_term is not None:
-            self.term = id_term
-
-        return Cytomine.get_instance().get_model(self, self.query_parameters)
-
-    def update(self, *args, **kwargs):
-        raise NotImplementedError("Cannot update a annotation-term.")
-
-    def __str__(self):
-        return f"[{self.callback_identifier}] Annotation {self.annotation} - Term {self.term}"
-
-
 class AnnotationFilter(Model):
     def __init__(self, name=None, users=None, terms=None, **attributes):
         super().__init__()
@@ -349,11 +351,15 @@ class AnnotationFilterCollection(Collection):
         self.set_parameters(parameters)
 
     def save(self, *args, **kwargs):
-        raise NotImplementedError("Cannot save an annotation filter collection by client.")
+        raise NotImplementedError(
+            "Cannot save an annotation filter collection by client."
+        )
 
 
 class AnnotationGroup(Model):
-    def __init__(self, id_project=None, id_image_group=None, type="SAME_OBJECT", **attributes):
+    def __init__(
+        self, id_project=None, id_image_group=None, type="SAME_OBJECT", **attributes
+    ):
         super().__init__()
         self.project = id_project
         self.imageGroup = id_image_group
@@ -378,7 +384,13 @@ class AnnotationGroupCollection(Collection):
 
 
 class AnnotationLink(Model):
-    def __init__(self, annotation_class_name=None, id_annotation=None, id_annotation_group=None, **attributes):
+    def __init__(
+        self,
+        annotation_class_name=None,
+        id_annotation=None,
+        id_annotation_group=None,
+        **attributes,
+    ):
         super().__init__()
         self.annotationClassName = annotation_class_name
         self.annotationIdent = id_annotation
@@ -396,7 +408,8 @@ class AnnotationLink(Model):
 
         if self.annotationIdent is None and id_annotation is None:
             raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.group is None and id_annotation_group is None:
+
+        if self.group is None and id_annotation_group is None:
             raise ValueError("Cannot fetch a model with no annotation group ID.")
 
         if id_annotation is not None:
@@ -415,6 +428,7 @@ class AnnotationLink(Model):
             f"[{self.callback_identifier}] Annotation {self.annotationIdent} "
             f"- Annotation group {self.group}"
         )
+
 
 class AnnotationLinkCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):

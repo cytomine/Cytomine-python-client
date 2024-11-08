@@ -14,6 +14,8 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+# pylint: disable=invalid-name,unused-argument
+
 import json
 
 import six
@@ -44,8 +46,8 @@ class Model:
     def save(self):
         if self.id is None:
             return Cytomine.get_instance().post_model(self)
-        else:
-            return self.update()
+
+        return self.update()
 
     def delete(self, id=None):
         if self.id is None and id is None:
@@ -82,7 +84,11 @@ class Model:
         return self
 
     def to_json(self, **dump_parameters):
-        d = dict((k, v) for k, v in six.iteritems(self.__dict__) if v is not None and not k.startswith("_"))
+        d = dict(
+            (k, v)
+            for k, v in six.iteritems(self.__dict__)
+            if v is not None and not k.startswith("_")
+        )
         if "uri_" in d:
             d["uri"] = d.pop("uri_")
         return json.dumps(d, **dump_parameters)

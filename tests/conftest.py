@@ -20,24 +20,26 @@ import string
 
 import pytest
 
-from cytomine.cytomine import Cytomine
-from cytomine.models.annotation import Annotation
-from cytomine.models.image import (
+from cytomine import Cytomine
+from cytomine.models import (
     AbstractImage,
     AbstractSlice,
+    Annotation,
     ImageInstance,
     ImageServerCollection,
+    Ontology,
+    Project,
+    Storage,
+    Tag,
+    Term,
+    Track,
+    UploadedFile,
+    User,
 )
-from cytomine.models.ontology import Ontology, Term
-from cytomine.models.project import Project
-from cytomine.models.property import Tag
-from cytomine.models.storage import Storage, UploadedFile
-from cytomine.models.track import Track
-from cytomine.models.user import User
 
 
 def random_string(length=10):
-    return ''.join(random.choice(string.ascii_letters) for _ in range(length))
+    return "".join(random.choice(string.ascii_letters) for _ in range(length))
 
 
 def pytest_addoption(parser):
@@ -48,10 +50,12 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def connect(request):
-    c = Cytomine.connect(request.config.getoption("--host"),
-                         request.config.getoption("--public_key"),
-                         request.config.getoption("--private_key"),
-                         logging.DEBUG)
+    c = Cytomine.connect(
+        request.config.getoption("--host"),
+        request.config.getoption("--public_key"),
+        request.config.getoption("--private_key"),
+        logging.DEBUG,
+    )
     c.wait_to_accept_connection()
     c.open_admin_session()
     return c
@@ -60,7 +64,13 @@ def connect(request):
 @pytest.fixture(scope="session")
 def dataset(request):
     data = {}
-    data["user"] = User(random_string(), random_string(), random_string(), "mail@cytomine.org", random_string()).save()
+    data["user"] = User(
+        random_string(),
+        random_string(),
+        random_string(),
+        "mail@cytomine.org",
+        random_string(),
+    ).save()
 
     data["ontology"] = Ontology(random_string()).save()
     data["term1"] = Term(random_string(), data["ontology"].id, "#000000").save()
@@ -69,22 +79,84 @@ def dataset(request):
     data["project"] = Project(random_string(), data["ontology"].id).save()
     data["storage"] = Storage(random_string(), data["user"].id).save()
     data["image_servers"] = ImageServerCollection().fetch()
-    data["uploaded_file"] = UploadedFile(originalFilename=random_string(), filename=random_string(), size=1, ext="tiff", contentType="tiff/ddd", id_projects=data["project"].id, id_storage=data["storage"].id, id_user=data["user"].id, id_image_server=data["image_servers"][0].id).save()
-    data["uploaded_file2"] = UploadedFile(originalFilename=random_string(), filename=random_string(), size=1, ext="tiff", contentType="tiff/ddd", id_projects=data["project"].id, id_storage=data["storage"].id, id_user=data["user"].id, id_image_server=data["image_servers"][0].id).save()
-    data["uploaded_file3"] = UploadedFile(originalFilename=random_string(), filename=random_string(), size=1, ext="tiff", contentType="tiff/ddd", id_projects=data["project"].id, id_storage=data["storage"].id, id_user=data["user"].id, id_image_server=data["image_servers"][0].id).save()
-    
-    data["abstract_image"] = AbstractImage(random_string(), data["uploaded_file"].id, width=50, height=50).save()
-    data["abstract_image2"] = AbstractImage(random_string(), data["uploaded_file2"].id, width=50, height=50).save()
-    data["abstract_image3"] = AbstractImage(random_string(), data["uploaded_file3"].id, width=50, height=50).save()
-        
-    data["abstract_slice"] = AbstractSlice(id_image=data["abstract_image"].id, channel=0, z_stack=0, time=0, id_uploaded_file=data["uploaded_file"].id, mime="image/pyrtiff").save()
+    data["uploaded_file"] = UploadedFile(
+        originalFilename=random_string(),
+        filename=random_string(),
+        size=1,
+        ext="tiff",
+        contentType="tiff/ddd",
+        id_projects=data["project"].id,
+        id_storage=data["storage"].id,
+        id_user=data["user"].id,
+        id_image_server=data["image_servers"][0].id,
+    ).save()
+    data["uploaded_file2"] = UploadedFile(
+        originalFilename=random_string(),
+        filename=random_string(),
+        size=1,
+        ext="tiff",
+        contentType="tiff/ddd",
+        id_projects=data["project"].id,
+        id_storage=data["storage"].id,
+        id_user=data["user"].id,
+        id_image_server=data["image_servers"][0].id,
+    ).save()
+    data["uploaded_file3"] = UploadedFile(
+        originalFilename=random_string(),
+        filename=random_string(),
+        size=1,
+        ext="tiff",
+        contentType="tiff/ddd",
+        id_projects=data["project"].id,
+        id_storage=data["storage"].id,
+        id_user=data["user"].id,
+        id_image_server=data["image_servers"][0].id,
+    ).save()
 
-    data["image_instance"] = ImageInstance(data["abstract_image"].id, data["project"].id).save()
-    data["image_instance2"] = ImageInstance(data["abstract_image2"].id, data["project"].id).save()
-    
+    data["abstract_image"] = AbstractImage(
+        random_string(),
+        data["uploaded_file"].id,
+        width=50,
+        height=50,
+    ).save()
+    data["abstract_image2"] = AbstractImage(
+        random_string(),
+        data["uploaded_file2"].id,
+        width=50,
+        height=50,
+    ).save()
+    data["abstract_image3"] = AbstractImage(
+        random_string(),
+        data["uploaded_file3"].id,
+        width=50,
+        height=50,
+    ).save()
+
+    data["abstract_slice"] = AbstractSlice(
+        id_image=data["abstract_image"].id,
+        channel=0,
+        z_stack=0,
+        time=0,
+        id_uploaded_file=data["uploaded_file"].id,
+        mime="image/pyrtiff",
+    ).save()
+
+    data["image_instance"] = ImageInstance(
+        data["abstract_image"].id,
+        data["project"].id,
+    ).save()
+    data["image_instance2"] = ImageInstance(
+        data["abstract_image2"].id,
+        data["project"].id,
+    ).save()
+
     data["track"] = Track(random_string(), data["image_instance2"].id, "#000000").save()
-    
-    data["annotation"] = Annotation(location="POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))", id_image=data["image_instance"].id, id_terms=[data["term2"].id]).save()
+
+    data["annotation"] = Annotation(
+        location="POLYGON ((0 0, 0 20, 20 20, 20 0, 0 0))",
+        id_image=data["image_instance"].id,
+        id_terms=[data["term2"].id],
+    ).save()
 
     data["tag"] = Tag(random_string()).save()
 

@@ -14,7 +14,15 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from cytomine.models.ontology import *
+# pylint: disable=unused-argument
+
+from cytomine.models import (
+    Ontology,
+    OntologyCollection,
+    RelationTerm,
+    Term,
+    TermCollection,
+)
 from tests.conftest import random_string
 
 
@@ -22,79 +30,82 @@ class TestOntology:
     def test_ontology(self, connect, dataset):
         name = random_string()
         ontology = Ontology(name).save()
-        assert (isinstance(ontology, Ontology))
-        assert (ontology.name == name)
+        assert isinstance(ontology, Ontology)
+        assert ontology.name == name
 
         ontology = Ontology().fetch(ontology.id)
-        assert (isinstance(ontology, Ontology))
-        assert (ontology.name == name)
+        assert isinstance(ontology, Ontology)
+        assert ontology.name == name
 
         name = random_string()
         ontology.name = name
         ontology.update()
-        assert (isinstance(ontology, Ontology))
-        assert (ontology.name == name)
+        assert isinstance(ontology, Ontology)
+        assert ontology.name == name
 
         ontology.delete()
-        assert (not Ontology().fetch(ontology.id))
+        assert not Ontology().fetch(ontology.id)
 
     def test_ontologies(self, connect, dataset):
         ontologies = OntologyCollection().fetch()
-        assert (isinstance(ontologies, OntologyCollection))
+        assert isinstance(ontologies, OntologyCollection)
 
         ontologies = OntologyCollection()
         ontologies.append(Ontology(random_string()))
-        assert (ontologies.save())
+        assert ontologies.save()
 
 
 class TestTerm:
     def test_term(self, connect, dataset):
         name = random_string()
         term = Term(name, dataset["ontology"].id, "#AAAAAA").save()
-        assert (isinstance(term, Term))
-        assert (term.name == name)
+        assert isinstance(term, Term)
+        assert term.name == name
 
         term = Term().fetch(term.id)
-        assert (isinstance(term, Term))
-        assert (term.name == name)
+        assert isinstance(term, Term)
+        assert term.name == name
 
         name = random_string()
         term.name = name
         term.update()
-        assert (isinstance(term, Term))
-        assert (term.name == name)
+        assert isinstance(term, Term)
+        assert term.name == name
 
         term.delete()
-        assert (not Term().fetch(term.id))
+        assert not Term().fetch(term.id)
 
     def test_terms(self, connect, dataset):
         terms = TermCollection().fetch()
-        assert (isinstance(terms, TermCollection))
+        assert isinstance(terms, TermCollection)
 
         terms = TermCollection()
         terms.append(Term(random_string(), dataset["ontology"].id, "#AAAAAA"))
-        assert (terms.save())
+        assert terms.save()
 
     def test_terms_by_project(self, connect, dataset):
         terms = TermCollection().fetch_with_filter("project", dataset["project"].id)
-        assert (isinstance(terms, TermCollection))
+        assert isinstance(terms, TermCollection)
 
     def test_terms_by_ontology(self, connect, dataset):
         terms = TermCollection().fetch_with_filter("ontology", dataset["ontology"].id)
-        assert (isinstance(terms, TermCollection))
+        assert isinstance(terms, TermCollection)
 
     def test_terms_by_annotation(self, connect, dataset):
-        terms = TermCollection().fetch_with_filter("annotation", dataset["annotation"].id)
-        assert (isinstance(terms, TermCollection))
+        terms = TermCollection().fetch_with_filter(
+            "annotation",
+            dataset["annotation"].id,
+        )
+        assert isinstance(terms, TermCollection)
 
 
 class TestRelationTerm:
     def test_relation_term(self, connect, dataset):
         rt = RelationTerm(dataset["term1"].id, dataset["term2"].id).save()
-        assert (isinstance(rt, RelationTerm))
+        assert isinstance(rt, RelationTerm)
 
         rt = RelationTerm().fetch(dataset["term1"].id, dataset["term2"].id)
-        assert (rt.term1 == dataset["term1"].id)
+        assert rt.term1 == dataset["term1"].id
 
         rt.delete()
-        assert (not RelationTerm().fetch(dataset["term1"].id, dataset["term2"].id))
+        assert not RelationTerm().fetch(dataset["term1"].id, dataset["term2"].id)

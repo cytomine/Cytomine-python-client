@@ -14,6 +14,7 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+# pylint: disable=invalid-name
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
@@ -23,7 +24,6 @@ from cytomine.models.model import Model
 class CytomineUser:
     def __init__(self):
         self.username = None
-        self.algo = False
         self.origin = None
 
     def keys(self):
@@ -31,10 +31,21 @@ class CytomineUser:
         if hasattr(self, "id") and self.id:
             return Cytomine.get_instance().get(f"user/{self.id}/keys.json")
 
+        return None
+
 
 class User(Model, CytomineUser):
-    def __init__(self, username=None, firstname=None, lastname=None, email=None, password=None, language=None,
-                 is_developer=None, **attributes):
+    def __init__(
+        self,
+        username=None,
+        firstname=None,
+        lastname=None,
+        email=None,
+        password=None,
+        language=None,
+        is_developer=None,
+        **attributes,
+    ):
         super().__init__()
         self.username = username
         self.firstname = firstname
@@ -73,12 +84,13 @@ class CurrentUser(User):
             f"[{self.callback_identifier}] CURRENT USER - {self.id} : {self.username}"
         )
 
+
 class UserCollection(Collection):
     def __init__(self, filters=None, max=0, offset=0, **parameters):
         super().__init__(User, filters, max, offset)
         self._allowed_filters = [None, "project", "ontology"]
 
-        self.admin = None # Only works with project filter
+        self.admin = None  # Only works with project filter
         self.online = None
         self.publicKey = None
 
@@ -138,7 +150,8 @@ class UserRole(Model):
 
         if self.user is None and id_user is None:
             raise ValueError("Cannot fetch a model with no user ID.")
-        elif self.role is None and id_role is None:
+
+        if self.role is None and id_role is None:
             raise ValueError("Cannot fetch a model with no role ID.")
 
         if id_user is not None:

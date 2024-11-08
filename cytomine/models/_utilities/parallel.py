@@ -16,12 +16,7 @@
 
 import errno
 import os
-
-try:
-    import queue as queue
-except ImportError:
-    import Queue as queue
-
+import queue
 from multiprocessing import cpu_count
 from threading import Thread
 
@@ -39,7 +34,8 @@ def generic_parallel(data, worker_fn, n_workers=0):
     data: iterable
         The data to be downloaded with `download_instance_fn`
     worker_fn: callable
-        A functions that execute the operation on the given output. It has one parameter which must be the same type
+        A functions that execute the operation on the given output.
+        It has one parameter which must be the same type
         as the items of `data`. If needed it can return a value.
     n_workers: int
         Number of workers to use (default: uses all the available processors)
@@ -47,9 +43,10 @@ def generic_parallel(data, worker_fn, n_workers=0):
     Returns
     -------
     results: iterable
-        List processed items as tuples. First element of the tuple is the item itself, the second element of the tuple
-        is the value returned by `worker_fn` for this item.
+        List processed items as tuples. First element of the tuple is the item itself,
+        the second element of the tuple is the value returned by `worker_fn` for this item.
     """
+
     def worker(_in, _out):
         while True:
             item = _in.get()
@@ -59,13 +56,13 @@ def generic_parallel(data, worker_fn, n_workers=0):
 
     if n_workers <= 0:
         n_workers = cpu_count()
-    else:
-        n_workers = n_workers
 
     # instantiate multiprocessing objects
     in_queue = queue.Queue()
     out_queue = queue.Queue()
-    threads = [Thread(target=worker, args=[in_queue, out_queue]) for _ in range(n_workers)]
+    threads = [
+        Thread(target=worker, args=[in_queue, out_queue]) for _ in range(n_workers)
+    ]
 
     for t in threads:
         t.daemon = True
@@ -84,7 +81,7 @@ def generic_parallel(data, worker_fn, n_workers=0):
     for t in threads:
         t.join()
 
-    results = list()
+    results = []
     while not out_queue.empty():
         results.append(out_queue.get_nowait())
 
@@ -92,14 +89,16 @@ def generic_parallel(data, worker_fn, n_workers=0):
 
 
 def generic_chunk_parallel(data, worker_fn, chunk_size=1, n_workers=0):
-    """Execute a worker function on all elements of a data list. Items are processed by batch of size 'chunk_size'.
+    """Execute a worker function on all elements of a data list.
+    Items are processed by batch of size 'chunk_size'.
 
     Parameters
     ---------
     data: iterable
         Data to be processed (data should be sliceable)
     worker_fn: callable
-        A callable function that can process a batch of items from data (received as a list of items)
+        A callable function that can process a batch of items from data
+        (received as a list of items)
     chunk_size: int
         Size of the chunk
     n_workers: int
@@ -108,11 +107,12 @@ def generic_chunk_parallel(data, worker_fn, chunk_size=1, n_workers=0):
     Returns
     -------
     results: iterable
-        List processed items as tuples. First element of the tuple is the slice (start,end) of the chunk (end excluded),
+        List processed items as tuples. First element of the tuple is the slice
+        (start,end) of the chunk (end excluded),
         the second element of the tuple is the value returned by `worker_fn` for this slice.
     """
     nb_chunks = (len(data) + chunk_size) // chunk_size
-    chunk_limits = list()
+    chunk_limits = []
 
     for i in range(nb_chunks):
         start = i * chunk_size
@@ -134,7 +134,8 @@ def generic_download(data, download_instance_fn, n_workers=0):
     data: iterable
         The data to be downloaded with `download_instance_fn`
     download_instance_fn: callable
-        A functions that downloads what needs to be downloaded. It has one parameter which must be the same type as the
+        A functions that downloads what needs to be downloaded.
+        It has one parameter which must be the same type as the
         items of `data`. If needed it can return a value.
     n_workers: int
         Number of workers to use (default: uses all the available processors)
@@ -142,7 +143,8 @@ def generic_download(data, download_instance_fn, n_workers=0):
     Returns
     -------
     results: iterable
-        List processed items as tuples. First element of the tuple is the item itself, the second element of the tuple
+        List processed items as tuples. First element of the tuple is the item itself,
+        the second element of the tuple
         is the value returned by `download_instance_fn` for this item.
     """
     return generic_parallel(data, download_instance_fn, n_workers=n_workers)
@@ -156,6 +158,3 @@ def makedirs(path, exist_ok=True):
         except OSError as e:
             if not (exist_ok and e.errno == errno.EEXIST):
                 raise  # Reraise if failed for reasons other than existing already
-
-
-

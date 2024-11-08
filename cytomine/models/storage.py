@@ -14,6 +14,7 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
+# pylint: disable=invalid-name
 
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
@@ -59,8 +60,21 @@ class UploadedFile(Model):
     EXTRACTED = 102
     CONVERTED = 104
 
-    def __init__(self, original_filename=None, filename=None, size=None, ext=None, content_type=None,
-                 id_projects=None, id_storage=None, id_user=None, id_image_server=None, status=None, id_parent=None, **attributes):
+    def __init__(
+        self,
+        original_filename=None,
+        filename=None,
+        size=None,
+        ext=None,
+        content_type=None,
+        id_projects=None,
+        id_storage=None,
+        id_user=None,
+        id_image_server=None,
+        status=None,
+        id_parent=None,
+        **attributes,
+    ):
         super().__init__()
         self.originalFilename = original_filename
         self.filename = filename

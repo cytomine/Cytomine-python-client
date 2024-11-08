@@ -15,8 +15,13 @@
 # * limitations under the License.
 
 __author__ = "Rubens Ulysse <urubens@uliege.be>"
-__contributors__ = ["Marée Raphaël <raphael.maree@uliege.be>", "Mormont Romain <r.mormont@uliege.be>"]
-__copyright__ = "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
+__contributors__ = [
+    "Marée Raphaël <raphael.maree@uliege.be>",
+    "Mormont Romain <r.mormont@uliege.be>",
+]
+__copyright__ = (
+    "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
+)
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
@@ -53,7 +58,8 @@ class ImageGroupImageInstance(Model):
 
         if self.group is None and id_image_group is None:
             raise ValueError("Cannot fetch a model with no image group ID.")
-        elif self.image is None and id_image_instance is None:
+
+        if self.image is None and id_image_instance is None:
             raise ValueError("Cannot fetch a model with no image instance ID.")
 
         if id_image_group is not None:
@@ -65,7 +71,9 @@ class ImageGroupImageInstance(Model):
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
     def update(self, *args, **kwargs):
-        raise NotImplementedError("Cannot update a image group-image instance relation.")
+        raise NotImplementedError(
+            "Cannot update a image group-image instance relation."
+        )
 
     def __str__(self):
         return (
