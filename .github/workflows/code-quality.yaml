@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "cytomine/**/*.py"
-      - "examples/**/*.py"
       - "tests/**/*.py"
 
 jobs:
@@ -29,7 +28,7 @@ jobs:
           pip install pylint
 
       - name: Check lint
-        run: pylint --output=lint.txt cytomine examples tests
+        run: pylint --output=lint.txt cytomine tests
 
       - name: Upload lint report
         if: ${{ always() }}
