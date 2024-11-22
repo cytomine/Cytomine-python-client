@@ -16,11 +16,15 @@
 
 import os
 from shutil import copyfile
+from typing import Any, Callable, List, TypeVar
 
 from cytomine import Cytomine
+from cytomine.models.model import Model
 
 from .parallel import makedirs
 from .pattern_matching import resolve_pattern
+
+T = TypeVar("T", bound=Model)
 
 
 class DumpError(Exception):
@@ -28,13 +32,13 @@ class DumpError(Exception):
 
 
 def generic_image_dump(
-    dest_pattern,
-    model,
-    url_fn,
-    override=True,
-    check_extension=True,
-    **parameters,
-):
+    dest_pattern: str,
+    model: T,
+    url_fn: Callable[[T, str], str],
+    override: bool = True,
+    check_extension: bool = True,
+    **parameters: Any,
+) -> List[str]:
     """A generic function for 'dumping' a model as an image (crop, windows,...).
     Parameters
     ----------

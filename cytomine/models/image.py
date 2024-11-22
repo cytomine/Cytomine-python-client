@@ -18,6 +18,7 @@
 
 import os
 import re
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from cytomine.cytomine import Cytomine, deprecated
 from cytomine.models.collection import Collection
@@ -26,8 +27,42 @@ from cytomine.models.model import Model
 from ._utilities import generic_image_dump
 
 
+class ImageServer(Model):
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        url: Optional[str] = None,
+        available: bool = False,
+        base_path: Optional[str] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
+        self.name = name
+        self.url = url
+        self.available = available
+        self.base_path = base_path
+
+
+class ImageServerCollection(Collection):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(ImageServer, filters, max, offset)
+        self._allowed_filters = [None]
+        self.set_parameters(parameters)
+
+
 class AbstractImage(Model):
-    def __init__(self, filename=None, id_uploaded_file=None, **attributes):
+    def __init__(
+        self,
+        filename: Optional[str] = None,
+        id_uploaded_file: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.originalFilename = filename
         self.uploadedFile = id_uploaded_file
@@ -55,18 +90,23 @@ class AbstractImage(Model):
         self.preview = None
 
         self.populate(attributes)
-        self._image_servers = None
+        self._image_servers: Optional[List[ImageServer]] = None
 
     @deprecated
-    def image_servers(self):
+    def image_servers(self) -> Optional[List[ImageServer]]:
         if not self._image_servers:
-            data = Cytomine.get_instance().get(
-                f"{self.callback_identifier}/{self.id}/imageservers.json"
-            )
-            self._image_servers = data["imageServersURLs"]
+            uri = f"{self.callback_identifier}/{self.id}/imageservers.json"
+            data = Cytomine.get_instance().get(uri)
+            self._image_servers = data["imageServersURLs"]  # type: ignore
+
         return self._image_servers
 
-    def download(self, dest_pattern="{originalFilename}", override=True, **kwargs):
+    def download(
+        self,
+        dest_pattern: str = "{originalFilename}",
+        override: bool = True,
+        **kwargs: Any,
+    ) -> bool:
         """
         Download the original image.
 
@@ -86,54 +126,46 @@ class AbstractImage(Model):
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
-        def dump_url_fn(model, file_path, **kwargs):
+        def dump_url_fn(model: Model, file_path: str, **kwargs: Any) -> str:
             return f"{model.callback_identifier}/{model.id}/download"
 
         files = generic_image_dump(
-            dest_pattern, self, dump_url_fn, override=override, check_extension=False
+            dest_pattern,
+            self,
+            dump_url_fn,
+            override=override,
+            check_extension=False,
         )
         return len(files) > 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"[{self.callback_identifier}] {self.id} : {self.originalFilename}"
 
 
 class AbstractImageCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(AbstractImage, filters, max, offset)
         self._allowed_filters = [None]  # "project"]
-        self.set_parameters(parameters)
-
-
-class ImageServer(Model):
-    def __init__(
-        self, name=None, url=None, available=False, base_path=None, **attributes
-    ):
-        super().__init__()
-        self.name = name
-        self.url = url
-        self.available = available
-        self.base_path = base_path
-
-
-class ImageServerCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super().__init__(ImageServer, filters, max, offset)
-        self._allowed_filters = [None]
         self.set_parameters(parameters)
 
 
 class AbstractSlice(Model):
     def __init__(
         self,
-        id_image=None,
-        id_uploaded_file=None,
-        mime=None,
-        channel=None,
-        z_stack=None,
-        time=None,
-        **attributes,
-    ):
+        id_image: Optional[int] = None,
+        id_uploaded_file: Optional[int] = None,
+        mime: Optional[str] = None,
+        channel: Optional[int] = None,
+        z_stack: Optional[int] = None,
+        time: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.image = id_image
         self.uploadedFile = id_uploaded_file
@@ -147,25 +179,36 @@ class AbstractSlice(Model):
 
 
 class AbstractSliceCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(AbstractSlice, filters, max, offset)
         self._allowed_filters = ["abstractimage", "uploadedfile"]
         self.set_parameters(parameters)
 
 
 class ImageInstance(Model):
-    def __init__(self, id_abstract_image=None, id_project=None, **attributes):
+    def __init__(
+        self,
+        id_abstract_image: Optional[int] = None,
+        id_project: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.baseImage = id_abstract_image
         self.project = id_project
         self.user = None
-        self.originalFilename = None
-        self.instanceFilename = None
-        self.path = None
-        self.contentType = None
+        self.originalFilename: Optional[str] = None
+        self.instanceFilename: Optional[str] = None
+        self.path: Optional[str] = None
+        self.contentType: Optional[str] = None
 
-        self.filename = None
-        self.filenames = None
+        self.filename: Optional[str] = None
+        self.filenames: Optional[List[str]] = None
 
         self.width = None
         self.height = None
@@ -192,23 +235,23 @@ class ImageInstance(Model):
         self.reviewed = None
         self.populate(attributes)
         self._image_servers = None
-        self._reference_slice = None
+        self._reference_slice: Optional[SliceInstance] = None
 
-        self.x = None
-        self.y = None
-        self.w = None
-        self.h = None
+        self.x: Optional[int] = None
+        self.y: Optional[int] = None
+        self.w: Optional[int] = None
+        self.h: Optional[int] = None
 
     @deprecated
-    def image_servers(self):
+    def image_servers(self) -> Any:
         if not self._image_servers:
             data = Cytomine.get_instance().get(
                 f"abstractimage/{self.baseImage}/imageservers.json"
             )
-            self._image_servers = data["imageServersURLs"]
+            self._image_servers = data["imageServersURLs"]  # type: ignore
         return self._image_servers
 
-    def reference_slice(self):
+    def reference_slice(self) -> Optional[Union[bool, "SliceInstance"]]:
         if self.id is None:
             raise ValueError("Cannot get the reference slice of an image with no ID.")
 
@@ -216,21 +259,24 @@ class ImageInstance(Model):
             data = Cytomine.get_instance().get(
                 f"imageinstance/{self.id}/sliceinstance/reference.json"
             )
-            self._reference_slice = SliceInstance().populate(data) if data else False
+            if not isinstance(data, dict):
+                return False
+
+            self._reference_slice = SliceInstance().populate(data)  # type: ignore
 
         return self._reference_slice
 
     def dump(
         self,
-        dest_pattern="{id}.jpg",
-        override=True,
-        max_size=None,
-        bits=8,
-        contrast=None,
-        gamma=None,
-        colormap=None,
-        inverse=None,
-    ):
+        dest_pattern: str = "{id}.jpg",
+        override: bool = True,
+        max_size: Optional[Union[int, Tuple[int, ...]]] = None,
+        bits: int = 8,
+        contrast: Optional[float] = None,
+        gamma: Optional[float] = None,
+        colormap: Optional[int] = None,
+        inverse: Optional[bool] = None,
+    ) -> bool:
         """
         Download the *reference* slice image with optional image modifications.
 
@@ -266,7 +312,7 @@ class ImageInstance(Model):
         if self.id is None:
             raise ValueError("Cannot dump an image with no ID.")
 
-        parameters = {
+        parameters: Dict[str, Any] = {
             "maxSize": max(max_size) if isinstance(max_size, tuple) else max_size,
             "contrast": contrast,
             "gamma": gamma,
@@ -275,12 +321,16 @@ class ImageInstance(Model):
             "bits": bits,
         }
 
-        def dump_url_fn(model, file_path, **kwargs):
+        def dump_url_fn(model: Model, file_path: str, **kwargs: Any) -> str:
             extension = os.path.basename(file_path).split(".")[-1]
             return f"{model.callback_identifier}/{model.id}/thumb.{extension}"
 
         files = generic_image_dump(
-            dest_pattern, self, dump_url_fn, override=override, **parameters
+            dest_pattern,
+            self,
+            dump_url_fn,
+            override=override,
+            **parameters,
         )
 
         if len(files) == 0:
@@ -291,7 +341,12 @@ class ImageInstance(Model):
 
         return True
 
-    def download(self, dest_pattern="{originalFilename}", override=True, **kwargs):
+    def download(
+        self,
+        dest_pattern: str = "{originalFilename}",
+        override: bool = True,
+        **kwargs: Any,
+    ) -> bool:
         """
         Download the original image.
 
@@ -311,37 +366,41 @@ class ImageInstance(Model):
         if self.id is None:
             raise ValueError("Cannot download image with no ID.")
 
-        def dump_url_fn(model, file_path, **kwargs):
+        def dump_url_fn(model: Model, file_path: str, **kwargs: Any) -> str:
             return f"{model.callback_identifier}/{model.id}/download"
 
         files = generic_image_dump(
-            dest_pattern, self, dump_url_fn, override=override, check_extension=False
+            dest_pattern,
+            self,
+            dump_url_fn,
+            override=override,
+            check_extension=False,
         )
         return len(files) > 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"[{self.callback_identifier}] {self.id} : {self.instanceFilename}"
 
     def window(
         self,
-        x,
-        y,
-        w,
-        h,
-        dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg",
-        override=True,
-        mask=None,
-        alpha=None,
-        bits=8,
-        annotations=None,
-        terms=None,
-        users=None,
-        reviewed=None,
-        complete=True,
-        projection=None,
-        max_size=None,
-        zoom=None,
-    ):
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        dest_pattern: str = "{id}-{x}-{y}-{w}-{h}.jpg",
+        override: bool = True,
+        mask: Optional[bool] = None,
+        alpha: Optional[bool] = None,
+        bits: int = 8,
+        annotations: Optional[List[int]] = None,
+        terms: Optional[List[int]] = None,
+        users: Optional[List[int]] = None,
+        reviewed: Optional[bool] = None,
+        complete: bool = True,
+        projection: Optional[str] = None,
+        max_size: Optional[Union[int, Tuple[int, ...]]] = None,
+        zoom: Optional[int] = None,
+    ) -> bool:
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -430,10 +489,10 @@ class ImageInstance(Model):
 
         # Temporary fix due to Cytomine-core
         if mask is not None:
-            mask = str(mask).lower()
+            mask = str(mask).lower()  # type: ignore
 
         if alphamask is not None:
-            alphamask = str(alphamask).lower()
+            alphamask = str(alphamask).lower()  # type: ignore
         # ===
 
         parameters = {
@@ -463,19 +522,29 @@ class ImageInstance(Model):
 
 
 class ImageInstanceCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(ImageInstance, filters, max, offset)
         self._allowed_filters = ["project", "imagegroup"]  # "user"
         self.set_parameters(parameters)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Collection]:
         raise NotImplementedError("Cannot save an imageinstance collection by client.")
 
 
 class SliceInstance(Model):
     def __init__(
-        self, id_project=None, id_image=None, id_base_slice=None, **attributes
-    ):
+        self,
+        id_project: Optional[int] = None,
+        id_image: Optional[int] = None,
+        id_base_slice: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.project = id_project
         self.image = id_image
@@ -488,27 +557,28 @@ class SliceInstance(Model):
         self.path = None
         self.rank = None
 
-        self.filename = None  # Used to store local filename after dump on disk.
-        self.filenames = None  # Used to store local filenames after dump on disk.
+        # Used to store local filename(s) after dump on disk.
+        self.filename: Optional[str] = None
+        self.filenames: Optional[List[str]] = None
 
-        self.x = None
-        self.y = None
-        self.w = None
-        self.h = None
+        self.x: Optional[int] = None
+        self.y: Optional[int] = None
+        self.w: Optional[int] = None
+        self.h: Optional[int] = None
 
         self.populate(attributes)
 
     def dump(
         self,
-        dest_pattern="{id}.jpg",
-        override=True,
-        max_size=None,
-        bits=8,
-        contrast=None,
-        gamma=None,
-        colormap=None,
-        inverse=None,
-    ):
+        dest_pattern: str = "{id}.jpg",
+        override: bool = True,
+        max_size: Optional[Union[int, Tuple[int, ...]]] = None,
+        bits: int = 8,
+        contrast: Optional[float] = None,
+        gamma: Optional[float] = None,
+        colormap: Optional[int] = None,
+        inverse: Optional[bool] = None,
+    ) -> bool:
         """
         Download the slice image with optional image modifications.
 
@@ -553,12 +623,16 @@ class SliceInstance(Model):
             "bits": bits,
         }
 
-        def dump_url_fn(model, file_path, **kwargs):
+        def dump_url_fn(model: Model, file_path: str, **kwargs: Any) -> str:
             extension = os.path.basename(file_path).split(".")[-1]
             return f"{model.callback_identifier}/{model.id}/thumb.{extension}"
 
         files = generic_image_dump(
-            dest_pattern, self, dump_url_fn, override=override, **parameters
+            dest_pattern,
+            self,
+            dump_url_fn,
+            override=override,
+            **parameters,  # type: ignore
         )
 
         if len(files) == 0:
@@ -571,23 +645,23 @@ class SliceInstance(Model):
 
     def window(
         self,
-        x,
-        y,
-        w,
-        h,
-        dest_pattern="{id}-{x}-{y}-{w}-{h}.jpg",
-        override=True,
-        mask=None,
-        alpha=None,
-        bits=8,
-        annotations=None,
-        terms=None,
-        users=None,
-        reviewed=None,
-        complete=True,
-        max_size=None,
-        zoom=None,
-    ):
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        dest_pattern: str = "{id}-{x}-{y}-{w}-{h}.jpg",
+        override: bool = True,
+        mask: Optional[bool] = None,
+        alpha: Optional[bool] = None,
+        bits: int = 8,
+        annotations: Optional[List[int]] = None,
+        terms: Optional[List[int]] = None,
+        users: Optional[List[int]] = None,
+        reviewed: Optional[bool] = None,
+        complete: bool = True,
+        max_size: Optional[Union[int, Tuple[int, ...]]] = None,
+        zoom: Optional[int] = None,
+    ) -> bool:
         """
         Extract a window (rectangle) from an image and download it.
 
@@ -672,10 +746,10 @@ class SliceInstance(Model):
 
         # Temporary fix due to Cytomine-core
         if mask is not None:
-            mask = str(mask).lower()
+            mask = str(mask).lower()  # type: ignore
 
         if alphamask is not None:
-            alphamask = str(alphamask).lower()
+            alphamask = str(alphamask).lower()  # type: ignore
         # ===
 
         parameters = {
@@ -704,7 +778,13 @@ class SliceInstance(Model):
 
 
 class SliceInstanceCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(SliceInstance, filters, max, offset)
         self._allowed_filters = ["imageinstance"]
         self.set_parameters(parameters)

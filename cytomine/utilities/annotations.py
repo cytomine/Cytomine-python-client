@@ -1,3 +1,8 @@
+# type: ignore
+
+from collections.abc import Iterable
+from typing import Any, Dict, List, Optional
+
 from cytomine.models import AnnotationCollection
 
 REVIEWED_INCLUDE = 1
@@ -6,13 +11,13 @@ REVIEWED_EXCLUDE = 0
 
 
 def get_annotations(
-    projects,
-    images=None,
-    terms=None,
-    users=None,
-    reviewed=REVIEWED_EXCLUDE,
-    **collection_params,
-):
+    projects: List[int],
+    images: Optional[Iterable[int]] = None,
+    terms: Optional[Iterable[int]] = None,
+    users: Optional[Iterable[int]] = None,
+    reviewed: int = REVIEWED_EXCLUDE,
+    **collection_params: Dict[Any, Any],
+) -> AnnotationCollection:
     """Returns a list annotations filtered with the following criterion.
 
     Parameters

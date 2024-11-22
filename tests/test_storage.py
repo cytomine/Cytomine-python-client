@@ -16,6 +16,9 @@
 
 # pylint: disable=unused-argument
 
+from typing import Any, Dict
+
+from cytomine.cytomine import Cytomine
 from cytomine.models import (
     Storage,
     StorageCollection,
@@ -26,7 +29,11 @@ from tests.conftest import random_string
 
 
 class TestStorage:
-    def test_storage(self, connect, dataset):
+    def test_storage(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         name = random_string()
         storage = Storage(name, dataset["user"].id).save()
         assert isinstance(storage, Storage)
@@ -46,23 +53,27 @@ class TestStorage:
         # storage.delete()
         # assert(not Storage().fetch(storage.id))
 
-    def test_storages(self, connect, dataset):
+    def test_storages(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         storages = StorageCollection().fetch()
         assert isinstance(storages, StorageCollection)
 
 
 class TestUploadedFile:
-    def test_uploaded_file(self, connect, dataset):
+    def test_uploaded_file(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         storages = StorageCollection().fetch()
         filename = "filename"
         uf = UploadedFile(
             "original",
             filename,
-            id_user=connect.current_user.id,
+            id_user=connect.current_user.id,  # type: ignore
             size=1,
             ext="ext",
             contentType="contentType",
-            id_storage=storages[0].id,
+            id_storage=storages[0].id,  # type: ignore
             id_image_server=dataset["image_servers"][0].id,
         ).save()
         assert isinstance(uf, UploadedFile)
@@ -77,6 +88,10 @@ class TestUploadedFile:
         uf.delete()
         assert not UploadedFile().fetch(uf.id)
 
-    def test_uploaded_files(self, connect, dataset):
+    def test_uploaded_files(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         uploaded_files = UploadedFileCollection().fetch()
         assert isinstance(uploaded_files, UploadedFileCollection)

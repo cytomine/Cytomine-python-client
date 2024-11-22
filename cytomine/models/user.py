@@ -16,17 +16,19 @@
 
 # pylint: disable=invalid-name
 
+from typing import Any, Dict, Optional, Union
+
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
 
 
 class CytomineUser:
-    def __init__(self):
-        self.username = None
+    def __init__(self) -> None:
+        self.username: Optional[str] = None
         self.origin = None
 
-    def keys(self):
+    def keys(self) -> Optional[Union[bool, Dict[str, str]]]:
         # Only works if you are superadmin.
         if hasattr(self, "id") and self.id:
             return Cytomine.get_instance().get(f"user/{self.id}/keys.json")
@@ -37,15 +39,15 @@ class CytomineUser:
 class User(Model, CytomineUser):
     def __init__(
         self,
-        username=None,
-        firstname=None,
-        lastname=None,
-        email=None,
-        password=None,
-        language=None,
-        is_developer=None,
-        **attributes,
-    ):
+        username: Optional[str] = None,
+        firstname: Optional[str] = None,
+        lastname: Optional[str] = None,
+        email: Optional[str] = None,
+        password: Optional[str] = None,
+        language: Optional[str] = None,
+        is_developer: Optional[str] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.username = username
         self.firstname = firstname
@@ -59,34 +61,40 @@ class User(Model, CytomineUser):
         self.guest = None
         self.populate(attributes)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"[{self.callback_identifier}] {self.id} : {self.username}"
 
 
 class CurrentUser(User):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.id = 0
         self.publicKey = None
         self.privateKey = None
 
-    def uri(self):
+    def uri(self) -> str:
         return "user/current.json"
 
-    def keys(self):
+    def keys(self) -> Union[bool, Dict[str, str]]:
         return Cytomine.get_instance().get(f"userkey/{self.publicKey}/keys.json")
 
-    def signature(self):
+    def signature(self) -> Union[bool, Dict[str, str]]:
         return Cytomine.get_instance().get("signature.json")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"[{self.callback_identifier}] CURRENT USER - {self.id} : {self.username}"
         )
 
 
 class UserCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, str]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(User, filters, max, offset)
         self._allowed_filters = [None, "project", "ontology"]
 
@@ -96,7 +104,7 @@ class UserCollection(Collection):
 
         self.set_parameters(parameters)
 
-    def uri(self, without_filters=False):
+    def uri(self, without_filters: bool = False) -> str:
         uri = super().uri(without_filters)
         if "project" in self.filters and self.admin:
             uri = uri.replace("user", "admin")
@@ -104,31 +112,36 @@ class UserCollection(Collection):
 
 
 class Role(Model):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.authority = None
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot save a new role by client.")
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         raise NotImplementedError("Cannot delete a role by client.")
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a role by client.")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"[{self.callback_identifier}] {self.id} : {self.authority}"
 
 
 class RoleCollection(Collection):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(Role)
         self._allowed_filters = [None]
 
 
 class UserRole(Model):
-    def __init__(self, id_user=None, id_role=None, **attributes):
+    def __init__(
+        self,
+        id_user: Optional[int] = None,
+        id_role: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.user = id_user
         self.role = id_role
@@ -136,16 +149,20 @@ class UserRole(Model):
         self.populate(attributes)
 
     @property
-    def callback_identifier(self):
+    def callback_identifier(self) -> str:
         return "secusersecrole"
 
-    def uri(self):
+    def uri(self) -> str:
         if self.is_new():
             return f"user/{self.user}/role.json"
 
         return f"user/{self.user}/role/{self.role}.json"
 
-    def fetch(self, id_user=None, id_role=None):
+    def fetch(
+        self,
+        id_user: Optional[int] = None,
+        id_role: Optional[int] = None,
+    ) -> Union[bool, Model]:
         self.id = -1
 
         if self.user is None and id_user is None:
@@ -162,10 +179,10 @@ class UserRole(Model):
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a user-role.")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"[{self.callback_identifier}] {self.id} : "
             f"User {self.user} - Role {self.role}"
@@ -173,10 +190,10 @@ class UserRole(Model):
 
 
 class UserRoleCollection(Collection):
-    def __init__(self, filters=None):
+    def __init__(self, filters: Optional[Dict[str, str]] = None) -> None:
         super().__init__(UserRole, filters)
         self._allowed_filters = ["user"]
 
     @property
-    def callback_identifier(self):
+    def callback_identifier(self) -> str:
         return "role"

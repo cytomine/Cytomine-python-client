@@ -15,7 +15,11 @@
 # * limitations under the License.
 
 # pylint: disable=unused-argument
+# type: ignore
 
+from typing import Any, Dict
+
+from cytomine.cytomine import Cytomine
 from cytomine.models import (
     CurrentUser,
     Role,
@@ -29,7 +33,7 @@ from tests.conftest import random_string
 
 
 class TestUser:
-    def test_user(self, connect, dataset):
+    def test_user(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         name = random_string()
         user = User(
             name,
@@ -54,7 +58,7 @@ class TestUser:
         user.delete()
         assert not User().fetch(user.id)
 
-    def test_users(self, connect, dataset):
+    def test_users(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         users = UserCollection().fetch()
         assert isinstance(users, UserCollection)
 
@@ -70,35 +74,55 @@ class TestUser:
         )
         assert users.save()
 
-    def test_users_by_project(self, connect, dataset):
+    def test_users_by_project(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         users = UserCollection().fetch_with_filter("project", dataset["project"].id)
         assert isinstance(users, UserCollection)
 
-    def test_users_by_ontology(self, connect, dataset):
+    def test_users_by_ontology(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         users = UserCollection().fetch_with_filter("ontology", dataset["ontology"].id)
         assert isinstance(users, UserCollection)
 
 
 class TestCurrentUser:
-    def test_current_user(self, connect, dataset):
+    def test_current_user(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         user = CurrentUser().fetch()
         assert isinstance(user, CurrentUser)
         assert user.__dict__ == connect.current_user.__dict__
 
-    def test_current_user_keys(self, connect, dataset):
+    def test_current_user_keys(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         keys = connect.current_user.keys()
         assert keys["privateKey"] == connect.current_user.privateKey
 
-    def test_current_user_signature(self, connect, dataset):
+    def test_current_user_signature(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         assert connect.current_user.signature()
 
 
 class TestRole:
-    def test_roles(self, connect, dataset):
+    def test_roles(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         roles = RoleCollection().fetch()
         assert isinstance(roles, RoleCollection)
 
-    def test_role(self, connect, dataset):
+    def test_role(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         roles = RoleCollection().fetch()
         if len(roles) > 0:
             role = Role().fetch(roles[0].id)
@@ -107,7 +131,7 @@ class TestRole:
 
 
 class TestUserRole:
-    def test_user_role(self, connect, dataset):
+    def test_user_role(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         roles = RoleCollection().fetch()
         if len(roles) > 0:
             user_role = UserRole(dataset["user"].id, roles[-1].id).save()
@@ -120,10 +144,10 @@ class TestUserRole:
             user_role.delete()
             assert not UserRole().fetch(dataset["user"].id, roles[-1].id)
 
-    # def test_user_roles(self, connect, dataset):
-    #     user_roles = UserRoleCollection().fetch()
-    #     assert(isinstance(user_roles, UserRoleCollection))
-
-    def test_user_roles_by_user(self, connect, dataset):
+    def test_user_roles_by_user(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         user_roles = UserRoleCollection().fetch_with_filter("user", dataset["user"].id)
         assert isinstance(user_roles, UserRoleCollection)

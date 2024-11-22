@@ -19,14 +19,22 @@ import os
 import queue
 from multiprocessing import cpu_count
 from threading import Thread
+from typing import Any, Callable, Iterable, List, Optional, Tuple, TypeVar
+
+T = TypeVar("T")  # Type of elements in data
+R = TypeVar("R")  # Return type of worker_fn
 
 
-def is_false(v):
+def is_false(v: Any) -> bool:
     """Check if v is 'False'"""
     return isinstance(v, bool) and not v
 
 
-def generic_parallel(data, worker_fn, n_workers=0):
+def generic_parallel(
+    data: Iterable[T],
+    worker_fn: Callable[[T], Optional[R]],
+    n_workers: int = 0,
+) -> List[Tuple[T, Optional[R]]]:
     """Run a function on a batch of data in parallel using a given processing function.
 
     Parameters
@@ -47,7 +55,7 @@ def generic_parallel(data, worker_fn, n_workers=0):
         the second element of the tuple is the value returned by `worker_fn` for this item.
     """
 
-    def worker(_in, _out):
+    def worker(_in: Any, _out: Any) -> None:
         while True:
             item = _in.get()
             if item is None:
@@ -58,8 +66,8 @@ def generic_parallel(data, worker_fn, n_workers=0):
         n_workers = cpu_count()
 
     # instantiate multiprocessing objects
-    in_queue = queue.Queue()
-    out_queue = queue.Queue()
+    in_queue: queue.Queue = queue.Queue()
+    out_queue: queue.Queue = queue.Queue()
     threads = [
         Thread(target=worker, args=[in_queue, out_queue]) for _ in range(n_workers)
     ]
@@ -88,7 +96,12 @@ def generic_parallel(data, worker_fn, n_workers=0):
     return results
 
 
-def generic_chunk_parallel(data, worker_fn, chunk_size=1, n_workers=0):
+def generic_chunk_parallel(
+    data: List[T],
+    worker_fn: Callable[[List[T]], R],
+    chunk_size: int = 1,
+    n_workers: int = 0,
+) -> List[Tuple[Tuple[int, int], R]]:
     """Execute a worker function on all elements of a data list.
     Items are processed by batch of size 'chunk_size'.
 
@@ -119,14 +132,18 @@ def generic_chunk_parallel(data, worker_fn, chunk_size=1, n_workers=0):
         end = start + chunk_size
         chunk_limits.append([start, end])
 
-    def worker_wrapper(startend):
+    def worker_wrapper(startend: Tuple[int, int]) -> R:
         _start, _end = startend
         return worker_fn(data[_start:_end])
 
-    return generic_parallel(chunk_limits, worker_wrapper, n_workers=n_workers)
+    return generic_parallel(chunk_limits, worker_wrapper, n_workers=n_workers)  # type: ignore
 
 
-def generic_download(data, download_instance_fn, n_workers=0):
+def generic_download(
+    data: Iterable[T],
+    download_instance_fn: Callable[[T], Optional[R]],
+    n_workers: int = 0,
+) -> List[Tuple[T, Optional[R]]]:
     """Download a set of data in parallel using a given download function.
 
     Parameters
@@ -150,7 +167,7 @@ def generic_download(data, download_instance_fn, n_workers=0):
     return generic_parallel(data, download_instance_fn, n_workers=n_workers)
 
 
-def makedirs(path, exist_ok=True):
+def makedirs(path: str, exist_ok: bool = True) -> None:
     """Python 2.7 compatinle"""
     if path:
         try:

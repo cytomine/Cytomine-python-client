@@ -17,25 +17,24 @@
 # pylint: disable=invalid-name,unused-argument
 
 import json
-
-import six
+from typing import Any, Dict, Optional, Union
 
 from cytomine.cytomine import Cytomine
 
 
 class Model:
-    def __init__(self, **attributes):
+    def __init__(self, **attributes: Any) -> None:
         # In some cases, a model can have some request parameters.
-        self._query_parameters = {}
+        self._query_parameters: Dict[str, Any] = {}
 
         # Attributes common to all models
-        self.id = None
+        self.id: Optional[int] = None
         self.created = None
         self.updated = None
         self.deleted = None
-        self.name = None
+        self.name: Optional[str] = None
 
-    def fetch(self, id=None):
+    def fetch(self, id: Optional[int] = None) -> Union[bool, "Model"]:
         if self.id is None and id is None:
             raise ValueError("Cannot fetch a model with no ID.")
         if id is not None:
@@ -43,13 +42,13 @@ class Model:
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
-    def save(self):
+    def save(self) -> Union[bool, "Model"]:
         if self.id is None:
             return Cytomine.get_instance().post_model(self)
 
         return self.update()
 
-    def delete(self, id=None):
+    def delete(self, id: Optional[int] = None) -> bool:
         if self.id is None and id is None:
             raise ValueError("Cannot delete a model with no ID.")
         if id is not None:
@@ -57,7 +56,11 @@ class Model:
 
         return Cytomine.get_instance().delete_model(self)
 
-    def update(self, id=None, **attributes):
+    def update(
+        self,
+        id: Optional[int] = None,
+        **attributes: Any,
+    ) -> Union[bool, "Model"]:
         if self.id is None and id is None:
             raise ValueError("Cannot update a model with no ID.")
         if id is not None:
@@ -67,12 +70,12 @@ class Model:
             self.populate(attributes)
         return Cytomine.get_instance().put_model(self)
 
-    def is_new(self):
+    def is_new(self) -> bool:
         return self.id is None
 
-    def populate(self, attributes):
+    def populate(self, attributes: Dict[Any, Any]) -> "Model":
         if attributes:
-            for key, value in six.iteritems(attributes):
+            for key, value in attributes.items():
                 if key.startswith("id_"):
                     key = key[3:]
                 if key == "uri":
@@ -83,46 +86,46 @@ class Model:
                     setattr(self, key, value)
         return self
 
-    def to_json(self, **dump_parameters):
+    def to_json(self, **dump_parameters: Any) -> str:
         d = dict(
             (k, v)
-            for k, v in six.iteritems(self.__dict__)
+            for k, v in self.__dict__.items()
             if v is not None and not k.startswith("_")
         )
         if "uri_" in d:
             d["uri"] = d.pop("uri_")
         return json.dumps(d, **dump_parameters)
 
-    def uri(self):
+    def uri(self) -> str:
         if self.is_new():
             return f"{self.callback_identifier}.json"
 
         return f"{self.callback_identifier}/{self.id}.json"
 
     @property
-    def query_parameters(self):
+    def query_parameters(self) -> Dict[str, Any]:
         return self._query_parameters
 
     @property
-    def callback_identifier(self):
+    def callback_identifier(self) -> str:
         return self.__class__.__name__.lower()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"[{self.callback_identifier}] {self.id} : {self.name}"
 
 
 class DomainModel(Model):
-    def __init__(self, object, **attributes):
+    def __init__(self, object: "Model", **attributes: Any) -> None:
         super().__init__(**attributes)
 
         if object.is_new():
             raise ValueError("The object must be fetched or saved before.")
 
-        self.domainClassName = None
-        self.domainIdent = None
+        self.domainClassName: Optional[str] = None
+        self.domainIdent: Optional[int] = None
         self.obj = object
 
-    def uri(self):
+    def uri(self) -> str:
         if self.is_new():
             return (
                 f"domain/{self.domainClassName}/{self.domainIdent}/"
@@ -135,11 +138,11 @@ class DomainModel(Model):
         )
 
     @property
-    def obj(self):
+    def obj(self) -> "Model":
         return self._object
 
     @obj.setter
-    def obj(self, value):
+    def obj(self, value: "Model") -> None:
         self._object = value
-        self.domainClassName = value.class_
+        self.domainClassName = getattr(value, "class_", None)
         self.domainIdent = value.id

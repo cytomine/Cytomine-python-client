@@ -23,13 +23,20 @@ __copyright__ = (
     "Copyright 2010-2022 University of Liège, Belgium, http://www.cytomine.be/"
 )
 
+from typing import Any, Dict, Optional, Union
+
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
 
 
 class ImageGroup(Model):
-    def __init__(self, name=None, id_project=None, **attributes):
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        id_project: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.name = name
         self.project = id_project
@@ -37,23 +44,38 @@ class ImageGroup(Model):
 
 
 class ImageGroupCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(ImageGroup, filters, max, offset)
         self._allowed_filters = ["project"]
         self.set_parameters(parameters)
 
 
 class ImageGroupImageInstance(Model):
-    def __init__(self, id_image_group=None, id_image_instance=None, **attributes):
+    def __init__(
+        self,
+        id_image_group: Optional[int] = None,
+        id_image_instance: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
         super().__init__()
         self.group = id_image_group
         self.image = id_image_instance
         self.populate(attributes)
 
-    def uri(self):
+    def uri(self) -> str:
         return f"imagegroup/{self.group}/imageinstance/{self.image}.json"
 
-    def fetch(self, id_image_group=None, id_image_instance=None):
+    def fetch(
+        self,
+        id_image_group: Optional[int] = None,
+        id_image_instance: Optional[int] = None,
+    ) -> Union[bool, Model]:
         self.id = -1
 
         if self.group is None and id_image_group is None:
@@ -70,12 +92,12 @@ class ImageGroupImageInstance(Model):
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError(
             "Cannot update a image group-image instance relation."
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"[{self.callback_identifier}] {self.id} : Group {self.group} "
             f"- Image {self.image}"
@@ -83,7 +105,13 @@ class ImageGroupImageInstance(Model):
 
 
 class ImageGroupImageInstanceCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
         super().__init__(ImageGroupImageInstance, filters, max, offset)
         self._allowed_filters = ["imagegroup", "imageinstance"]
         self.set_parameters(parameters)

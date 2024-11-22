@@ -16,8 +16,11 @@
 
 # pylint: disable=unused-argument
 
+from typing import Any, Dict
+
 import pytest
 
+from cytomine.cytomine import Cytomine
 from cytomine.models import (
     AbstractImage,
     AbstractImageCollection,
@@ -32,19 +35,19 @@ from tests.conftest import random_string
 
 
 class TestAbstractImage:
-    def test_abstract_image(self, connect, dataset):
+    def test_abstract_image(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         filename = random_string()
         abstract_image = AbstractImage(filename, dataset["uploaded_file"].id).save()
         assert isinstance(abstract_image, AbstractImage)
-        assert abstract_image.filename == filename
+        assert abstract_image.originalFilename == filename
 
         abstract_image = AbstractImage().fetch(abstract_image.id)
         assert isinstance(abstract_image, AbstractImage)
-        assert abstract_image.filename == filename
+        assert abstract_image.originalFilename == filename
 
         abstract_image = AbstractImage().fetch(abstract_image.id)
         assert isinstance(abstract_image, AbstractImage)
-        assert abstract_image.filename == filename
+        assert abstract_image.originalFilename == filename
 
         # TODO: problem of access rights in core prevent the successful execution of following tests
         # filename = random_string()
@@ -56,21 +59,29 @@ class TestAbstractImage:
         # abstract_image.delete()
         # assert (not AbstractImage().fetch(abstract_image.id))
 
-    def test_abstract_image_server(self, connect, dataset):
+    def test_abstract_image_server(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         # TODO
         pass
 
-    def test_abstract_image_download(self, connect, dataset):
+    def test_abstract_image_download(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         # TODO
         pass
 
-    def test_abstract_images(self, connect, dataset):
+    def test_abstract_images(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         abstract_images = AbstractImageCollection().fetch()
         assert isinstance(abstract_images, AbstractImageCollection)
 
 
 class TestImageInstance:
-    def test_image_instance(self, connect, dataset):
+    def test_image_instance(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         image_instance = ImageInstance(
             dataset["abstract_image3"].id,
             dataset["project"].id,
@@ -88,23 +99,35 @@ class TestImageInstance:
         image_instance.delete()
         assert not ImageInstance().fetch(image_instance.id)
 
-    def test_image_instance_server(self, connect, dataset):
+    def test_image_instance_server(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         # TODO
         pass
 
-    def test_image_instance_download(self, connect, dataset):
+    def test_image_instance_download(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         # TODO
         pass
 
-    def test_image_instance_dump(self, connect, dataset):
+    def test_image_instance_dump(
+        self,
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         # TODO
         pass
 
     def test_image_instance_by_project(
         self,
-        connect,
-        dataset,
-    ):
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         image_instances = ImageInstanceCollection().fetch_with_filter(
             "project",
             dataset["project"].id,
@@ -113,7 +136,7 @@ class TestImageInstance:
 
 
 class TestAbstractSlice:
-    def test_abstract_slice(self, connect, dataset):
+    def test_abstract_slice(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         abstract_slice = AbstractSlice(
             dataset["abstract_image2"].id,
             dataset["uploaded_file2"].id,
@@ -129,9 +152,9 @@ class TestAbstractSlice:
 
     def test_abstract_slices_by_abstract_image(
         self,
-        connect,
-        dataset,
-    ):
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         abstract_slices = AbstractSliceCollection().fetch_with_filter(
             "abstractimage",
             dataset["abstract_image"].id,
@@ -140,9 +163,9 @@ class TestAbstractSlice:
 
     def test_abstract_slices_by_uploadedfile(
         self,
-        connect,
-        dataset,
-    ):
+        connect: Cytomine,
+        dataset: Dict[str, Any],
+    ) -> None:
         abstract_slices = AbstractSliceCollection().fetch_with_filter(
             "uploadedfile",
             dataset["uploaded_file"].id,
@@ -157,7 +180,7 @@ class TestSliceInstance:
             "so trying to create a slice instance based on the image instance returns a 409 code"
         )
     )
-    def test_slice_instance(self, connect, dataset):
+    def test_slice_instance(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         slice_instance = SliceInstance(
             dataset["project"].id,
             dataset["image_instance2"].id,
@@ -174,9 +197,9 @@ class TestSliceInstance:
         assert slice_instance.filename == "filename"
 
         slice_instance.delete()
-        assert not SliceInstance.fetch(slice_instance.id)
+        assert not SliceInstance.fetch(slice_instance.id)  # type: ignore
 
-    def test_slices_by_image(self, connect, dataset):
+    def test_slices_by_image(self, connect: Cytomine, dataset: Dict[str, Any]) -> None:
         slices = SliceInstanceCollection().fetch_with_filter(
             "imageinstance",
             dataset["image_instance"].id,
