@@ -14,11 +14,9 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+# pylint: disable=invalid-name
 
+from typing import Any, Dict, Optional, Union
 
 from cytomine.cytomine import Cytomine
 from cytomine.models.collection import Collection
@@ -26,8 +24,14 @@ from cytomine.models.model import Model
 
 
 class Track(Model):
-    def __init__(self, name=None, id_image=None, color=None, **attributes):
-        super(Track, self).__init__()
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        id_image: Optional[int] = None,
+        color: Optional[str] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.name = name
         self.image = id_image
         self.color = color
@@ -35,29 +39,46 @@ class Track(Model):
 
 
 class TrackCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(TrackCollection, self).__init__(Track, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(Track, filters, max, offset)
         self._allowed_filters = ["project", "imageinstance"]
         self.set_parameters(parameters)
 
 
 class AnnotationTrack(Model):
-    def __init__(self, annotation_class_name=None, id_annotation=None, id_track=None, **attributes):
-        super(AnnotationTrack, self).__init__()
+    def __init__(
+        self,
+        annotation_class_name: Optional[str] = None,
+        id_annotation: Optional[int] = None,
+        id_track: Optional[int] = None,
+        **attributes: Any,
+    ):
+        super().__init__()
         self.annotationClassName = annotation_class_name
         self.annotationIdent = id_annotation
         self.track = id_track
         self.populate(attributes)
 
-    def uri(self):
-        return "annotationtrack/{}/{}.json".format(self.annotationIdent, self.track)
+    def uri(self) -> str:
+        return f"annotationtrack/{self.annotationIdent}/{self.track}.json"
 
-    def fetch(self, id_annotation=None, id_track=None):
+    def fetch(
+        self,
+        id_annotation: Optional[int] = None,
+        id_track: Optional[int] = None,
+    ) -> Union[bool, Model]:
         self.id = -1
 
         if self.annotationIdent is None and id_annotation is None:
             raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.track is None and id_track is None:
+
+        if self.track is None and id_track is None:
             raise ValueError("Cannot fetch a model with no term ID.")
 
         if id_annotation is not None:
@@ -68,8 +89,11 @@ class AnnotationTrack(Model):
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a annotation-track.")
 
-    def __str__(self):
-        return "[{}] Annotation {} - Track {}".format(self.callback_identifier, self.annotationIdent, self.track)
+    def __str__(self) -> str:
+        return (
+            f"[{self.callback_identifier}] Annotation {self.annotationIdent} "
+            f"- Track {self.track}"
+        )

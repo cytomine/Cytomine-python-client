@@ -14,27 +14,36 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+# pylint: disable=invalid-name
 
+from typing import Any, Dict, List, Optional
 
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
 
 
 class Storage(Model):
-    def __init__(self, name=None, id_user=None, **attributes):
-        super(Storage, self).__init__()
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        id_user: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.name = name
         self.user = id_user
         self.populate(attributes)
 
 
 class StorageCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(StorageCollection, self).__init__(Storage, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(Storage, filters, max, offset)
         self._allowed_filters = [None]
 
         self.all = None
@@ -64,9 +73,22 @@ class UploadedFile(Model):
     EXTRACTED = 102
     CONVERTED = 104
 
-    def __init__(self, original_filename=None, filename=None, size=None, ext=None, content_type=None,
-                 id_projects=None, id_storage=None, id_user=None, id_image_server=None, status=None, id_parent=None, **attributes):
-        super(UploadedFile, self).__init__()
+    def __init__(
+        self,
+        original_filename: Optional[str] = None,
+        filename: Optional[str] = None,
+        size: Optional[int] = None,
+        ext: Optional[str] = None,
+        content_type: Optional[str] = None,
+        id_projects: Optional[List[int]] = None,
+        id_storage: Optional[int] = None,
+        id_user: Optional[int] = None,
+        id_image_server: Optional[int] = None,
+        status: Optional[int] = None,
+        id_parent: Optional[int] = None,
+        **attributes: Any,
+    ):
+        super().__init__()
         self.originalFilename = original_filename
         self.filename = filename
         self.path = None
@@ -82,13 +104,19 @@ class UploadedFile(Model):
         self.parent = id_parent
         self.populate(attributes)
 
-    def __str__(self):
-        return "[{}] {} : {}".format(self.callback_identifier, self.id, self.filename)
+    def __str__(self) -> str:
+        return f"[{self.callback_identifier}] {self.id} : {self.filename}"
 
 
 class UploadedFileCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(UploadedFileCollection, self).__init__(UploadedFile, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(UploadedFile, filters, max, offset)
         self._allowed_filters = [None]
 
         self.all = None

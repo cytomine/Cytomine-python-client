@@ -16,9 +16,10 @@
 
 import re
 from copy import copy
+from typing import Any, List
 
 
-def is_iterable(obj):
+def is_iterable(obj: Any) -> bool:
     """Portable way to check that an object is iterable"""
     try:
         iter(obj)
@@ -27,9 +28,10 @@ def is_iterable(obj):
         return False
 
 
-def resolve_pattern(pattern, attr_source):
-    """Resolve a string pattern using values from an attribute source. If one attribute is an iterable (and not a
-    string) the pattern will be resolved once for each value in the iterable.
+def resolve_pattern(pattern: str, attr_source: object) -> List[str]:
+    """Resolve a string pattern using values from an attribute source.
+    If one attribute is an iterable (and not a string)
+    the pattern will be resolved once for each value in the iterable.
 
     Parameters
     ----------
@@ -51,7 +53,7 @@ def resolve_pattern(pattern, attr_source):
     patterns = [pattern]
     for attr, values in attr_dict.items():
         remaining.remove(attr)
-        resolved = list()
+        resolved = []
         if isinstance(values, str) or not is_iterable(values):
             values = [values]
         format_params = {a: "{" + a + "}" for a in remaining}

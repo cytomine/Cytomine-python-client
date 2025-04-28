@@ -14,10 +14,6 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import logging
 import sys
@@ -26,9 +22,12 @@ from argparse import ArgumentParser
 from shapely.geometry import Point, box
 
 from cytomine import Cytomine
-from cytomine.models import Property, Annotation, AnnotationTerm, AnnotationCollection
-
-
+from cytomine.models import (
+    Annotation,
+    AnnotationCollection,
+    AnnotationTerm,
+    Property,
+)
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")

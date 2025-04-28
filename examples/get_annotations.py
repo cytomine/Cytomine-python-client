@@ -14,24 +14,16 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging
+import os
 import sys
 from argparse import ArgumentParser
-
-import os
 
 from shapely import wkt
 from shapely.affinity import affine_transform
 
 from cytomine import Cytomine
 from cytomine.models import AnnotationCollection, ImageInstanceCollection
-
-
 
 
 def get_by_id(haystack, needle):
@@ -90,16 +82,16 @@ if __name__ == '__main__':
         print(annotations)
 
         for annotation in annotations:
-            print("ID: {} | Image: {} | Project: {} | Term: {} | User: {} | Area: {} | Perimeter: {} | WKT: {}".format(
-                annotation.id,
-                annotation.image,
-                annotation.project,
-                annotation.term,
-                annotation.user,
-                annotation.area,
-                annotation.perimeter,
-                annotation.location
-            ))
+            print(
+                f"ID: {annotation.id} | "
+                f"Image: {annotation.image} | "
+                f"Project: {annotation.project} | "
+                f"Term: {annotation.term} | "
+                f"User: {annotation.user} | "
+                f"Area: {annotation.area} | "
+                f"Perimeter: {annotation.perimeter} | "
+                f"WKT: {annotation.location}"
+            )
 
             # Annotation location is the annotation geometry in WKT format.
             # See https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry
@@ -107,7 +99,7 @@ if __name__ == '__main__':
             # You can use Shapely library to read geometry in WKT format. See https://shapely.readthedocs.io/en/latest/
             # See 'shapely.wkt.loads(wkt)' function in Shapely library.
             geometry = wkt.loads(annotation.location)
-            print("Geometry from Shapely: {}".format(geometry))
+            print(f"Geometry from Shapely: {geometry}")
 
             # In Cytomine, geometries are referenced using a cartesian coordinate system !
             # See 'shapely.affinity.affine_transform(geom, matrix)' function in Shapely library if needed
@@ -118,7 +110,7 @@ if __name__ == '__main__':
                 # matrix = [a, b, d, e, x_off, y_off]
                 image = get_by_id(image_instances, annotation.image)
                 geometry_opencv = affine_transform(geometry, [1, 0, 0, -1, 0, image.height])
-                print("Geometry with OpenCV coordinate system: {}".format(geometry_opencv))
+                print(f"Geometry with OpenCV coordinate system: {geometry_opencv}")
 
             if params.download_path:
                 # max_size is set to 512 (in pixels). Without max_size parameter, it download a dump of the same size that the annotation.

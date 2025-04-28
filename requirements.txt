@@ -5,13 +5,11 @@
 #    pip-compile setup.py
 #
 cachecontrol==0.12.10
-    # via cytomine-python-client (setup.py)
-certifi==2021.5.30
+    # via Cytomine-Python-Client (setup.py)
+certifi==2022.12.7
     # via requests
 charset-normalizer==2.0.12
     # via requests
-future==0.18.2
-    # via cytomine-python-client (setup.py)
 idna==3.2
     # via requests
 msgpack==1.0.2
@@ -27,7 +25,7 @@ shapely==1.7.1
     # via cytomine-python-client (setup.py)
 six==1.16.0
     # via cytomine-python-client (setup.py)
-urllib3==1.26.6
+urllib3==1.26.19
     # via
     #   cytomine-python-client (setup.py)
     #   requests

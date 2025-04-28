@@ -21,7 +21,6 @@
 import sys
 from argparse import ArgumentParser
 
-
 if __name__ == '__main__':
     from cytomine import Cytomine
     from cytomine.models.user import *

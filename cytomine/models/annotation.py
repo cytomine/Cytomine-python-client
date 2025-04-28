@@ -14,25 +14,30 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
+# pylint: disable=invalid-name
 
 import os
-import re
+from typing import Any, Dict, List, Optional, Union
 
 from cytomine.cytomine import Cytomine
-from cytomine.models.collection import Collection, CollectionPartialUploadException
+from cytomine.models.collection import Collection
 from cytomine.models.model import Model
-from ._utilities import generic_image_dump, generic_download, is_false
+
+from ._utilities import generic_download, generic_image_dump, is_false
 
 
 class Annotation(Model):
-    def __init__(self, location=None, id_image=None, id_terms=None, id_project=None, id_tracks=None, id_slice=None,
-                 **attributes):
-        super(Annotation, self).__init__()
+    def __init__(
+        self,
+        location: Optional[str] = None,
+        id_image: Optional[int] = None,
+        id_terms: Optional[List[int]] = None,
+        id_project: Optional[int] = None,
+        id_tracks: Optional[List[int]] = None,
+        id_slice: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.location = location
         self.image = id_image
         self.slice = id_slice
@@ -44,32 +49,54 @@ class Annotation(Model):
         self.areaUnit = None
         self.perimeter = None
         self.perimeterUnit = None
-        self.cropURL = None
+        self.cropURL: Optional[str] = None
+        self.filename: Optional[str] = None
+        self.filenames: Optional[List[str]] = None
 
         self.populate(attributes)
 
-    def __str__(self):
-        return "[{}] {}".format(self.callback_identifier, self.id)
+    def __str__(self) -> str:
+        return f"[{self.callback_identifier}] {self.id}"
 
-    def review(self, id_terms=None):
+    def review(
+        self,
+        id_terms: Optional[List[int]] = None,
+    ) -> Union[bool, Dict[str, Any]]:
         if self.id is None:
             raise ValueError("Cannot review an annotation with no ID.")
 
         if not id_terms:
             id_terms = []
         data = {"id": self.id, "terms": id_terms}
-        return Cytomine.get_instance().post("{}/{}/review.json".format(self.callback_identifier, self.id), data)
+        return Cytomine.get_instance().post(
+            f"{self.callback_identifier}/{self.id}/review.json",
+            data,
+        )
 
-    def dump(self, dest_pattern="{id}.jpg", override=True, mask=False, alpha=False, bits=8,
-             zoom=None, max_size=None, increase_area=None, contrast=None, gamma=None, colormap=None, inverse=None,
-             complete=True):
+    def dump(
+        self,
+        dest_pattern: str = "{id}.jpg",
+        override: bool = True,
+        mask: bool = False,
+        alpha: bool = False,
+        bits: int = 8,
+        zoom: Optional[int] = None,
+        max_size: Optional[int] = None,
+        increase_area: Optional[float] = None,
+        contrast: Optional[float] = None,
+        gamma: Optional[float] = None,
+        colormap: Optional[int] = None,
+        inverse: Optional[bool] = None,
+        complete: bool = True,
+    ) -> bool:
         """
         Download the annotation crop, with optional image modifications.
 
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute
             if it exists. The extension must be jpg, png or tif.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
@@ -80,12 +107,13 @@ class Annotation(Model):
         zoom : int, optional
             Optional image zoom number
         bits : int (8,16,32) or str ("max"), optional
-            Bit depth (bit per channel) of returned image. "max" returns the original image bit depth
+            Bit depth (bit per channel) of returned image.
+            "max" returns the original image bit depth
         max_size : int, optional
             Maximum size (width or height) of returned image. None to get original size.
         increase_area : float, optional
-            Increase the crop size. For example, an annotation whose bounding box size is (w,h) will have
-            a crop dimension of (w*increase_area, h*increase_area).
+            Increase the crop size. For example, an annotation whose bounding box size
+            is (w,h) will have a crop dimension of (w*increase_area, h*increase_area).
         contrast : float, optional
             Optional contrast applied on returned image.
         gamma : float, optional
@@ -100,13 +128,14 @@ class Annotation(Model):
         Returns
         -------
         downloaded : bool
-            True if everything happens correctly, False otherwise. As a side effect, object attribute "filename"
+            True if everything happens correctly, False otherwise.
+            As a side effect, object attribute "filename"
             is filled with downloaded file path.
         """
         if self.id is None:
             raise ValueError("Cannot dump an annotation with no ID.")
 
-        parameters = {
+        parameters: Dict[str, Any] = {
             "zoom": zoom,
             "maxSize": max_size,
             "increaseArea": increase_area,
@@ -115,10 +144,14 @@ class Annotation(Model):
             "colormap": colormap,
             "inverse": inverse,
             "bits": bits,
-            "complete": complete
+            "complete": complete,
         }
 
-        def dump_url_fn(model, file_path, **kwargs):
+        def dump_url_fn(
+            model: "Annotation",
+            file_path: str,
+            **kwargs: Any,  # pylint: disable=unused-argument
+        ) -> str:
             extension = os.path.basename(file_path).split(".")[-1]
             if mask and alpha:
                 image = "alphamask"
@@ -128,9 +161,25 @@ class Annotation(Model):
                 image = "mask"
             else:
                 image = "crop"
-            return model.cropURL.replace("crop.png", "{}.{}".format(image, extension)).replace("crop.jpg", "{}.{}".format(image, extension))
 
-        files = generic_image_dump(dest_pattern, self, dump_url_fn, override=override, **parameters)
+            if model.cropURL is None:
+                raise ValueError("cropURL is None")
+
+            return model.cropURL.replace(
+                "crop.png",
+                f"{image}.{extension}",
+            ).replace(
+                "crop.jpg",
+                f"{image}.{extension}",
+            )
+
+        files = generic_image_dump(
+            dest_pattern,
+            self,
+            dump_url_fn,
+            override=override,
+            **parameters,
+        )
 
         if len(files) == 0:
             return False
@@ -142,30 +191,33 @@ class Annotation(Model):
 
 
 class AnnotationCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationCollection, self).__init__(Annotation, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(Annotation, filters, max, offset)
         self._allowed_filters = [None]
 
-        self.showBasic = True
-        self.showMeta = True
-        self.showWKT = None
-        self.showGIS = None
-        self.showTerm = None
-        self.showTrack = None
-        self.showAlgo = None
-        self.showUser = None
-        self.showImage = None
-        self.showSlice = None
-        self.showImageGroup = None
-        self.showLink = None
+        self.showBasic: bool = True
+        self.showMeta: bool = True
+        self.showWKT: Optional[bool] = None
+        self.showGIS: Optional[bool] = None
+        self.showTerm: Optional[bool] = None
+        self.showTrack: Optional[bool] = None
+        self.showUser: Optional[bool] = None
+        self.showImage: Optional[bool] = None
+        self.showSlice: Optional[bool] = None
+        self.showImageGroup: Optional[bool] = None
+        self.showLink: Optional[bool] = None
         self.reviewed = None
         self.noTerm = None
-        self.noAlgoTerm = None
         self.multipleTerm = None
 
         self.project = None
 
-        self.job = None
         self.user = None
         self.users = None
 
@@ -178,8 +230,6 @@ class AnnotationCollection(Collection):
         self.term = None
         self.terms = None
         self.suggestedTerm = None
-        self.userForTermAlgo = None
-        self.jobForTermAlgo = None
 
         self.track = None
         self.tracks = None
@@ -197,22 +247,29 @@ class AnnotationCollection(Collection):
 
         self.set_parameters(parameters)
 
-    def uri(self, without_filters=False):
+    def uri(self, without_filters: bool = False) -> str:
         if self.included:
             self.add_filter("imageinstance", self.image)
-        uri = super(AnnotationCollection, self).uri(without_filters)
+        uri = super().uri(without_filters)
         if self.included:
             return uri.replace(".json", "/included.json")
 
         return uri
 
-    def dump_crops(self, dest_pattern, n_workers=0, override=True, **dump_params):
+    def dump_crops(
+        self,
+        dest_pattern: str,
+        n_workers: int = 0,
+        override: bool = True,
+        **dump_params: Any,
+    ) -> "AnnotationCollection":
         """Download the crops of the annotations
+
         Parameters
         ----------
         dest_pattern : str, optional
-            Destination path for the downloaded image. "{X}" patterns are replaced by the value of X attribute
-            if it exists.
+            Destination path for the downloaded image.
+            "{X}" patterns are replaced by the value of X attribute if it exists.
         override : bool, optional
             True if a file with same name can be overrided by the new file.
         n_workers: int
@@ -226,17 +283,23 @@ class AnnotationCollection(Collection):
             Annotations that have been successfully downloaded (containing a `filenames` attribute)
         """
 
-        def dump_crop(an):
-            if is_false(an.dump(dest_pattern=dest_pattern, override=override, **dump_params)):
+        def dump_crop(an: Annotation) -> Union[bool, Annotation]:
+            if is_false(
+                an.dump(dest_pattern=dest_pattern, override=override, **dump_params)
+            ):
                 return False
-            else:
-                return an
 
-        results = generic_download(self, download_instance_fn=dump_crop, n_workers=n_workers)
+            return an
+
+        results = generic_download(
+            self,
+            download_instance_fn=dump_crop,
+            n_workers=n_workers,
+        )
 
         # check errors
         count_fail = 0
-        failed = list()
+        failed = []
         for in_annot, out_annot in results:
             if is_false(out_annot):
                 count_fail += 1
@@ -247,8 +310,10 @@ class AnnotationCollection(Collection):
             n_annots = len(self)
             ratio = 100 * count_fail / float(n_annots)
             logger.info(
-                "Failed to download crops for {}/{} annotations ({:3.2f} %).".format(count_fail, n_annots, ratio))
-            logger.debug("Annotation with crop download failure: {}".format(failed))
+                f"Failed to download crops for {count_fail}/{n_annots} "
+                f"annotations ({ratio:3.2f} %)."
+            )
+            logger.debug("Annotation with crop download failure: %s", failed)
 
         collection = AnnotationCollection()
         collection.extend([an for _, an in results if not isinstance(an, bool) or an])
@@ -256,22 +321,32 @@ class AnnotationCollection(Collection):
 
 
 class AnnotationTerm(Model):
-    def __init__(self, id_annotation=None, id_term=None, **attributes):
-        super(AnnotationTerm, self).__init__()
+    def __init__(
+        self,
+        id_annotation: Optional[int] = None,
+        id_term: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.userannotation = id_annotation
         self.term = id_term
         self.user = None
         self.populate(attributes)
 
-    def uri(self):
-        return "annotation/{}/term/{}.json".format(self.userannotation, self.term)
+    def uri(self) -> str:
+        return f"annotation/{self.userannotation}/term/{self.term}.json"
 
-    def fetch(self, id_annotation=None, id_term=None):
+    def fetch(
+        self,
+        id_annotation: Optional[int] = None,
+        id_term: Optional[int] = None,
+    ) -> Union[bool, Model]:
         self.id = -1
 
         if self.userannotation is None and id_annotation is None:
             raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.term is None and id_term is None:
+
+        if self.term is None and id_term is None:
             raise ValueError("Cannot fetch a model with no term ID.")
 
         if id_annotation is not None:
@@ -282,53 +357,25 @@ class AnnotationTerm(Model):
 
         return Cytomine.get_instance().get_model(self, self.query_parameters)
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a annotation-term.")
 
-    def __str__(self):
-        return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.userannotation, self.term)
-
-
-class AlgoAnnotationTerm(Model):
-    def __init__(self, id_annotation=None, id_term=None, id_expected_term=None, rate=1.0, **attributes):
-        super(AlgoAnnotationTerm, self).__init__()
-        self.annotation = id_annotation
-        self.annotationIdent = id_annotation
-        self.term = id_term
-        self.expectedTerm = id_expected_term
-        self.user = None
-        self.rate = rate
-        self.populate(attributes)
-
-    def uri(self):
-        return "annotation/{}/term/{}.json".format(self.annotation, self.term)
-
-    def fetch(self, id_annotation=None, id_term=None):
-        self.id = -1
-
-        if self.annotation is None and id_annotation is None:
-            raise ValueError("Cannot fetch a model with no annotation ID.")
-        elif self.term is None and id_term is None:
-            raise ValueError("Cannot fetch a model with no term ID.")
-
-        if id_annotation is not None:
-            self.annotation = id_annotation
-
-        if id_term is not None:
-            self.term = id_term
-
-        return Cytomine.get_instance().get_model(self, self.query_parameters)
-
-    def update(self, *args, **kwargs):
-        raise NotImplementedError("Cannot update a annotation-term.")
-
-    def __str__(self):
-        return "[{}] Annotation {} - Term {}".format(self.callback_identifier, self.annotation, self.term)
+    def __str__(self) -> str:
+        return (
+            f"[{self.callback_identifier}] Annotation {self.userannotation} "
+            f"- Term {self.term}"
+        )
 
 
 class AnnotationFilter(Model):
-    def __init__(self, name=None, users=None, terms=None, **attributes):
-        super(AnnotationFilter, self).__init__()
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        users: Optional[List[int]] = None,
+        terms: Optional[List[int]] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.name = name
         self.users = users
         self.terms = terms
@@ -336,12 +383,120 @@ class AnnotationFilter(Model):
 
 
 class AnnotationFilterCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationFilterCollection, self).__init__(AnnotationFilter, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(AnnotationFilter, filters, max, offset)
         self._allowed_filters = [None]
         self.project = None
         self.set_parameters(parameters)
 
-    def save(self, *args, **kwargs):
-        raise NotImplementedError("Cannot save an annotation filter collection by client.")
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Collection]:
+        raise NotImplementedError(
+            "Cannot save an annotation filter collection by client."
+        )
 
+
+class AnnotationGroup(Model):
+    def __init__(
+        self,
+        id_project: Optional[int] = None,
+        id_image_group: Optional[int] = None,
+        type: str = "SAME_OBJECT",
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
+        self.project = id_project
+        self.imageGroup = id_image_group
+        self.type = type
+        self.populate(attributes)
+
+    def merge(self, id_other_annotation_group: int) -> Union[bool, Dict[str, str]]:
+        if self.id is None:
+            raise ValueError("Cannot merge an annotaiton group with no ID.")
+
+        return Cytomine.get_instance().post(
+            f"annotationgroup/{self.id}/annotationgroup/"
+            f"{id_other_annotation_group}/merge.json"
+        )
+
+
+class AnnotationGroupCollection(Collection):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(AnnotationGroup, filters, max, offset)
+        self._allowed_filters = ["project", "imagegroup"]
+        self.set_parameters(parameters)
+
+
+class AnnotationLink(Model):
+    def __init__(
+        self,
+        annotation_class_name: Optional[str] = None,
+        id_annotation: Optional[int] = None,
+        id_annotation_group: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
+        self.annotationClassName = annotation_class_name
+        self.annotationIdent = id_annotation
+        self.group = id_annotation_group
+        self.populate(attributes)
+
+    def uri(self) -> str:
+        if self.is_new():
+            return f"{self.callback_identifier}.json"
+
+        return f"annotationgroup/{self.group}/annotation/{self.annotationIdent}.json"
+
+    def fetch(
+        self,
+        id_annotation: Optional[int] = None,
+        id_annotation_group: Optional[int] = None,
+    ) -> Union[bool, Model]:
+        self.id = -1
+
+        if self.annotationIdent is None and id_annotation is None:
+            raise ValueError("Cannot fetch a model with no annotation ID.")
+
+        if self.group is None and id_annotation_group is None:
+            raise ValueError("Cannot fetch a model with no annotation group ID.")
+
+        if id_annotation is not None:
+            self.annotationIdent = id_annotation
+
+        if id_annotation_group is not None:
+            self.group = id_annotation_group
+
+        return Cytomine.get_instance().get_model(self, self.query_parameters)
+
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
+        raise NotImplementedError("Cannot update an annotation link.")
+
+    def __str__(self) -> str:
+        return (
+            f"[{self.callback_identifier}] Annotation {self.annotationIdent} "
+            f"- Annotation group {self.group}"
+        )
+
+
+class AnnotationLinkCollection(Collection):
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(AnnotationLink, filters, max, offset)
+        self._allowed_filters = ["annotationgroup", "annotation"]
+        self.set_parameters(parameters)

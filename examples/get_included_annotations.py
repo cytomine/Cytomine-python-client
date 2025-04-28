@@ -14,19 +14,12 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging
 import sys
 from argparse import ArgumentParser
 
 from cytomine import Cytomine
 from cytomine.models import AnnotationCollection
-
-
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")
@@ -63,5 +56,7 @@ if __name__ == '__main__':
             included_annotations.term = params.id_object_term
             included_annotations.annotation = roi_annotation.id
             included_annotations.fetch()
-            print("Number of annotations of term {} included in ROI {}: {}".format(
-                params.id_object_term, roi_annotation.id, len(included_annotations)))
+            print(
+                f"Number of annotations of term {params.id_object_term} included "
+                f"in ROI {roi_annotation.id}: {len(included_annotations)}"
+            )

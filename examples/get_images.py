@@ -14,11 +14,6 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging
 import os
 import sys
@@ -26,8 +21,6 @@ from argparse import ArgumentParser
 
 from cytomine import Cytomine
 from cytomine.models.image import ImageInstanceCollection
-
-
 
 # This example script allows you to get the list of images (metadata) in a given project.
 # If a download path is provided, it downloads all original images like they have been uploaded to Cytomine.
@@ -64,13 +57,24 @@ if __name__ == '__main__':
             f = open(params.download_path + "images-" + params.id_project + ".csv", "w+")
             f.write("ID;Width;Height;Resolution;Magnification;Filename \n")
             for image in image_instances:
-                f.write("{};{};{};{};{}\n".format(image.id, image.width, image.height, image.physicalSizeX,
-                                                  image.magnification, image.filename))
+                f.write(
+                    f"{image.id};"
+                    f"{image.width};"
+                    f"{image.height};"
+                    f"{image.physicalSizeX};"
+                    f"{image.magnification};"
+                    f"{image.filename}\n"
+                )
 
         for image in image_instances:
-            print("Image ID: {} | Width: {} | Height: {} | Resolution:  | Magnification: {} | Filename: {}".format(
-                image.id, image.width, image.height, image.physicalSizeX, image.magnification, image.filename
-            ))
+            print(
+                f"Image ID: {image.id} | "
+                f"Width: {image.width} | "
+                f"Height: {image.height} | "
+                f"Resolution: {image.physicalSizeX} | "
+                f"Magnification: {image.magnification} | "
+                f"Filename: {image.filename}"
+            )
 
             if params.download_path:
                 # We will dump the images in a specified /dump directory. Filename fo this dump will be the original

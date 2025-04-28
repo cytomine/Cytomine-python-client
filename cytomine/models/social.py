@@ -14,19 +14,17 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+# pylint: disable=arguments-differ,invalid-name
 
+from typing import Any, Dict, Optional, Union
 
 from cytomine.models.collection import Collection
 from cytomine.models.model import Model
 
 
 class Position(Model):
-    def __init__(self):
-        super(Position, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.user = None
         self.image = None
         self.slice = None
@@ -38,19 +36,25 @@ class Position(Model):
         self.x = None
         self.y = None
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot save a new position by client.")
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         raise NotImplementedError("Cannot delete a position.")
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a position.")
 
 
 class PositionCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(PositionCollection, self).__init__(Position, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(Position, filters, max, offset)
         self._allowed_filters = ["imageinstance", "sliceinstance"]
 
         self.user = None
@@ -60,13 +64,13 @@ class PositionCollection(Collection):
         self.set_parameters(parameters)
 
     @property
-    def callback_identifier(self):
+    def callback_identifier(self) -> str:
         return "positions"
 
 
 class AnnotationAction(Model):
-    def __init__(self):
-        super(AnnotationAction, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.user = None
         self.image = None
         self.slice = None
@@ -76,23 +80,29 @@ class AnnotationAction(Model):
         self.annotationCreator = None
         self.action = None
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot save a new annotation action by client.")
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         raise NotImplementedError("Cannot delete an annotation action.")
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update an annotation action.")
 
     @property
-    def callback_identifier(self):
+    def callback_identifier(self) -> str:
         return "annotation_action"
 
 
 class AnnotationActionCollection(Collection):
-    def __init__(self, filters=None, max=0, offset=0, **parameters):
-        super(AnnotationActionCollection, self).__init__(AnnotationAction, filters, max, offset)
+    def __init__(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(AnnotationAction, filters, max, offset)
         self._allowed_filters = ["imageinstance"]
 
         self.user = None
@@ -101,12 +111,18 @@ class AnnotationActionCollection(Collection):
         self.set_parameters(parameters)
 
     @property
-    def callback_identifier(self):
+    def callback_identifier(self) -> str:
         return "annotation_action"
 
+
 class ProjectConnection(Model):
-    def __init__(self, project=None, user=None, **attributes):
-        super(ProjectConnection, self).__init__()
+    def __init__(
+        self,
+        project: Optional[int] = None,
+        user: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.project = project
         self.user = user
         self.countViewedImages = None
@@ -122,45 +138,65 @@ class ProjectConnection(Model):
 
         self.populate(attributes)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot save a ProjectConnection by client.")
-    
-    def delete(self, *args, **kwargs):
+
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         raise NotImplementedError("Cannot delete a ProjectConnection by client.")
-    
-    def update(self, *args, **kwargs):
+
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a ProjectConnection by client.")
 
-    def fetch(self, *args, **kwargs):
+    def fetch(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot fetch a ProjectConnection by client.")
-    
-    def __str__(self):
-        return "[{}] {}: [user] {}, [project] {}".format(self.callback_identifier, self.id, self.user, self.project)
+
+    def __str__(self) -> str:
+        return (
+            f"[{self.callback_identifier}] {self.id}: "
+            f"[user] {self.user}, [project] {self.project}"
+        )
+
 
 class ProjectConnectionCollection(Collection):
-    def __init__(self, project, user, filters=None, max=0, offset=0, **parameters):
-        super(ProjectConnectionCollection, self).__init__(ProjectConnection, filters, max, offset)
+    def __init__(
+        self,
+        project: int,
+        user: int,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ) -> None:
+        super().__init__(ProjectConnection, filters, max, offset)
         self._allowed_filters = [None]
         self.project = project
         self.user = user
         self.set_parameters(parameters)
 
-    def uri(self):
-        return f'project/{self.project}/userconnection/{self.user}.json'
+    def uri(self, without_filters: bool = False) -> str:
+        return f"project/{self.project}/userconnection/{self.user}.json"
 
-    def save(self, *args, **kwargs):
-        raise NotImplementedError("Cannot save a ProjectConnection collection by client.")
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Collection]:
+        raise NotImplementedError(
+            "Cannot save a ProjectConnection collection by client."
+        )
+
 
 class ImageConsultation(Model):
-    def __init__(self, image=None, user=None, **attributes):
-        super(ImageConsultation, self).__init__()
+    def __init__(
+        self,
+        image: Optional[int] = None,
+        user: Optional[int] = None,
+        **attributes: Any,
+    ) -> None:
+        super().__init__()
         self.project = None
         self.user = user
         self.image = image
         self.imageName = None
         self.imageThumb = None
         self.mode = None
-        self.projectConnection = None 
+        self.projectConnection = None
         self.time = None
         self.updated = None
         self.countCreatedAnnotations = None
@@ -170,31 +206,45 @@ class ImageConsultation(Model):
 
         self.populate(attributes)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot save a ImageConsultation by client.")
-    
-    def delete(self, *args, **kwargs):
+
+    def delete(self, *args: Any, **kwargs: Any) -> bool:
         raise NotImplementedError("Cannot delete a ImageConsultation by client.")
-    
-    def update(self, *args, **kwargs):
+
+    def update(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot update a ImageConsultation by client.")
 
-    def fetch(self, *args, **kwargs):
+    def fetch(self, *args: Any, **kwargs: Any) -> Union[bool, Model]:
         raise NotImplementedError("Cannot fetch a ImageConsultation by client.")
-    
-    def __str__(self):
-        return "[{}] {}: [user] {}, [image] {}".format(self.callback_identifier, self.id, self.user, self.image)
+
+    def __str__(self) -> str:
+        return (
+            f"[{self.callback_identifier}] {self.id}: "
+            f"[user] {self.user}, [image] {self.image}"
+        )
+
 
 class ImageConsultationCollection(Collection):
-    def __init__(self, project, user, filters=None, max=0, offset=0, **parameters):
-        super(ImageConsultationCollection, self).__init__(ImageConsultation, filters, max, offset)
+    def __init__(
+        self,
+        project: int,
+        user: int,
+        filters: Optional[Dict[str, Any]] = None,
+        max: int = 0,
+        offset: int = 0,
+        **parameters: Any,
+    ):
+        super().__init__(ImageConsultation, filters, max, offset)
         self._allowed_filters = [None]
         self.project = project
         self.user = user
         self.set_parameters(parameters)
 
-    def uri(self):
-        return f'project/{self.project}/user/{self.user}/imageconsultation.json'
+    def uri(self, without_filters: bool = False) -> str:
+        return f"project/{self.project}/user/{self.user}/imageconsultation.json"
 
-    def save(self, *args, **kwargs):
-        raise NotImplementedError("Cannot save a ImageConsultation collection by client.")
+    def save(self, *args: Any, **kwargs: Any) -> Union[bool, Collection]:
+        raise NotImplementedError(
+            "Cannot save a ImageConsultation collection by client."
+        )

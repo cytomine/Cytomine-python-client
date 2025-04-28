@@ -14,19 +14,17 @@
 # * See the License for the specific language governing permissions and
 # * limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import logging
 import sys
 from argparse import ArgumentParser
 
 from cytomine import Cytomine
-from cytomine.models import ImageInstance, Tag, TagDomainAssociation, TagDomainAssociationCollection
-
-
+from cytomine.models import (
+    ImageInstance,
+    Tag,
+    TagDomainAssociation,
+    TagDomainAssociationCollection,
+)
 
 logging.basicConfig()
 logger = logging.getLogger("cytomine.client")
@@ -56,7 +54,7 @@ if __name__ == '__main__':
         tda = TagDomainAssociation(object=image, tag=tag.id).save()
 
         # Get the list of tags for the image:
-        print("Image {} has tags:".format(image.instanceFilename))
+        print(f"Image {image.instanceFilename} has tags:")
         tdac = TagDomainAssociationCollection(object=image).fetch()
         for tda in tdac:
-            print("- {}".format(tda.tagName))
+            print(f"- {tda.tagName}")
