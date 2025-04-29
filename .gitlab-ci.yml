@@ -1,4 +1,5 @@
 stages:
+  - lint
   - test
   - publish
 
@@ -6,12 +7,10 @@ stages:
 # - PYPI_USERNAME: pypi username for package upload
 # - PYPI_PASSWORD: pypi password for package upload
 
-default:
-  tags:
-    - docker
-
 workflow:
   rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+      when: always
     # - if: $CI_COMMIT_REF_PROTECTED != "true"
     #   when: never
     # only publish package if tag is a pypi compatible version (see long regex, extracted from PEP440) 
@@ -28,6 +27,23 @@ workflow:
       variables:
         PUBLISH_PYTHON_PACKAGE: "false"
         IS_OPEN_SOURCE_RELEASE_CANDIDATE: "false"
+
+lint-python:
+  stage: lint
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:${PYTHON_VERSION}
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.8", "3.9", "3.10"]
+  before_script:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pylint pytest
+  script:
+    - pylint --output=lint.txt cytomine tests
+  artifacts:
+    paths:
+      - ./lint.txt
+    expire_in: 1 week
 
 .run-pytest-generic: &run-pytest-generic
   stage: test
