@@ -3,26 +3,20 @@ stages:
   - test
   - publish
 
+variables:
+  SEMVER_REGEX: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+
 workflow:
   rules:
     - if: '$CI_MERGE_REQUEST_ID'
       when: always
-    # - if: $CI_COMMIT_REF_PROTECTED != "true"
-    #   when: never
-    # only publish package if tag is a pypi compatible version (see long regex, extracted from PEP440) 
-    # open-source if tag is not post- nor pre-release  
-    - if: $CI_COMMIT_TAG != null && $CI_COMMIT_TAG =~ /^v?(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*$/
-      variables:
-        PUBLISH_PYTHON_PACKAGE: "true"
-        IS_OPEN_SOURCE_RELEASE_CANDIDATE: "true"
-    - if: $CI_COMMIT_TAG != null && $CI_COMMIT_TAG =~ /^v?((?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:[-_\.]?(?:a|b|c|rc|alpha|beta|pre|preview)[-_\.]?(?:[0-9]+)?)?(?:-[0-9]+|[-_\.]?(?:post|rev|r)[-_\.]?(?:[0-9]+)?)?(?:[-_\.]?dev[-_\.]?(?:[0-9]+)?)?)(?:\+[a-z0-9]+(?:[-_\.][a-z0-9]+)*)?$/
-      variables:
-        PUBLISH_PYTHON_PACKAGE: "true"
-        IS_OPEN_SOURCE_RELEASE_CANDIDATE: "false"
-    - if: $CI_COMMIT_TAG == null || $CI_COMMIT_TAG !~ /^v?((?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:[-_\.]?(?:a|b|c|rc|alpha|beta|pre|preview)[-_\.]?(?:[0-9]+)?)?(?:-[0-9]+|[-_\.]?(?:post|rev|r)[-_\.]?(?:[0-9]+)?)?(?:[-_\.]?dev[-_\.]?(?:[0-9]+)?)?)(?:\+[a-z0-9]+(?:[-_\.][a-z0-9]+)*)?$/
-      variables:
-        PUBLISH_PYTHON_PACKAGE: "false"
-        IS_OPEN_SOURCE_RELEASE_CANDIDATE: "false"
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "production"'
+      when: always
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ $SEMVER_REGEX'
+      when: always
+    - when: never
 
 lint-python:
   stage: lint
@@ -59,22 +53,12 @@ unit-tests:
     when: always
 
 publish-python-package:
-  image: python:3.8-slim-bullseye
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3.8-alpine
   stage: publish
   rules:
-    - if: $PUBLISH_PYTHON_PACKAGE == "true"
-  script:
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ $SEMVER_REGEX
+  before_script:
     - pip install twine
-    - sed -i -- "s/version='x.x.x'/version='$CI_COMMIT_TAG'/g" setup.py
     - python setup.py sdist
-    - |
-      if [ $IS_OPEN_SOURCE_RELEASE_CANDIDATE = "true" ]; then
-        export TARGET_PYTHON_REPO=https://upload.pypi.org/legacy/
-        export TWINE_USERNAME=$PYPI_USERNAME
-        export TWINE_PASSWORD=$PYPI_PASSWORD
-      else
-        export TARGET_PYTHON_REPO=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi
-        export TWINE_USERNAME=gitlab-ci-token
-        export TWINE_PASSWORD=$CI_JOB_TOKEN
-      fi
-    - twine upload dist/cytomine-python-client-*.tar.gz --repository-url $TARGET_PYTHON_REPO
+  script:
+    - twine upload dist/cytomine-python-client-${CI_COMMIT_TAG}.tar.gz
