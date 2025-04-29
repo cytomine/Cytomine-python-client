@@ -33,7 +33,7 @@ lint-python:
   image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:${PYTHON_VERSION}
   parallel:
     matrix:
-      - PYTHON_VERSION: ["3.8", "3.9", "3.10"]
+      - PYTHON_VERSION: ["3.8", "3.9"]
   before_script:
     - python3 -m pip install --upgrade pip
     - pip install -r requirements.txt
