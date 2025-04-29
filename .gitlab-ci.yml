@@ -39,6 +39,7 @@ lint-python:
   artifacts:
     paths:
       - ./lint.txt
+    when: always
 
 unit-tests:
   stage: test
@@ -55,6 +56,7 @@ unit-tests:
   artifacts:
     reports:
       junit: ./reports/pytest-unit.xml
+    when: always
 
 publish-python-package:
   image: python:3.8-slim-bullseye
