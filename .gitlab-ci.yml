@@ -35,7 +35,7 @@ lint-python:
     matrix:
       - PYTHON_VERSION: ["3.8", "3.9", "3.10"]
   before_script:
-    - python -m pip install --upgrade pip
+    - python3 -m pip install --upgrade pip
     - pip install -r requirements.txt
     - pip install pylint pytest
   script:
