@@ -53,7 +53,7 @@ unit-tests:
     when: always
 
 publish-python-package:
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3.8-alpine
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3.8-slim-bullseye
   stage: publish
   rules:
     - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG =~ $SEMVER_REGEX
