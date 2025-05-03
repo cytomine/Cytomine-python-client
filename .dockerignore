@@ -1,9 +1,0 @@
-.idea
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-.tox
-.cache
-.git
