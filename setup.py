@@ -44,7 +44,6 @@ setup(
         "requests-toolbelt>=0.8.0",
         "CacheControl>=0.12.10",
         "Shapely>=1.6.4",
-        "six>=1.11.0",
         "requests>=2.27.1",
         "urllib3>=1.25.2",
     ],
