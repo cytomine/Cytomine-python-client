@@ -977,3 +977,36 @@ class Cytomine:
                 uf.images.append(data)  # type: ignore
 
         return uf
+
+    def import_datasets(
+        self,
+        storage_id: int,
+        dataset_names: Optional[str] = None,
+        create_project: bool = False,
+    ) -> Dict[str, str]:
+        """Import datasets from a given path."""
+
+        upload_host = self._base_url(with_base_path=False)
+
+        response = self._session.post(
+            f"{upload_host}/import",
+            auth=CytomineAuth(
+                self._public_key,
+                self._private_key,
+                upload_host,
+                "",
+            ),
+            headers=self._headers(content_type="text/plain"),
+            params={
+                "storage_id": storage_id,
+                "dataset_names": dataset_names,
+                "create_project": create_project,
+            },
+        )
+
+        if response.status_code != requests.codes.ok:
+            self._logger.error("Error during datasets upload: %s", response.text)
+            return {}
+
+        self._logger.info("Datasets uploaded successfully")
+        return response.json()
